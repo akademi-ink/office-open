@@ -261,7 +261,15 @@ export type ParagraphPropertiesOptionsBase = {
   run?: ParagraphRunOptions;
 } & ParagraphStylePropertiesOptions;
 
-export type ParagraphPropertiesChangeOptions = ChangedProperties & ParagraphPropertiesOptionsBase;
+export type ParagraphPropertiesChangeOptions = ChangedProperties &
+  ParagraphPropertiesOptionsBase & {
+    /**
+     * Raw `w:sectPr` that the source carried inside `w:pPrChange/w:pPr`.
+     * CT_PPrBase does not allow it, but Word-authored files contain it and it
+     * must round-trip verbatim; it is never interpreted as a section break.
+     */
+    sectionPropertiesXml?: string;
+  };
 
 /**
  * Options for configuring paragraph properties.

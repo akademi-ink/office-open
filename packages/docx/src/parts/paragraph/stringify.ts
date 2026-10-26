@@ -353,6 +353,7 @@ export const EMPTY_PPR_RESULT: StringifyPPrResult = { xml: undefined, numberingR
 // nested revision wrappers), not document data — kept out of the public options.
 export function stringifyParagraphProperties(
   options?: ParagraphPropertiesOptions & { includeIfEmpty?: boolean },
+  sectionPropertiesXml?: string,
 ): StringifyPPrResult {
   if (!options) return EMPTY_PPR_RESULT;
 
@@ -546,13 +547,22 @@ export function stringifyParagraphProperties(
     }
   }
 
+  // Section properties belong to the paragraph's current properties, before
+  // the tracked formatting snapshot (CT_PPr order: … rPr, sectPr, pPrChange).
+  if (sectionPropertiesXml) s += sectionPropertiesXml;
+
   // Revision (pPrChange)
   if (options.revision) {
     const rev = options.revision;
     // The embedded w:pPr is CT_PPrBase — no rPr (run), so drop it before
-    // serializing the pre-change properties.
-    const { author: _a, date: _d, id: _i, run: _r, ...originalProps } = rev;
-    const inner = stringifyParagraphProperties({ ...originalProps, includeIfEmpty: true });
+    // serializing the pre-change properties. A source-born sectPr inside the
+    // revision snapshot is not CT_PPrBase either, but it is preserved as raw
+    // XML inside that snapshot (never as the paragraph's live section break).
+    const { author: _a, date: _d, id: _i, run: _r, sectionPropertiesXml: _s, ...originalProps } = rev;
+    const inner = stringifyParagraphProperties(
+      { ...originalProps, includeIfEmpty: true },
+      rev.sectionPropertiesXml,
+    );
     s += `<w:pPrChange w:author="${escapeXml(rev.author)}" w:date="${rev.date}" w:id="${rev.id ?? autoRevisionId()}">${inner.xml ?? "<w:pPr/>"}</w:pPrChange>`;
   }
 

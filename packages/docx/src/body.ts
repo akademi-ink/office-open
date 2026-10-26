@@ -119,7 +119,9 @@ export function stringifyParagraph(
 
   // Build paragraph properties — direct string output, no intermediate object tree.
   // A string paragraph is `{ text }` by construction: no pPr fields, no numbering.
-  const props = isPlainText ? EMPTY_PPR_RESULT : stringifyParagraphProperties(resolved);
+  const props = isPlainText
+    ? EMPTY_PPR_RESULT
+    : stringifyParagraphProperties(resolved, sectionPropertiesXml);
 
   // Register numbering references (length check skips the iterator allocation
   // on the common no-numbering path)
@@ -132,15 +134,7 @@ export function stringifyParagraph(
 
   // Paragraph properties XML
   if (props.xml) {
-    if (sectionPropertiesXml) {
-      // Insert sectPr before closing </w:pPr>; a self-closed empty pPr
-      // (emptyProperties round-trip marker) expands to host the section break.
-      body += props.xml.includes("</w:pPr>")
-        ? props.xml.replace("</w:pPr>", sectionPropertiesXml + "</w:pPr>")
-        : props.xml.replace(/\/>$/, `>${sectionPropertiesXml}</w:pPr>`);
-    } else {
-      body += props.xml;
-    }
+    body += props.xml;
   } else if (sectionPropertiesXml) {
     // No pPr but we need sectPr — wrap in pPr
     body += `<w:pPr>${sectionPropertiesXml}</w:pPr>`;
@@ -945,7 +939,13 @@ export function parseParagraphProperties(
     const revId = attrNum(pPrChange, "w:id");
     if (revId !== undefined) rev.id = revId;
     const innerPPr = findChild(pPrChange, "w:pPr");
-    if (innerPPr) Object.assign(rev, parseParagraphProperties(innerPPr, ctx));
+    if (innerPPr) {
+      Object.assign(rev, parseParagraphProperties(innerPPr, ctx));
+      // Word-authored sources sometimes carry a sectPr inside pPrChange/pPr.
+      // Preserve it verbatim in the revision snapshot; it is not a live break.
+      const innerSectPr = findChild(innerPPr, "w:sectPr");
+      if (innerSectPr) rev.sectionPropertiesXml = stringifyElement(innerSectPr);
+    }
     if (Object.keys(rev).length > 0) opts.revision = rev as ParagraphPropertiesChangeOptions;
   }
 
