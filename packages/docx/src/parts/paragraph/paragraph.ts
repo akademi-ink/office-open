@@ -64,6 +64,9 @@ export interface ComplexFieldOptions {
   result?: string;
   rPrXml?: string;
   resultRPrXml?: string;
+  /** The first result run's parsed properties: the formatting the cached
+   *  result shows. Read-only for consumers; the writer emits resultRPrXml. */
+  resultRunProperties?: Record<string, unknown>;
   /** Verbatim run-properties of the end fldChar run (may differ from the
    *  control rPr — Word styles the end run like the result). */
   endRPrXml?: string;

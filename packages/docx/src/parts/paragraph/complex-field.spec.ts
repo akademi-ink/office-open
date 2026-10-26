@@ -118,4 +118,30 @@ describe("complex field parse", () => {
     const cf = findComplexField(opts);
     expect((cf!.complexField as Record<string, unknown>).instrRunsXml).toBeUndefined();
   });
+
+  it("carries the first result run's parsed properties", () => {
+    const opts = parseParagraphXml(
+      '<w:r><w:rPr><w:i/></w:rPr><w:fldChar w:fldCharType="begin"/></w:r>' +
+        '<w:r><w:instrText xml:space="preserve"> CITATION a </w:instrText></w:r>' +
+        '<w:r><w:fldChar w:fldCharType="separate"/></w:r>' +
+        '<w:r><w:rPr><w:b/><w:sz w:val="22"/></w:rPr><w:t>(Ada, 2020)</w:t></w:r>' +
+        '<w:r><w:fldChar w:fldCharType="end"/></w:r>',
+    );
+    const field = findComplexField(opts)!.complexField as Record<string, unknown>;
+    // The result run's own rPr, not the control run's italic.
+    expect(field.resultRunProperties).toMatchObject({ bold: true, size: 11 });
+    expect(field.resultRunProperties).not.toHaveProperty("italics");
+  });
+
+  it("leaves resultRunProperties unset when the result run has no rPr", () => {
+    const opts = parseParagraphXml(
+      '<w:r><w:fldChar w:fldCharType="begin"/></w:r>' +
+        '<w:r><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r>' +
+        '<w:r><w:fldChar w:fldCharType="separate"/></w:r>' +
+        "<w:r><w:t>1</w:t></w:r>" +
+        '<w:r><w:fldChar w:fldCharType="end"/></w:r>',
+    );
+    const field = findComplexField(opts)!.complexField as Record<string, unknown>;
+    expect(field.resultRunProperties).toBeUndefined();
+  });
 });

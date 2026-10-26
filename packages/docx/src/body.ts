@@ -1142,6 +1142,10 @@ function feedFieldRun(
         if (state.resultRunEls.length > 0) cf.result = state.pendingResult;
         if (state.controlRPr) cf.rPrXml = state.controlRPr;
         if (state.resultRPr) cf.resultRPrXml = state.resultRPr;
+        const resultRPrEl = state.resultRunEls[0] && findChild(state.resultRunEls[0], "w:rPr");
+        if (resultRPrEl) {
+          cf.resultRunProperties = parseRunProperties(resultRPrEl) as Record<string, unknown>;
+        }
         // Word styles the end run like the result (not like the controls).
         const endRPr = runRPrXml(run);
         if (endRPr && endRPr !== state.controlRPr) cf.endRPrXml = endRPr;
