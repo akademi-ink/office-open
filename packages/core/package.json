@@ -85,5 +85,8 @@
     "@noble/hashes": "2.3.0",
     "@office-open/xml": "workspace:*",
     "fflate": "0.8.3"
+  },
+  "devDependencies": {
+    "@rolldown/plugin-node-polyfills": "1.0.3"
   }
 }

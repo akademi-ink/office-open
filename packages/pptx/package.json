@@ -61,5 +61,8 @@
   "dependencies": {
     "@office-open/core": "workspace:*",
     "@office-open/xml": "workspace:*"
+  },
+  "devDependencies": {
+    "@rolldown/plugin-node-polyfills": "1.0.3"
   }
 }
