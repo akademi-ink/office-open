@@ -164,17 +164,13 @@ export function parseSectionChild(el: Element, ctx: DocxReadContext): SectionChi
       // markers are unbalanced opens (or continues) a field spanning
       // paragraph boundaries, and one carrying instrText with no fldChar at
       // all is a mid-field continuation. The per-paragraph field accumulator
-      // cannot represent either shape — keep the whole paragraph verbatim
-      // instead of dropping its runs.
-      if (
+      // cannot represent either shape, so the field's marker runs pass
+      // through verbatim while the paragraph and its text parse normally.
+      const crossed =
         isCrossParagraphFieldStart(el) ||
         isFieldContinuation(el) ||
-        isFieldSeparatorContinuation(el)
-      ) {
-        return { rawXml: stringifyElement(el) };
-      }
-
-      return { paragraph: parseParagraph(el, ctx) };
+        isFieldSeparatorContinuation(el);
+      return { paragraph: parseParagraph(el, ctx, crossed) };
     }
     case "w:tbl":
       return { table: tableDesc.parse(el, ctx) as TableOptions };

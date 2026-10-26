@@ -1021,6 +1021,16 @@ interface FieldRunState {
   instrRunEls: Element[];
   /** Result-stage run elements (separate → end), buffered likewise. */
   resultRunEls: Element[];
+  /** The paragraph is crossed by a field that opens or closes in another
+   *  paragraph: marker runs pass through verbatim and nothing accumulates. */
+  verbatimMarkers?: boolean;
+}
+
+/** A run carrying a field control: fldChar or (deleted) instruction text. */
+function isFieldMarkerRun(run: Element): boolean {
+  return (run.elements ?? []).some(
+    (c) => c.name === "w:fldChar" || c.name === "w:instrText" || c.name === "w:delInstrText",
+  );
 }
 
 const initialFieldRunState = (): FieldRunState => ({
@@ -1069,6 +1079,11 @@ function feedFieldRun(
   run: Element,
   state: FieldRunState,
 ): { consumed: boolean; child?: ParagraphChild } {
+  if (state.verbatimMarkers) {
+    return isFieldMarkerRun(run)
+      ? { consumed: true, child: { rawXml: stringifyElement(run) } }
+      : { consumed: false };
+  }
   const fldCharEl = findChild(run, "w:fldChar");
   if (fldCharEl) {
     const fctype = attr(fldCharEl, "w:fldCharType");
@@ -1612,12 +1627,14 @@ function parseHyperlinkChild(child: Element, ctx: DocxReadContext): ParagraphChi
 function parseRunLevelChildren(
   elements: Element[] | undefined,
   ctx: DocxReadContext,
+  verbatimFieldMarkers = false,
 ): ParagraphChild[] {
   const childList: ParagraphChild[] = [];
 
   // Field accumulator — see feedFieldRun. The whole field collapses to a
   // single child.
   const fieldState = initialFieldRunState();
+  fieldState.verbatimMarkers = verbatimFieldMarkers;
 
   for (const child of elements ?? []) {
     switch (child.name) {
@@ -1990,7 +2007,18 @@ function isTextOnlyRun(c: unknown): c is { text: string } {
   return typeof c === "object" && c !== null && "text" in c && Object.keys(c).length === 1;
 }
 
-export function parseParagraph(el: Element, ctx: DocxReadContext): ParagraphOptions {
+/**
+ * Parse a w:p. A paragraph crossed by a complex field whose begin or end lies
+ * in another paragraph (a Mendeley/Zotero bibliography, a multi-paragraph
+ * TOC tail) passes `verbatimFieldMarkers`: its fldChar/instrText runs become
+ * verbatim `rawXml` run children in place, and every other run parses as
+ * usual, so the paragraph stays editable and still round-trips the field.
+ */
+export function parseParagraph(
+  el: Element,
+  ctx: DocxReadContext,
+  verbatimFieldMarkers = false,
+): ParagraphOptions {
   const opts: Partial<ParagraphOptions> = {};
 
   // w:p element attributes: rsid family + w14:paraId/textId (hex string verbatim)
@@ -2014,7 +2042,7 @@ export function parseParagraph(el: Element, ctx: DocxReadContext): ParagraphOpti
     Object.assign(opts, parseParagraphProperties(pPr, ctx));
   }
 
-  const childList = parseRunLevelChildren(el.elements, ctx);
+  const childList = parseRunLevelChildren(el.elements, ctx, verbatimFieldMarkers);
 
   // Simple text optimization: a single text-only run collapses into opts.text
   // (the canonical ParagraphOptions form). Multiple runs stay a children
