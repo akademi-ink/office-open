@@ -532,9 +532,16 @@ function buildTocChild(els: Element[], ctx: DocxReadContext): SectionChild {
     // through parseSectionChild's cross-paragraph pre-check — the closing
     // paragraph's unbalanced `end` would flip it to verbatim rawXml and lose
     // the structured pPr (pStyle/divId) this capture exists to preserve.
-    const outerMarkers = outerTocMarkerRuns(els);
+    const markers = outerTocMarkerRuns(els);
+    const closingWithTail = entryEls.find(
+      (el) => countFieldDelta(el) < 0 && hasFieldAfterOuterEnd(el),
+    );
+    if (closingWithTail) tocOpts.endInBody = true;
     tocOpts.entries = entryEls.map((el) => {
-      const entry = withoutRuns(el, outerMarkers);
+      if (el === closingWithTail) {
+        return parseClosingEntryWithFieldTrail(el, markers.head, ctx) ?? { paragraph: {} };
+      }
+      const entry = withoutRuns(el, new Set([...markers.head, ...markers.end]));
       return entry.name === "w:p"
         ? { paragraph: parseParagraph(entry, ctx) }
         : parseSectionChild(entry, ctx);
@@ -545,13 +552,33 @@ function buildTocChild(els: Element[], ctx: DocxReadContext): SectionChild {
 }
 
 /**
+ * True when a field starts after the paragraph's outer field-end run. A bare
+ * page break after the end stays an ordinary entry/body child (existing
+ * round-trip); a trailing empty TOC field must stay after the outer end, at
+ * its source position inside the closing entry.
+ */
+function hasFieldAfterOuterEnd(el: Element): boolean {
+  let afterEnd = false;
+  for (const child of el.elements ?? []) {
+    if (child.name === "w:pPr") continue;
+    if (afterEnd && findFirst(child, "w:instrText") !== undefined) return true;
+    if (child.name === "w:r") {
+      const fld = findChild(child, "w:fldChar");
+      if (fld && attr(fld, "w:fldCharType") === "end") afterEnd = true;
+    }
+  }
+  return false;
+}
+
+/**
  * The outer TOC field's own runs: its begin→separate head and its closing end.
  * The TOC child re-emits both, so entry paragraphs are parsed without them —
  * a paragraph whose markers stay verbatim (a tracked insertion splitting an
  * entry's HYPERLINK) would otherwise write them twice.
  */
-function outerTocMarkerRuns(els: Element[]): Set<Element> {
-  const runs = new Set<Element>();
+function outerTocMarkerRuns(els: Element[]): { head: Set<Element>; end: Set<Element> } {
+  const head = new Set<Element>();
+  const end = new Set<Element>();
   let depth = 0;
   let inHead = false;
   let closed = false;
@@ -565,15 +592,57 @@ function outerTocMarkerRuns(els: Element[]): Set<Element> {
     }
     const type = attr(findChild(node, "w:fldChar") ?? node, "w:fldCharType");
     if (type === "begin" && ++depth === 1) inHead = true;
-    if (inHead) runs.add(node);
+    if (inHead) head.add(node);
     if (type === "separate" && depth === 1) inHead = false;
     if (type === "end" && --depth === 0) {
-      runs.add(node);
+      end.add(node);
       closed = true;
     }
   };
   for (const el of els) walk(el);
-  return runs;
+  return { head, end };
+}
+
+/** Split the closing paragraph at its outer field-end run so the end keeps
+ *  its source position before a trailing empty TOC field. */
+function parseClosingEntryWithFieldTrail(
+  entry: Element,
+  headRuns: ReadonlySet<Element>,
+  ctx: DocxReadContext,
+): { paragraph: ParagraphOptions } | null {
+  const withoutHead = withoutRuns(entry, headRuns);
+  if (withoutHead.name !== "w:p") return null;
+  const elements = withoutHead.elements ?? [];
+  let depth = 0;
+  let endIndex = -1;
+  for (let i = 0; i < elements.length; i++) {
+    const child = elements[i]!;
+    if (child.name === "w:pPr") continue;
+    if (child.name === "w:r") {
+      const fld = findChild(child, "w:fldChar");
+      const type = fld ? attr(fld, "w:fldCharType") : undefined;
+      if (type === "begin") depth++;
+      else if (type === "end" && depth > 0) depth--;
+      else if (type === "end" && depth === 0) {
+        endIndex = i;
+        break;
+      }
+    }
+  }
+  if (endIndex < 0) return null;
+  const endRun = elements[endIndex]!;
+  const before = parseParagraph({ ...withoutHead, elements: elements.slice(0, endIndex) }, ctx);
+  const after = parseParagraph({ ...withoutHead, elements: elements.slice(endIndex + 1) }, ctx);
+  return {
+    paragraph: {
+      ...before,
+      children: [
+        ...(before.children ?? []),
+        { rawXml: stringifyElement(endRun) },
+        ...(after.children ?? []),
+      ],
+    },
+  };
 }
 
 /** A copy of `el` without the given descendant runs; `el` itself when none occur. */
