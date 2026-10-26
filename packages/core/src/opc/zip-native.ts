@@ -18,6 +18,7 @@ import type * as ZlibNode from "node:zlib";
 import { ZipPassThrough, inflateSync } from "fflate";
 import type { FlateError, Zippable, ZipOptions } from "fflate";
 
+import { akademiForcesJsDeflate } from "../util/akademi-determinism";
 import type { ByteSource } from "./byte-source";
 
 // ── CRC-32 lookup table ──
@@ -107,7 +108,8 @@ try {
   // Browser/Deno or Node-like runtime without usable zlib — fflate fallback
 }
 
-export const hasNativeDeflate = (): boolean => _nativeDeflate !== undefined;
+export const hasNativeDeflate = (): boolean =>
+  _nativeDeflate !== undefined && !akademiForcesJsDeflate();
 
 // fflate's async zip entries hand every chunk to a dedicated worker via
 // postMessage with a transfer list — one thread spawn per part (~5-10ms each

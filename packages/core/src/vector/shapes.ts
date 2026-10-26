@@ -16,6 +16,7 @@
 import type { Element as XmlElement } from "@office-open/xml";
 import { escapeXml, stringifyElement } from "@office-open/xml";
 
+import { akademiGenerationScope } from "../util/akademi-determinism";
 import {
   stringifyVmlAttributes,
   parseVmlAttributes,
@@ -128,10 +129,12 @@ let nextSpid = 1024;
 /**
  * Allocate the next VML shape id (`_x0000_s1025`, `_x0000_s1026`, …).
  * Ids only need to be unique within a document; the counter is process-global
- * so concurrent generations never collide.
+ * so concurrent generations never collide. Inside a @akademi-ink/docx generation
+ * scope the id comes from the per-generation counter instead.
  */
 export function nextVmlShapeId(): string {
-  return `_x0000_s${++nextSpid}`;
+  const scope = akademiGenerationScope();
+  return `_x0000_s${scope ? scope.nextVml() : ++nextSpid}`;
 }
 
 // ── Shared shape options base ──

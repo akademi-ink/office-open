@@ -7,6 +7,8 @@
 import { sha1 } from "@noble/hashes/legacy.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 
+import { akademiGenerationScope } from "./akademi-determinism";
+
 /**
  * A function that generates unique sequential numeric IDs.
  */
@@ -26,6 +28,8 @@ const URL_ALPHABET = "useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvw
  * Generates a unique lowercase alphanumeric ID using crypto.getRandomValues.
  */
 export const uniqueId = (): string => {
+  const scope = akademiGenerationScope();
+  if (scope) return scope.nextToken();
   const bytes = new Uint8Array(21);
   crypto.getRandomValues(bytes);
   let id = "";
@@ -50,4 +54,7 @@ export const hashedId = (data: Uint8Array | ArrayBuffer | string): string => {
 /**
  * Generates a UUID v4-style unique identifier using crypto.randomUUID.
  */
-export const uniqueUuid = (): string => crypto.randomUUID();
+export const uniqueUuid = (): string => {
+  const scope = akademiGenerationScope();
+  return scope ? scope.nextUuid() : crypto.randomUUID();
+};

@@ -16,6 +16,7 @@ import {
   zipSync,
 } from "fflate";
 
+import { AKADEMI_ZIP_MTIME } from "../util/akademi-determinism";
 import { convertOutput } from "./output";
 import type { OutputByType, OutputType } from "./output";
 import {
@@ -127,7 +128,7 @@ export const zipAndConvert = async <T extends OutputType>(
     : await new Promise<Uint8Array>((resolve, reject) => {
         zip(
           files as AsyncZippable,
-          { level: level as ZipOptions["level"], consume: true },
+          { level: level as ZipOptions["level"], consume: true, mtime: AKADEMI_ZIP_MTIME },
           (err, data) => {
             if (err) reject(err);
             else resolve(data);
@@ -151,7 +152,7 @@ export const zipSyncAndConvert = <T extends OutputType>(
 ): OutputByType[T] => {
   const zipped = hasNativeDeflate()
     ? nativeZip(files, level)
-    : zipSync(files, { level: level as ZipOptions["level"] });
+    : zipSync(files, { level: level as ZipOptions["level"], mtime: AKADEMI_ZIP_MTIME });
   return convertOutput(zipped, type, mimeType);
 };
 
@@ -205,6 +206,7 @@ export const createZipStream = (
               : workerPath
                 ? new AsyncZipDeflate(name, { level: level as ZipOptions["level"] })
                 : new ZipDeflate(name, { level: level as ZipOptions["level"] });
+          entry.mtime = AKADEMI_ZIP_MTIME;
           zip.add(entry);
           // AsyncZipDeflate transfers each pushed buffer to its worker
           // (postMessage move semantics), detaching the caller's view —
@@ -280,6 +282,7 @@ export class ZipStreamWriter {
     // so ordering between parts is preserved by fflate's internal queue. The
     // worker transfer-detaches every chunk it is handed, so sinks receive
     // copies — a caller-held buffer must survive repeated generations.
+    entry.mtime = AKADEMI_ZIP_MTIME;
     this.zip.add(entry);
     this.current = entry;
     return {

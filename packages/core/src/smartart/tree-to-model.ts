@@ -1,5 +1,6 @@
 import { escapeXml } from "@office-open/xml";
 
+import { akademiGenerationScope } from "../util/akademi-determinism";
 import { COLOR_CATEGORIES, LAYOUT_CATEGORIES, STYLE_CATEGORIES } from "./categories";
 import { stringifyConnection } from "./data-model/connection";
 import { stringifyDataModel } from "./data-model/data-model";
@@ -28,6 +29,8 @@ function stringifyDocPoint(layout: string, style: string, color: string): string
 }
 
 function uuid(): string {
+  const scope = akademiGenerationScope();
+  if (scope) return `{${scope.nextUuid().toUpperCase()}}`;
   return `{${crypto.randomUUID().toUpperCase()}}`;
 }
 
