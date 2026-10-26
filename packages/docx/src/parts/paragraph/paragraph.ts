@@ -83,8 +83,8 @@ export interface ComplexFieldOptions {
 /**
  * Children allowed inside a track-change wrapper (w:ins/w:del/w:moveFrom/
  * w:moveTo, CT_RunTrackChange) — runs, the comment range markers Word anchors
- * directly inside the wrapper, complete field chains, and nested same-type
- * wrappers.
+ * directly inside the wrapper, complete field chains (or verbatim marker runs
+ * of a field the wrapper splits), and nested same-type wrappers.
  */
 export type TrackChangeChild =
   | RunOptions
@@ -96,6 +96,8 @@ export type TrackChangeChild =
   | { complexField: ComplexFieldOptions }
   | { formField: FormFieldOptions }
   | { proofErr: "spellStart" | "spellEnd" | "gramStart" | "gramEnd" }
+  // A field marker run kept verbatim when the field crosses the wrapper
+  | { rawXml: string }
   // Drawings inserted as revisions (w:ins around the drawing's w:r)
   | { picture: PictureOptions }
   | { chart: ChartOptions }

@@ -532,12 +532,66 @@ function buildTocChild(els: Element[], ctx: DocxReadContext): SectionChild {
     // through parseSectionChild's cross-paragraph pre-check — the closing
     // paragraph's unbalanced `end` would flip it to verbatim rawXml and lose
     // the structured pPr (pStyle/divId) this capture exists to preserve.
-    tocOpts.entries = entryEls.map((el) =>
-      el.name === "w:p" ? { paragraph: parseParagraph(el, ctx) } : parseSectionChild(el, ctx),
-    );
+    const outerMarkers = outerTocMarkerRuns(els);
+    tocOpts.entries = entryEls.map((el) => {
+      const entry = withoutRuns(el, outerMarkers);
+      return entry.name === "w:p"
+        ? { paragraph: parseParagraph(entry, ctx) }
+        : parseSectionChild(entry, ctx);
+    });
   }
   captureTocFieldRPr(els, tocOpts);
   return { toc: tocOpts };
+}
+
+/**
+ * The outer TOC field's own runs: its begin→separate head and its closing end.
+ * The TOC child re-emits both, so entry paragraphs are parsed without them —
+ * a paragraph whose markers stay verbatim (a tracked insertion splitting an
+ * entry's HYPERLINK) would otherwise write them twice.
+ */
+function outerTocMarkerRuns(els: Element[]): Set<Element> {
+  const runs = new Set<Element>();
+  let depth = 0;
+  let inHead = false;
+  let closed = false;
+  const walk = (node: Element): void => {
+    if (closed) return;
+    if (node.name !== "w:r") {
+      for (const c of node.elements ?? []) {
+        if (c.type === "element") walk(c);
+      }
+      return;
+    }
+    const type = attr(findChild(node, "w:fldChar") ?? node, "w:fldCharType");
+    if (type === "begin" && ++depth === 1) inHead = true;
+    if (inHead) runs.add(node);
+    if (type === "separate" && depth === 1) inHead = false;
+    if (type === "end" && --depth === 0) {
+      runs.add(node);
+      closed = true;
+    }
+  };
+  for (const el of els) walk(el);
+  return runs;
+}
+
+/** A copy of `el` without the given descendant runs; `el` itself when none occur. */
+function withoutRuns(el: Element, runs: ReadonlySet<Element>): Element {
+  const children = el.elements;
+  if (!children) return el;
+  let changed = false;
+  const kept: Element[] = [];
+  for (const child of children) {
+    if (runs.has(child)) {
+      changed = true;
+      continue;
+    }
+    const next = withoutRuns(child, runs);
+    if (next !== child) changed = true;
+    kept.push(next);
+  }
+  return changed ? { ...el, elements: kept } : el;
 }
 
 /**

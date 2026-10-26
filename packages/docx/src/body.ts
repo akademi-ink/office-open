@@ -1311,9 +1311,40 @@ function parseDrawingRunChild(child: Element, ctx: DocxReadContext): ParagraphCh
  * drawings (wps shapes and text boxes inserted as revisions), and nested
  * same-family wrappers.
  */
-function parseTrackChangeRuns(el: Element, ctx: DocxReadContext): TrackChangeChild[] {
+const TRACK_CHANGE_WRAPPERS = new Set(["w:ins", "w:del", "w:moveFrom", "w:moveTo"]);
+
+/**
+ * True when a track-change wrapper holds only part of a field: a revision
+ * that inserted a TOC entry often opens its HYPERLINK/PAGEREF chain inside the
+ * w:ins and closes it in a later run outside. The paragraph then keeps every
+ * marker run verbatim, as for a field that crosses paragraphs; collapsing
+ * would need both halves in one accumulator.
+ */
+function wrapperSplitsField(el: Element): boolean {
+  let depth = 0;
+  const walk = (parent: Element): boolean => {
+    for (const sub of parent.elements ?? []) {
+      if (sub.name === "w:r") {
+        const type = attr(findChild(sub, "w:fldChar") ?? sub, "w:fldCharType");
+        if (type === "begin") depth++;
+        else if (type === "end" && --depth < 0) return true;
+      } else if (sub.name && TRACK_CHANGE_WRAPPERS.has(sub.name) && walk(sub)) {
+        return true;
+      }
+    }
+    return false;
+  };
+  return walk(el) || depth !== 0;
+}
+
+function parseTrackChangeRuns(
+  el: Element,
+  ctx: DocxReadContext,
+  verbatimFieldMarkers = false,
+): TrackChangeChild[] {
   const out: TrackChangeChild[] = [];
   const fieldState = initialFieldRunState();
+  fieldState.verbatimMarkers = verbatimFieldMarkers;
   for (const sub of el.elements ?? []) {
     if (sub.name === "w:r") {
       const fed = feedFieldRun(sub, fieldState);
@@ -1357,7 +1388,7 @@ function parseTrackChangeRuns(el: Element, ctx: DocxReadContext): TrackChangeChi
       }
     } else if (sub.name === "w:ins" || sub.name === "w:del") {
       // Nested wrappers (w:ins > w:del) — recurse with the same shape.
-      const nested = parseTrackChangeRuns(sub, ctx);
+      const nested = parseTrackChangeRuns(sub, ctx, verbatimFieldMarkers);
       if (nested.length > 0) {
         const meta = {
           id: attrNum(sub, "w:id") ?? 0,
@@ -1634,7 +1665,14 @@ function parseRunLevelChildren(
   // Field accumulator — see feedFieldRun. The whole field collapses to a
   // single child.
   const fieldState = initialFieldRunState();
-  fieldState.verbatimMarkers = verbatimFieldMarkers;
+  fieldState.verbatimMarkers =
+    verbatimFieldMarkers ||
+    (elements ?? []).some(
+      (child) =>
+        child.name !== undefined &&
+        TRACK_CHANGE_WRAPPERS.has(child.name) &&
+        wrapperSplitsField(child),
+    );
 
   for (const child of elements ?? []) {
     switch (child.name) {
@@ -1716,7 +1754,7 @@ function parseRunLevelChildren(
         break;
       }
       case "w:ins": {
-        const children = parseTrackChangeRuns(child, ctx);
+        const children = parseTrackChangeRuns(child, ctx, fieldState.verbatimMarkers);
         if (children.length > 0) {
           childList.push({
             insertion: {
@@ -1730,7 +1768,7 @@ function parseRunLevelChildren(
         break;
       }
       case "w:del": {
-        const children = parseTrackChangeRuns(child, ctx);
+        const children = parseTrackChangeRuns(child, ctx, fieldState.verbatimMarkers);
         if (children.length > 0) {
           childList.push({
             deletion: {
@@ -1744,7 +1782,7 @@ function parseRunLevelChildren(
         break;
       }
       case "w:moveFrom": {
-        const children = parseTrackChangeRuns(child, ctx);
+        const children = parseTrackChangeRuns(child, ctx, fieldState.verbatimMarkers);
         if (children.length > 0) {
           childList.push({
             movedFrom: {
@@ -1758,7 +1796,7 @@ function parseRunLevelChildren(
         break;
       }
       case "w:moveTo": {
-        const children = parseTrackChangeRuns(child, ctx);
+        const children = parseTrackChangeRuns(child, ctx, fieldState.verbatimMarkers);
         if (children.length > 0) {
           childList.push({
             movedTo: {
