@@ -2,7 +2,7 @@
   "name": "@office-open/monorepo",
   "version": "0.0.0",
   "private": true,
-  "description": "AI-native Office documents for TypeScript and JavaScript — generate, parse, and patch .docx, .xlsx, .pptx from plain JSON",
+  "description": "Akademi's Word-first OOXML engine (fork of DemoMacro/office-open v0.14.5)",
   "keywords": [
     "ai",
     "docx",
@@ -15,7 +15,7 @@
   ],
   "homepage": "https://www.office-open.com",
   "bugs": {
-    "url": "https://github.com/DemoMacro/office-open/issues"
+    "url": "https://github.com/akademi-ink/office-open/issues"
   },
   "license": "MIT",
   "author": {
@@ -25,7 +25,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DemoMacro/office-open.git"
+    "url": "git+https://github.com/akademi-ink/office-open.git"
   },
   "type": "module",
   "scripts": {
@@ -33,9 +33,6 @@
     "build": "pnpm --filter \"./packages/**\" -r build",
     "check": "vp check --fix",
     "test": "pnpm --filter \"./packages/**\" -r test",
-    "schema:generate": "tsx scripts/generate-schema.ts && vp fmt packages/office-open/schemas",
-    "schema:check": "tsx scripts/generate-schema.ts --check",
-    "schema:validate": "tsx scripts/schema-validate.ts",
     "corpus:setup": "tsx scripts/corpus-check.ts --setup",
     "models:generate": "tsx scripts/xsd-content-model.ts",
     "models:check": "tsx scripts/xsd-content-model.ts --check",
@@ -43,12 +40,7 @@
     "corpus:check": "tsx scripts/corpus-check.ts",
     "version": "pnpm --filter \"./packages/**\" -r exec basis version",
     "publish": "pnpm --filter \"./packages/**\" -r exec basis publish",
-    "postinstall": "pnpm build && vp config && basis git setup",
-    "docs:parity": "tsx scripts/docs-parity-check.ts",
-    "docs:dev": "pnpm --filter @office-open/docs dev",
-    "docs:build": "pnpm --filter @office-open/docs build",
-    "docs:generate": "pnpm --filter @office-open/docs generate",
-    "docs:preview": "pnpm --filter @office-open/docs preview"
+    "postinstall": "pnpm build && vp config && basis git setup"
   },
   "devDependencies": {
     "@funish/basis": "0.3.0",
@@ -60,7 +52,6 @@
     "docx": "9.7.1",
     "execa": "10.0.1",
     "happy-dom": "20.11.6",
-    "hucre": "1.1.0",
     "inquirer": "14.1.0",
     "libxml2-wasm": "0.7.1",
     "pptxgenjs": "4.0.1",

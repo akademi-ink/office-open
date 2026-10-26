@@ -39,7 +39,6 @@ import { unzipSync } from "fflate";
 // Requires a prior `pnpm build`.
 import { parseDocument, generateDocument } from "../packages/docx/dist/index.mjs";
 import { parsePresentation, generatePresentation } from "../packages/pptx/dist/index.mjs";
-import { parseWorkbook, generateWorkbook } from "../packages/xlsx/dist/index.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, "..");
@@ -77,14 +76,12 @@ const LIBRARIES: Library[] = [
   { id: "tika", repo: "https://github.com/apache/tika", dest: ".temp/corpus/tika" },
 ];
 
-type Format = "docx" | "xlsx" | "pptx";
+type Format = "docx" | "pptx";
 
 const BY_EXT: Record<string, { format: Format; parse: (b: Uint8Array) => Promise<unknown> }> = {
   docx: { format: "docx", parse: parseDocument },
   dotx: { format: "docx", parse: parseDocument },
   docm: { format: "docx", parse: parseDocument },
-  xlsx: { format: "xlsx", parse: parseWorkbook },
-  xlsm: { format: "xlsx", parse: parseWorkbook },
   pptx: { format: "pptx", parse: parsePresentation },
   pptm: { format: "pptx", parse: parsePresentation },
 };
@@ -162,12 +159,10 @@ async function runLibrary(
 ): Promise<Record<Format, FormatCounts> & { blockers: Record<Format, Map<string, number>> }> {
   const counts = {
     docx: { total: 0, clean: 0, diff: 0, parseFail: 0, genFail: 0 },
-    xlsx: { total: 0, clean: 0, diff: 0, parseFail: 0, genFail: 0 },
     pptx: { total: 0, clean: 0, diff: 0, parseFail: 0, genFail: 0 },
   } as Record<Format, FormatCounts>;
   const blockers: Record<Format, Map<string, number>> = {
     docx: new Map(),
-    xlsx: new Map(),
     pptx: new Map(),
   };
 
@@ -189,9 +184,7 @@ async function runLibrary(
       out =
         format === "docx"
           ? await generateDocument(opts as Parameters<typeof generateDocument>[0])
-          : format === "xlsx"
-            ? await generateWorkbook(opts as Parameters<typeof generateWorkbook>[0])
-            : await generatePresentation(opts as Parameters<typeof generatePresentation>[0]);
+          : await generatePresentation(opts as Parameters<typeof generatePresentation>[0]);
     } catch (e) {
       a.genFail++;
       console.error(`  genFail ${path.relative(ROOT_DIR, f)}: ${String(e).slice(0, 120)}`);
@@ -268,9 +261,9 @@ for (const lib of LIBRARIES) {
   console.log(`\n[${lib.id}] ${lib.dest}`);
   const result = await runLibrary(lib);
   const libBaseline = baseline[lib.id];
-  nextBaseline[lib.id] = { docx: result.docx, xlsx: result.xlsx, pptx: result.pptx };
+  nextBaseline[lib.id] = { docx: result.docx, pptx: result.pptx };
 
-  for (const format of ["docx", "xlsx", "pptx"] as const) {
+  for (const format of ["docx", "pptx"] as const) {
     const a = result[format];
     console.log(
       `  ${format}  total ${a.total} | clean ${a.clean} | diff ${a.diff} | parseFail ${a.parseFail} | genFail ${a.genFail}`,
