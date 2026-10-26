@@ -177,6 +177,13 @@ export interface TableOfContentsOptions {
   endInBody?: boolean;
 
   /**
+   * The field-end marker is a run inside the closing entry, before a trailing
+   * field the source keeps after it — stringify must not inject another end
+   * run (round-trip only).
+   */
+  endInEntry?: boolean;
+
+  /**
    * Verbatim `<w:r>…</w:r>` XML of the field's begin→separate control runs
    * (round-trip only; Word splits the instruction across runs and the split
    * must survive).

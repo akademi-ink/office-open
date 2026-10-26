@@ -536,7 +536,7 @@ function buildTocChild(els: Element[], ctx: DocxReadContext): SectionChild {
     const closingWithTail = entryEls.find(
       (el) => countFieldDelta(el) < 0 && hasFieldAfterOuterEnd(el),
     );
-    if (closingWithTail) tocOpts.endInBody = true;
+    if (closingWithTail) tocOpts.endInEntry = true;
     tocOpts.entries = entryEls.map((el) => {
       if (el === closingWithTail) {
         return parseClosingEntryWithFieldTrail(el, markers.head, ctx) ?? { paragraph: {} };

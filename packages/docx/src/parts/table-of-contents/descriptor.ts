@@ -88,9 +88,10 @@ export function stringifyTableOfContents(
   const endParagraph = `<w:p>${endRun}</w:p>`;
 
   const body = entriesXml
-    ? // endInBody: the end marker round-trips in a following body paragraph —
-      // injecting another end run here would emit the field end twice.
-      options.endInBody
+    ? // endInBody / endInEntry: the end marker round-trips in a following body
+      // paragraph or inside the closing entry — injecting another end run here
+      // would emit the field end twice.
+      options.endInBody || options.endInEntry
       ? injectFieldHead(entriesXml, headRuns)
       : injectFieldEnd(injectFieldHead(entriesXml, headRuns), endRun)
     : `<w:p>${headRuns}</w:p>` + endParagraph;
