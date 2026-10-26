@@ -101,4 +101,19 @@ describe("fields split by tracked insertions", () => {
       expect.objectContaining({ complexField: expect.objectContaining({ instruction: " PAGE " }) }),
     ]);
   });
+
+  it("keep bookmarks a deletion wraps at their position", async () => {
+    const paragraph =
+      '<w:p><w:del w:id="1" w:author="A" w:date="2024-07-10T13:32:00Z">' +
+      '<w:r><w:delText>a</w:delText></w:r><w:bookmarkStart w:id="7" w:name="_Toc1"/>' +
+      '<w:r><w:delText>b</w:delText></w:r></w:del><w:bookmarkEnd w:id="7"/>' +
+      text("c") +
+      "</w:p>";
+    const once = await generateDocument(parseDocumentSync(packageOf(paragraph)), { type: "uint8array" });
+    expect(documentXml(once)).toMatch(
+      /<w:del [^>]*>.*<w:delText[^>]*>a<\/w:delText><\/w:r><w:bookmarkStart w:id="7" w:name="_Toc1"\/><w:r>.*<w:delText[^>]*>b<\/w:delText>.*<\/w:del><w:bookmarkEnd w:id="7"\/>/,
+    );
+    const twice = await generateDocument(parseDocumentSync(once), { type: "uint8array" });
+    expect(documentXml(twice)).toBe(documentXml(once));
+  });
 });

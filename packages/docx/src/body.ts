@@ -1401,6 +1401,10 @@ function parseTrackChangeRuns(
             : { deletion: { ...meta, children: nested } },
         );
       }
+    } else if (sub.name !== "w:rPr") {
+      // Any other range markup the wrapper may hold (bookmarks, permissions,
+      // move ranges, …) stays verbatim at its position.
+      out.push({ rawXml: stringifyElement(sub) });
     }
   }
   return out;
