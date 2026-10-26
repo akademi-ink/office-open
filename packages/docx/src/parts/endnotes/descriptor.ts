@@ -64,6 +64,6 @@ export const endnotesDesc: CustomDescriptor<EndnotesData, BodyContext> = createN
   refRunXml: ENDNOTE_REF_RUN,
   separatorXml: SEPARATOR_ENDNOTE,
   continuationSeparatorXml: CONTINUATION_SEPARATOR_ENDNOTE,
-  // endnoteRef goes right after the paragraph open tag (historical output).
-  insertRefAfterParagraphProperties: false,
+  // endnoteRef goes after the paragraph properties, like footnoteRef.
+  insertRefAfterParagraphProperties: true,
 });

@@ -70,12 +70,24 @@ function stringifyChildren(items: MathInput[]): string {
   return items.map(stringifyMathInput).join("");
 }
 
+/**
+ * One m:t text node. ECMA-376 §17.3.2.25: leading/trailing whitespace is
+ * only significant under xml:space="preserve", which Word emits whenever the
+ * text has edge spaces; without it consumers (LibreOffice) trim them and the
+ * equation narrows.
+ */
+function mathTextXml(value: string): string {
+  return /^\s|\s$/.test(value)
+    ? `<m:t xml:space="preserve">${escapeXml(value)}</m:t>`
+    : `<m:t>${escapeXml(value)}</m:t>`;
+}
+
 // ── Main recursive stringifier ──
 
 export function stringifyMathInput(value: MathInput): string {
   // String → MathRun shorthand
   if (typeof value === "string") {
-    return `<m:r><m:t>${escapeXml(value)}</m:t></m:r>`;
+    return `<m:r>${mathTextXml(value)}</m:r>`;
   }
 
   // Class instances — still need toXml (shouldn't happen in compile/ JSON path)
@@ -322,7 +334,7 @@ export function stringifyMathInput(value: MathInput): string {
   if ("text" in value) {
     const props = value.properties ? mathRunPropsStr(value.properties) : "";
     const rPr = wRPrXml(value.runProperties);
-    return `<m:r>${props}${rPr}<m:t>${escapeXml(value.text)}</m:t></m:r>`;
+    return `<m:r>${props}${rPr}${mathTextXml(value.text)}</m:r>`;
   }
 
   return "";

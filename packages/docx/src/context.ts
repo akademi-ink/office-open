@@ -502,7 +502,7 @@ export class DocxWriteContext implements WriteContext {
   }
 
   private createHeader(header: SectionChild[], partName?: string): HeaderFooterEntry {
-    const referenceId = this.document.relationships.nextRelationshipId;
+    const referenceId = this.headerFooterReferenceId(partName, RELATIONSHIP_TYPES.header);
     const entry: HeaderFooterEntry = {
       children: header,
       relationships: new Relationships(),
@@ -513,7 +513,7 @@ export class DocxWriteContext implements WriteContext {
   }
 
   private createFooter(footer: SectionChild[], partName?: string): HeaderFooterEntry {
-    const referenceId = this.document.relationships.nextRelationshipId;
+    const referenceId = this.headerFooterReferenceId(partName, RELATIONSHIP_TYPES.footer);
     const entry: HeaderFooterEntry = {
       children: footer,
       relationships: new Relationships(),
@@ -521,6 +521,32 @@ export class DocxWriteContext implements WriteContext {
     };
     this.addFooterToDocument(entry, partName);
     return entry;
+  }
+
+  /**
+   * Reference id for a header/footer part. When a round-tripped part keeps
+   * its source file name, reuse the related source relationship's rId
+   * (kind+target match) so saving an opened document does not monotonically
+   * grow the id counter and shift every header/footer reference each cycle.
+   * A part already wired in this generation (two slots sharing one part)
+   * reuses its registered id; a fresh compile allocates the next one.
+   */
+  private headerFooterReferenceId(partName: string | undefined, type: string): number {
+    if (!partName) return this.document.relationships.nextRelationshipId;
+    const existing = this.document.relationships.idOf(type, partName);
+    if (existing) {
+      const m = /^rId(\d+)$/.exec(existing);
+      if (m) return Number(m[1]);
+    }
+    const source = (this._options.passthroughRelationships ?? []).find(
+      (r) =>
+        r.source === "word/document.xml" &&
+        r.relationshipType === type &&
+        (r.target === partName || r.target.endsWith(`/${partName}`)),
+    );
+    const m = source ? /^rId(\d+)$/.exec(source.rId) : undefined;
+    if (m && !this.document.relationships.hasId(m[0])) return Number(m[1]);
+    return this.document.relationships.nextRelationshipId;
   }
 
   private addHeaderToDocument(header: HeaderFooterEntry, partName?: string): void {

@@ -114,7 +114,13 @@ export type CharacterStyleOptions = {
  * personalReply, rsid.
  */
 function stringifyStyleLevelChildren(opts: StyleOptions & { id?: string }): string {
-  const parts: string[] = [`<w:name w:val="${escapeXml(opts.name ?? opts.id ?? "")}"/>`];
+  // Keep a source style without w:name nameless. Falling back to the styleId
+  // invented metadata the source did not carry, and consumers that attach
+  // styles by name (LibreOffice) then re-flow content where the source did
+  // not (sinkron's narrow label cells). ECMA-376: w:name is optional;
+  // readers fall back to the styleId.
+  const parts: string[] =
+    opts.name != null && opts.name !== "" ? [`<w:name w:val="${escapeXml(opts.name)}"/>`] : [];
   if (opts.aliases) parts.push(`<w:aliases w:val="${escapeXml(opts.aliases)}"/>`);
   if (opts.basedOn) parts.push(`<w:basedOn w:val="${escapeXml(opts.basedOn)}"/>`);
   if (opts.next) parts.push(`<w:next w:val="${escapeXml(opts.next)}"/>`);

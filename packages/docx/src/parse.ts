@@ -21,6 +21,7 @@ import type { DocumentOptions } from "@parts/core-properties";
 import { customPropertiesDesc } from "@parts/custom-properties";
 import { endnotesDesc } from "@parts/endnotes/descriptor";
 import { fontTableDesc } from "@parts/fonts/descriptor";
+import { decodeUriPath } from "@parts/fonts/font-wrapper";
 import type { EmbeddedFontOptionsWithKey } from "@parts/fonts/font-wrapper";
 import { footnotesDesc } from "@parts/footnotes/descriptor";
 import { glossaryDesc } from "@parts/glossary-document";
@@ -175,11 +176,12 @@ function resolveEmbeddedFontData(fonts: EmbeddedFontOptionsWithKey[], doc: Parse
     if (!font.embedRid) continue;
     const odttfPath = ridToPath.get(font.embedRid);
     if (!odttfPath) continue;
-    const bytes = doc.getRaw(odttfPath);
+    const decoded = decodeUriPath(odttfPath);
+    const bytes = doc.getRaw(odttfPath) ?? doc.getRaw(decoded);
     if (bytes) {
       font.data = Buffer.from(bytes);
       font.rawOdttf = true;
-      font.odttfPath = odttfPath;
+      font.odttfPath = decoded;
     }
   }
 }
@@ -706,10 +708,94 @@ export function parseDocx(data: DataType): DocxDocument {
   return parseDocxArchive(parseArchive(toUint8Array(data)));
 }
 
+/**
+ * Part names that can carry w:r content (body, headers/footers, notes,
+ * comments, textboxes). Field runs only exist inside these.
+ */
+function fieldRunParts(doc: ParsedArchive): string[] {
+  return doc
+    .keys()
+    .filter(
+      (path) =>
+        path.startsWith("word/") &&
+        path.endsWith(".xml") &&
+        /(^|\/)(document|header|footer|footnotes|endnotes|comments|comment|textbox)/.test(
+          path.slice(5),
+        ),
+    );
+}
+
+/** The direct children of a w:r that belong to the field state machine. */
+function isFieldStageElement(el: Element): boolean {
+  return (
+    el.type === "element" &&
+    (el.name === "w:fldChar" || el.name === "w:instrText" || el.name === "w:delInstrText")
+  );
+}
+
+/**
+ * Split a w:r whose direct children carry more than one field stage into one
+ * w:r per child (w:rPr cloned onto each) — the shape the field fold
+ * (feedFieldRun) consumes: one stage per run. Google Docs writes a whole
+ * complex field (begin + instrText + separate/result + end) into a single run,
+ * which the fold could never close, dropping the field and its run properties
+ * entirely. Returns undefined when the run is not multi-stage.
+ */
+function splitMultiStageFieldRun(run: Element): Element[] | undefined {
+  const elements = run.elements ?? [];
+  let stages = 0;
+  for (const c of elements) if (isFieldStageElement(c)) stages++;
+  if (stages < 2) return undefined;
+  const rPr = elements.find((c) => c.type === "element" && c.name === "w:rPr");
+  const out: Element[] = [];
+  for (const c of elements) {
+    if (c === rPr) continue;
+    out.push({
+      ...run,
+      elements: rPr !== undefined ? [rPr, c] : [c],
+    });
+  }
+  return out;
+}
+
+/**
+ * Walk a parsed part tree and replace every multi-stage field run with its
+ * stage-run sequence (in place; children order preserved).
+ */
+function splitMultiStageFieldRuns(root: Element | undefined): void {
+  if (!root || !root.elements) return;
+  let changed = false;
+  const next: Element[] = [];
+  for (const child of root.elements) {
+    if (child.type === "element" && child.name === "w:r") {
+      const split = splitMultiStageFieldRun(child);
+      if (split !== undefined) {
+        next.push(...split);
+        changed = true;
+        continue;
+      }
+    }
+    if (child.type === "element") splitMultiStageFieldRuns(child);
+    next.push(child);
+  }
+  if (changed) root.elements = next;
+}
+
 /** Archive-backed core of {@link parseDocx} — shared with the Blob open path. */
 function parseDocxArchive(doc: ParsedArchive): DocxDocument {
   const documentEl = doc.get("word/document.xml");
   if (!documentEl) throw new Error("word/document.xml not found");
+  // Split multi-stage field runs before the field fold runs (see
+  // splitMultiStageFieldRuns): Google Docs / some Word writers emit a whole
+  // complex field into one w:r. Best-effort per part: a malformed unused
+  // header must not turn the open into a throw where it previously parsed.
+  for (const fieldPart of fieldRunParts(doc)) {
+    try {
+      splitMultiStageFieldRuns(doc.get(fieldPart));
+    } catch {
+      // leave the part untouched
+    }
+  }
   const body = documentEl.elements?.find((e) => e.name === "w:body");
   if (!body) throw new Error("w:body not found in word/document.xml");
   const background = documentEl.elements?.find((e) => e.name === "w:background");

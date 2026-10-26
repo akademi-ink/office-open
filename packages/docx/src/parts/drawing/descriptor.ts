@@ -18,7 +18,7 @@
  */
 
 import { RELATIONSHIP_TYPES, TargetModeType } from "@office-open/core";
-import { convertToEmu, uniqueNumericIdCreator } from "@office-open/core";
+import { akademiGenerationScope, convertToEmu, uniqueNumericIdCreator } from "@office-open/core";
 import type { CustomDescriptor, WriteContext } from "@office-open/core/descriptor";
 import type {
   BlipEffectsOptions,
@@ -221,7 +221,14 @@ function buildHyperlinkChildren(ids: HyperlinkIds): string {
 // ── DocPr ──
 
 function stringifyDocPr(opts: DocPropertiesOptions | undefined, hlIds: HyperlinkIds): string {
-  const id = opts?.id ?? _docPropsIdGen();
+  // Inside an akademi generation scope the id comes from the per-generation
+  // counter, not the process-global generator.
+  const id =
+    opts?.id ??
+    (() => {
+      const scope = akademiGenerationScope();
+      return scope ? scope.nextDocPr() : _docPropsIdGen();
+    })();
   return stringifyNonVisualDrawingProperties(
     "wp:docPr",
     id,

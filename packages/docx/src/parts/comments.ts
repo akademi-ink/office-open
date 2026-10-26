@@ -7,6 +7,7 @@
  * @module
  */
 
+import { akademiGenerationScope } from "@office-open/core";
 import type { CustomDescriptor } from "@office-open/core/descriptor";
 import { attr, attrNum, escapeXml } from "@office-open/xml";
 import type { BookmarkStartOptions, DisplacedByCustomXml } from "@parts/paragraph/links/bookmark";
@@ -66,7 +67,15 @@ function stringifyComment(opts: CommentOptions, ctx: BodyContext): string {
   const attrs: string[] = [`w:id="${opts.id}"`, `w:author="${escapeXml(opts.author ?? "")}"`];
   // date === null keeps the source's attribute-less form (source files exist
   // without w:date and Word accepts them); undefined = fresh, defaults to now.
-  const dateStr = opts.date === null ? undefined : (opts.date ?? new Date().toISOString());
+  // Inside an akademi generation scope "now" is the scope's fixed timestamp.
+  const dateStr =
+    opts.date === null
+      ? undefined
+      : (opts.date ??
+        (() => {
+          const scope = akademiGenerationScope();
+          return scope ? scope.now : new Date().toISOString();
+        })());
   if (dateStr !== undefined) attrs.push(`w:date="${escapeXml(dateStr)}"`);
   if (opts.initials !== undefined) attrs.push(`w:initials="${escapeXml(opts.initials)}"`);
 

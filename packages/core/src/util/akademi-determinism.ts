@@ -12,6 +12,7 @@ export interface AkademiGenerationScope {
   nextToken(): string;
   nextUuid(): string;
   nextVml(): number;
+  nextDocPr(): number;
   /** Fixed ISO timestamp for docProps created/modified. */
   readonly now?: string;
 }

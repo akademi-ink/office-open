@@ -63,7 +63,28 @@ export class FontWrapper implements ViewWrapper {
           ? font.odttfPath.slice(5)
           : font.odttfPath
         : `fonts/${font.name}.odttf`;
-      this.relationships.addRelationship(relIdx, RELATIONSHIP_TYPES.font, target);
+      this.relationships.addRelationship(relIdx, RELATIONSHIP_TYPES.font, uriEscapePath(target));
     }
+  }
+}
+
+/**
+ * Percent-encode each path segment of a relationship target (spaces, `#`,
+ * `?`, non-ASCII, ...) while keeping the `/` separators: a Target is a URI, so
+ * a font family name with spaces must not leak raw into the rels part.
+ */
+export function uriEscapePath(path: string): string {
+  return path.split("/").map(encodeURIComponent).join("/");
+}
+
+/**
+ * Reverse of {@link uriEscapePath}: decode each segment so a package whose
+ * parts are stored under the decoded name still resolves.
+ */
+export function decodeUriPath(path: string): string {
+  try {
+    return path.split("/").map(decodeURIComponent).join("/");
+  } catch {
+    return path;
   }
 }

@@ -134,18 +134,25 @@ function splitAroundOuterField(els: Element[]): {
   let endIdx = -1;
   for (let i = 0; i < els.length; i++) {
     const depthBefore = depth;
+    let opened = false;
     const walk = (node: Element): void => {
       if (node.name === "w:fldChar") {
         const type = attr(node, "w:fldCharType");
-        if (type === "begin") depth++;
-        else if (type === "end") depth--;
+        if (type === "begin") {
+          depth++;
+          opened = true;
+        } else if (type === "end") depth--;
       }
       for (const c of node.elements ?? []) {
         if (c.type === "element") walk(c);
       }
     };
     walk(els[i]!);
-    if (startIdx < 0 && depth > depthBefore) startIdx = i;
+    // `opened` (not depth > depthBefore): an element may open AND close the
+    // field itself — a single-entry TOC renders the whole field in one
+    // paragraph — in which case depth returns to depthBefore and the
+    // element must still start the field slice.
+    if (startIdx < 0 && opened) startIdx = i;
     if (startIdx >= 0 && endIdx < 0 && depthBefore > 0 && depth === 0) {
       endIdx = i;
       break;
@@ -263,8 +270,15 @@ export function selectTocEntryElements(els: Element[]): Element[] {
       }
     };
     walk(el);
-    if (afterSeparate && depth === 0 && depthBefore > 0) {
-      if (keepTocClosingParagraph(el, entries.length > 0)) entries.push(el);
+    if (afterSeparate && depth === 0) {
+      const closing = depthBefore > 0;
+      if (
+        closing
+          ? keepTocClosingParagraph(el, entries.length > 0)
+          : findFirst(el, "w:t") !== undefined
+      ) {
+        entries.push(el);
+      }
       afterSeparate = false;
     } else if (afterSeparate && depth >= 1 && findFirst(el, "w:t") !== undefined) {
       entries.push(el);
@@ -286,7 +300,35 @@ export function selectTocEntryElements(els: Element[]): Element[] {
  * not the TOC.
  */
 export function keepTocClosingParagraph(el: Element, hasEntries: boolean): boolean {
-  return findFirst(el, "w:t") === undefined && (hasEntries || findFirst(el, "w:pPr") !== undefined);
+  if (findFirst(el, "w:t") === undefined) {
+    return hasEntries || findFirst(el, "w:pPr") !== undefined;
+  }
+  return isTocEntryClosingParagraph(el);
+}
+
+/**
+ * True when a text-bearing paragraph that closes the TOC field is itself the
+ * last rendered entry. The writer (injectFieldEnd) parks the field end in the
+ * last entry's paragraph, so such a paragraph keeps an entry's markup — a TOC
+ * style, a hyperlink, or the nested page-number field — and must stay in the
+ * entries rather than being dropped/moved to the body. A paragraph the end
+ * merely drifted into (a following heading) carries none of those.
+ */
+function isTocEntryClosingParagraph(el: Element): boolean {
+  const pPr = findChild(el, "w:pPr");
+  const styleEl = pPr ? findChild(pPr, "w:pStyle") : undefined;
+  const style = styleEl ? attr(styleEl, "w:val") : undefined;
+  if (typeof style === "string" && style.toUpperCase().startsWith("TOC")) return true;
+  if (findFirst(el, "w:hyperlink") !== undefined) return true;
+  let fields = 0;
+  const walk = (node: Element): void => {
+    if (node.name === "w:fldChar") fields++;
+    for (const c of node.elements ?? []) {
+      if (c.type === "element") walk(c);
+    }
+  };
+  walk(el);
+  return fields > 1;
 }
 
 /**

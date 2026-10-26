@@ -1,3 +1,4 @@
+export * from "./akademi-determinism";
 export * from "./compile";
 export * from "./converters";
 export * from "./crypto";
