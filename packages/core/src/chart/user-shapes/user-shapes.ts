@@ -116,6 +116,12 @@ export interface UserShapePictureOptions extends ObjectCommonAttributes {
   /** Image reference key (a:blip r:embed via the relationship placeholder) */
   referenceId: string;
   blipFill?: BlipFillOptions;
+  /**
+   * The resolved image bytes + extension, filled by the document reader from
+   * the user-shapes part's own relationships (read-side convenience; the
+   * writer re-emits `referenceId` and ignores it).
+   */
+  image?: { data: Uint8Array; type: string };
   shapeProperties: ShapePropertiesOptions;
   style?: DefaultShapeStyleOptions;
 }

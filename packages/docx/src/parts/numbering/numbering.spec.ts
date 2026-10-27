@@ -282,6 +282,36 @@ describe("parseNumberingDefinitions (round-trip)", () => {
     expect((out.match(/<w:num /g) ?? []).length).toBe(1);
   });
 
+  it("keeps source w:numId and w:abstractNumId values on round-trip", () => {
+    // A template's styles.xml copied verbatim points at the source ids, so
+    // re-indexing them would detach heading and caption numbering.
+    const lvl = '<w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="decimal"/><w:lvlText w:val="%1."/></w:lvl>';
+    const xml =
+      '<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+      `<w:abstractNum w:abstractNumId="6">${lvl}</w:abstractNum>` +
+      `<w:abstractNum w:abstractNumId="9">${lvl}</w:abstractNum>` +
+      `<w:abstractNum w:abstractNumId="11">${lvl}</w:abstractNum>` +
+      '<w:num w:numId="2"><w:abstractNumId w:val="6"/></w:num>' +
+      '<w:num w:numId="5"><w:abstractNumId w:val="6"/></w:num>' +
+      '<w:num w:numId="1"><w:abstractNumId w:val="9"/></w:num>' +
+      "</w:numbering>";
+    const el = parseXml(xml).elements?.[0];
+    if (!el) throw new Error("parsed document has no root element");
+    const opts = parseNumberingDefinitions(el, parseParagraphProperties, ctx);
+    const numbering = new Numbering({ abstractNumberings: opts!.abstractNumberings });
+    numbering.createConcreteNumberingInstance("list_2", 1);
+    const out = numbering.serialize(writeCtx);
+
+    const pairs = [...out.matchAll(/<w:num w:numId="(\d+)"><w:abstractNumId w:val="(\d+)"\/>/g)].map(
+      (m) => `${m[1]}->${m[2]}`,
+    );
+    expect(pairs.slice(0, 3).sort()).toEqual(["1->9", "2->6", "5->6"]);
+    // A fresh instance takes an id no source num uses.
+    expect(pairs).toHaveLength(4);
+    expect(["1", "2", "5"]).not.toContain(pairs[3]!.split("->")[0]);
+    expect(out).toContain('w:abstractNumId="11"');
+  });
+
   it("keeps a nested w:lvl lvlOverride on the instance, abstract untouched", () => {
     // CT_NumLvl choice: startOverride | lvl. The nested-lvl form redefines the
     // level wholesale (Word's "restart and redefine" shape) — parse keeps it

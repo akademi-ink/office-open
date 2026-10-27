@@ -1101,6 +1101,26 @@ function bridgeChartUserShapes(
   const bodyEl = ctx.docx.doc.get(resolveRelationshipTarget(chartPath, target));
   if (!bodyEl) return;
   us.anchors = userShapesDesc.parse(bodyEl, ctx).anchors;
+  // Picture shapes reference their image through the user-shapes part's own
+  // relationships (word/drawings/_rels/drawingN.xml.rels) — resolve the bytes
+  // so a renderer can paint them where the anchor puts them.
+  const partPath = resolveRelationshipTarget(chartPath, target);
+  const shapeRels = ctx.docx.doc.get(partPathToRelsPath(partPath));
+  if (!shapeRels) return;
+  for (const anchor of us.anchors) {
+    const object = anchor.object;
+    if (object.type !== "picture" || !object.referenceId) continue;
+    const imageRel = shapeRels.elements?.find(
+      (e) => e.name === "Relationship" && attr(e, "Id") === object.referenceId,
+    );
+    const imageTarget = imageRel ? attr(imageRel, "Target") : undefined;
+    if (!imageTarget) continue;
+    const imagePath = resolveRelationshipTarget(partPath, imageTarget);
+    const data = ctx.docx.doc.getRaw(imagePath);
+    if (!data) continue;
+    const dot = imagePath.lastIndexOf(".");
+    object.image = { data, type: dot >= 0 ? imagePath.slice(dot + 1).toLowerCase() : "png" };
+  }
 }
 
 /**

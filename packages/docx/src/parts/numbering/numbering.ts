@@ -59,6 +59,13 @@ export interface NumberingOptions {
      * w:abstractNumId with differing overrides). The definition emits once.
      */
     sharedDefinitionOf?: string;
+    /**
+     * Source w:abstractNumId, kept on round-trip so parts that are copied
+     * verbatim from the source (a template's styles.xml) still resolve.
+     */
+    abstractNumId?: number;
+    /** Source w:numId per reference (this config's and its aliases'). */
+    numIds?: Record<string, number>;
   }[];
   /** Numbering cleanup ID (w:numIdMacAtCleanup) */
   numIdMacAtCleanup?: number;
@@ -162,6 +169,9 @@ const DEFAULT_BULLET_LEVELS: LevelsOptions[] = [
   },
 ];
 
+const isId = (value: number | undefined): value is number =>
+  value !== undefined && Number.isInteger(value) && value >= 0;
+
 /**
  * Numbering definitions for a WordprocessingML document.
  *
@@ -186,6 +196,10 @@ export class Numbering {
   private referenceConfigMap = new Map<string, LevelsOptions[]>();
   private abstractNumUniqueNumericId = uniqueNumericIdCreator();
   private concreteNumUniqueNumericId = uniqueNumericIdCreator(1);
+  // Source ids are kept; fresh ids skip them.
+  private sourceNumIds = new Map<string, number>();
+  private reservedAbstractIds = new Set<number>();
+  private reservedNumIds = new Set<number>();
   private _numIdMacAtCleanup?: number;
   private _numPicBullets?: {
     numPicBulletId: number;
@@ -223,13 +237,22 @@ export class Numbering {
     }
 
     for (const con of options.abstractNumberings) {
+      if (isId(con.abstractNumId)) this.reservedAbstractIds.add(con.abstractNumId);
+      for (const [reference, numId] of Object.entries(con.numIds ?? {})) {
+        if (!isId(numId)) continue;
+        this.sourceNumIds.set(reference, numId);
+        this.reservedNumIds.add(numId);
+      }
+    }
+
+    for (const con of options.abstractNumberings) {
       // A config sharing another's definition resolves to the same data
       // object — the serializer's identity dedup emits the abstractNum once.
       const shared = con.sharedDefinitionOf
         ? this.abstractNumberingData.get(con.sharedDefinitionOf)
         : undefined;
       const abstractData = shared ?? {
-        id: this.abstractNumUniqueNumericId(),
+        id: isId(con.abstractNumId) ? con.abstractNumId : this.freshAbstractId(),
         levels: con.levels,
         properties: con.properties,
       };
@@ -326,13 +349,26 @@ export class Numbering {
     const fullReference = `${reference}-${instance}`;
     if (this.concreteNumberingData.has(fullReference)) return;
 
+    const sourceNumId = instance === 0 ? this.sourceNumIds.get(reference) : undefined;
     this.concreteNumberingData.set(fullReference, {
       abstractNumId: abstractNumbering.id,
       instance,
-      numId: this.concreteNumUniqueNumericId(),
+      numId: sourceNumId ?? this.freshNumId(),
       overrideLevels,
       reference,
     });
+  }
+
+  private freshAbstractId(): number {
+    let id = this.abstractNumUniqueNumericId();
+    while (this.reservedAbstractIds.has(id)) id = this.abstractNumUniqueNumericId();
+    return id;
+  }
+
+  private freshNumId(): number {
+    let id = this.concreteNumUniqueNumericId();
+    while (this.reservedNumIds.has(id)) id = this.concreteNumUniqueNumericId();
+    return id;
   }
 
   /** Gets all concrete numbering instances. */
@@ -608,7 +644,12 @@ export function parseNumberingDefinitions(
   // to its w:num, not to the shared definition.
   const groups = new Map<
     string,
-    { primary: string; aliases: string[]; overrides: LevelOverrideOptions[] }
+    {
+      primary: string;
+      aliases: string[];
+      overrides: LevelOverrideOptions[];
+      numIds: Record<string, number>;
+    }
   >();
   const parsedDefinitions = new Map<string, ReturnType<typeof parseAbstractDefinition>>();
   for (const { numId, abstractId, numEl } of numEntries) {
@@ -642,8 +683,14 @@ export function parseNumberingDefinitions(
     const group = groups.get(key);
     if (group) {
       group.aliases.push(`list_${numId}`);
+      group.numIds[`list_${numId}`] = Number(numId);
     } else {
-      groups.set(key, { primary: `list_${numId}`, aliases: [], overrides });
+      groups.set(key, {
+        primary: `list_${numId}`,
+        aliases: [],
+        overrides,
+        numIds: { [`list_${numId}`]: Number(numId) },
+      });
       if (!parsedDefinitions.has(String(abstractId))) {
         const parsed = parseAbstractDefinition(abstractEl);
         if (parsed) parsedDefinitions.set(String(abstractId), parsed);
@@ -664,6 +711,8 @@ export function parseNumberingDefinitions(
         reference: group.primary,
         ...parsed,
         instanceCount: 1,
+        abstractNumId: abstractId,
+        numIds: group.numIds,
         ...(group.overrides.length > 0 ? { overrideLevels: group.overrides } : {}),
         ...(group.aliases.length > 0 ? { aliases: group.aliases } : {}),
       });
@@ -673,6 +722,7 @@ export function parseNumberingDefinitions(
         ...parsed,
         instanceCount: 1,
         sharedDefinitionOf: primary,
+        numIds: group.numIds,
         ...(group.overrides.length > 0 ? { overrideLevels: group.overrides } : {}),
         ...(group.aliases.length > 0 ? { aliases: group.aliases } : {}),
       });
@@ -687,7 +737,14 @@ export function parseNumberingDefinitions(
   for (const [abstractId, abstractEl] of abstractNums) {
     if (referencedAbstractIds.has(abstractId)) continue;
     const parsed = parseAbstractDefinition(abstractEl);
-    if (parsed) configs.push({ reference: `abstract_${abstractId}`, ...parsed, instanceCount: 0 });
+    if (parsed) {
+      configs.push({
+        reference: `abstract_${abstractId}`,
+        ...parsed,
+        instanceCount: 0,
+        abstractNumId: Number(abstractId),
+      });
+    }
   }
 
   if (configs.length === 0 && numPicBullets.length === 0 && numIdMacAtCleanup === undefined) {
