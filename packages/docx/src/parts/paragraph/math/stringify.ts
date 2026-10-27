@@ -354,7 +354,7 @@ function stringifyNAry(
 ): string {
   const hasSub = opts.subScript && opts.subScript.length > 0;
   const hasSup = opts.superScript && opts.superScript.length > 0;
-  const prParts: string[] = [`<m:chr m:val="${character}"/>`];
+  const prParts: string[] = [`<m:chr m:val="${opts.properties?.character || character}"/>`];
   if (opts.properties?.limitLocation)
     prParts.push(`<m:limLoc m:val="${opts.properties.limitLocation}"/>`);
   if (opts.properties?.grow !== undefined)
@@ -704,6 +704,8 @@ function parseMathNAry(el: Element): MathInput {
     const grow = readOnOff(findChild(naryPr, "m:grow"));
     if (grow !== undefined) properties.grow = grow;
   }
+  // Any operator other than ∑ / ∫ (∏, ∮, ⋃, …) keeps its own character.
+  if (chrVal && chrVal !== "∑" && chrVal !== "∫") properties.character = chrVal;
 
   const common = {
     children: baseChildren,

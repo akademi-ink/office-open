@@ -942,6 +942,20 @@ function parseWpsShapeDrawing(
       ...(info.effectExtent ? { effectExtent: info.effectExtent } : {}),
     },
   };
+  // Rotation/flip live on wps:spPr/a:xfrm (ST_Angle in 1/60000 deg) — degrees
+  // here, like a picture's transformation; stringify multiplies back.
+  const xfrm = findChild(findChild(wsp, "wps:spPr"), "a:xfrm");
+  if (xfrm) {
+    const transform = shape.transformation as {
+      rotation?: number;
+      flipHorizontal?: boolean;
+      flipVertical?: boolean;
+    };
+    const rot = attrNum(xfrm, "rot");
+    if (rot !== undefined && rot !== 0) transform.rotation = parseAngle(rot);
+    if (attrBool(xfrm, "flipH") === true) transform.flipHorizontal = true;
+    if (attrBool(xfrm, "flipV") === true) transform.flipVertical = true;
+  }
   if (info.floating) shape.floating = info.floating;
   if (info.altText) shape.altText = info.altText;
   if (info.graphicFrameLocks !== undefined) shape.graphicFrameLocks = info.graphicFrameLocks;

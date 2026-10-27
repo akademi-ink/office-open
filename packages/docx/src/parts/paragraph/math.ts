@@ -65,6 +65,9 @@ export interface MathNaryProperties {
   limitLocation?: MathNaryLimitLocation;
   /** Whether the operator grows to content height (m:grow). */
   grow?: boolean;
+  /** Operator character (m:chr) when it is neither ∑ (`sum`) nor ∫ (`integral`) —
+   *  ∏, ∮, ⋃, … ride the `integral` branch with this override. */
+  character?: string;
 }
 
 /** Matrix column justification (one m:mc entry inside m:mcs). */
