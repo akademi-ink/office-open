@@ -941,6 +941,7 @@ export function parseParagraphProperties(
     const innerPPr = findChild(pPrChange, "w:pPr");
     if (innerPPr) {
       Object.assign(rev, parseParagraphProperties(innerPPr, ctx));
+      delete rev.nestedSectionPropertiesXml;
       // Word-authored sources sometimes carry a sectPr inside pPrChange/pPr.
       // Preserve it verbatim in the revision snapshot; it is not a live break.
       const innerSectPr = findChild(innerPPr, "w:sectPr");
@@ -949,11 +950,16 @@ export function parseParagraphProperties(
     if (Object.keys(rev).length > 0) opts.revision = rev as ParagraphPropertiesChangeOptions;
   }
 
+  const liveSectPr = findChild(el, "w:sectPr");
+  if (liveSectPr && !ctx.ownedSectPrs.has(liveSectPr)) {
+    opts.nestedSectionPropertiesXml = stringifyElement(liveSectPr);
+  }
+
   // A bare <w:pPr/> yields no fields — mark the presence so stringify
   // re-emits the empty element. A pPr whose only child is w:sectPr is not
   // empty: the section model owns that sectPr and re-injects it here, so the
   // marker must not claim the pPr.
-  if (Object.keys(opts).length === 0 && !findChild(el, "w:sectPr")) {
+  if (Object.keys(opts).length === 0 && !liveSectPr) {
     opts.emptyProperties = true;
   }
 

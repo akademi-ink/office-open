@@ -684,6 +684,13 @@ export class DocxReadContext implements ReadContext {
    */
   public currentPart = "word/document.xml";
 
+  /**
+   * `w:sectPr` elements the section model owns (body-level boundaries). A
+   * `w:sectPr` found in any other `w:pPr` (inside an `w:sdt`, a table cell, a
+   * text box) is not split into a section, so the paragraph keeps it verbatim.
+   */
+  public ownedSectPrs = new WeakSet<object>();
+
   constructor(
     public docx: DocxDocument,
     public styleCache: Map<string, Element>,

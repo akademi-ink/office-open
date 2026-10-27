@@ -243,6 +243,13 @@ export type ParagraphStylePropertiesOptions = {
    * it (element presence is part of the source's fidelity).
    */
   emptyProperties?: boolean;
+  /**
+   * Raw `w:sectPr` the source carried in a paragraph the section model does
+   * not split on (inside `w:sdt` content, a table cell, a text box). Preserved
+   * verbatim so the break marker survives generate→parse; body-level section
+   * breaks stay in `sections` instead.
+   */
+  nestedSectionPropertiesXml?: string;
 } & LevelParagraphStylePropertiesOptions;
 
 export type ParagraphPropertiesOptionsBase = {

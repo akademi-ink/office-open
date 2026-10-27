@@ -263,6 +263,8 @@ export function parseBody(body: Element, ctx: DocxReadContext): SectionOptions[]
     }
   }
 
+  for (const boundary of boundaries) ctx.ownedSectPrs.add(boundary.sectPr);
+
   // If no boundaries, the whole body is one section
   if (boundaries.length === 0) {
     return [

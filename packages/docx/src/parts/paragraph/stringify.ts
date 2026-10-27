@@ -550,6 +550,7 @@ export function stringifyParagraphProperties(
   // Section properties belong to the paragraph's current properties, before
   // the tracked formatting snapshot (CT_PPr order: … rPr, sectPr, pPrChange).
   if (sectionPropertiesXml) s += sectionPropertiesXml;
+  else if (options.nestedSectionPropertiesXml) s += options.nestedSectionPropertiesXml;
 
   // Revision (pPrChange)
   if (options.revision) {
