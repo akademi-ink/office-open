@@ -17,6 +17,7 @@ import {
   hpsMeasureValue,
   mapOptional,
   pointMeasureValue,
+  themeShadeValue,
   uCharHexNumber,
   xsdJcAlignment,
   xsdShadingPattern,
@@ -81,7 +82,7 @@ export function borderStr(name: string, opts: BorderOptions): string {
     "w:space": opts.space !== undefined ? pointMeasureValue(opts.space) : undefined,
     "w:themeColor": opts.themeColor,
     "w:themeTint": opts.themeTint !== undefined ? uCharHexNumber(opts.themeTint) : undefined,
-    "w:themeShade": opts.themeShade !== undefined ? uCharHexNumber(opts.themeShade) : undefined,
+    "w:themeShade": opts.themeShade !== undefined ? themeShadeValue(opts.themeShade) : undefined,
     "w:shadow": opts.shadow !== undefined ? (opts.shadow ? 1 : 0) : undefined,
     "w:frame": opts.frame !== undefined ? (opts.frame ? 1 : 0) : undefined,
   });
@@ -97,12 +98,12 @@ export function shadingStr(opts: ShadingProperties): string {
     "w:fill": opts.fill !== undefined ? hexColorValue(opts.fill) : undefined,
     "w:themeColor": opts.themeColor,
     "w:themeTint": opts.themeTint !== undefined ? uCharHexNumber(opts.themeTint) : undefined,
-    "w:themeShade": opts.themeShade !== undefined ? uCharHexNumber(opts.themeShade) : undefined,
+    "w:themeShade": opts.themeShade !== undefined ? themeShadeValue(opts.themeShade) : undefined,
     "w:themeFill": opts.themeFill,
     "w:themeFillTint":
       opts.themeFillTint !== undefined ? uCharHexNumber(opts.themeFillTint) : undefined,
     "w:themeFillShade":
-      opts.themeFillShade !== undefined ? uCharHexNumber(opts.themeFillShade) : undefined,
+      opts.themeFillShade !== undefined ? themeShadeValue(opts.themeFillShade) : undefined,
   });
   return `<w:shd${a}/>`;
 }
@@ -279,7 +280,7 @@ function colorStr(colorOrOptions: string | ColorOptions): string {
     "w:val": opts.val !== undefined ? hexColorValue(opts.val) : undefined,
     "w:themeColor": opts.themeColor,
     "w:themeTint": opts.themeTint !== undefined ? uCharHexNumber(opts.themeTint) : undefined,
-    "w:themeShade": opts.themeShade !== undefined ? uCharHexNumber(opts.themeShade) : undefined,
+    "w:themeShade": opts.themeShade !== undefined ? themeShadeValue(opts.themeShade) : undefined,
   });
   return `<w:color${a}/>`;
 }

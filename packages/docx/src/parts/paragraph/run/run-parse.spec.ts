@@ -32,6 +32,19 @@ describe("parseRunProperties round-trip", () => {
     });
   });
 
+  it("preserves a six-digit themeShade verbatim", () => {
+    const opts: RunPropertiesOptions = {
+      color: { val: "243F60", themeColor: "accent1", themeShade: "00007F" },
+    };
+    const rPr = stringifyRunProperties(opts)!;
+    expect(rPr).toContain('w:themeShade="00007F"');
+    expect(roundTrip(opts).color).toMatchObject({
+      val: "243F60",
+      themeColor: "accent1",
+      themeShade: "00007F",
+    });
+  });
+
   it("round-trips color as plain string when no theme attributes", () => {
     const result = roundTrip({ color: "FF0000" });
     expect(result.color).toBe("FF0000");

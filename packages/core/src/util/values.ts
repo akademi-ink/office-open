@@ -271,6 +271,21 @@ export const hexBinary = (val: string, length: number): string => {
 };
 
 /**
+ * Preserves a theme shade exactly as the source wrote it.
+ *
+ * `ST_UcharHexNumber` formally allows one byte (2 hex digits), but Word itself
+ * writes six-digit shades (`w:themeShade="00007F"`) and accepts them. Rejecting
+ * or truncating that value loses formatting the source carried; validate the
+ * hex alphabet and the two real-world widths, then return the text verbatim.
+ */
+export const themeShadeValue = (val: string): string => {
+  if (!/^[0-9A-Fa-f]+$/u.test(val) || (val.length !== 2 && val.length !== 6)) {
+    throw new Error(`Invalid theme shade '${val}'. Expected 2 or 6 hex digits`);
+  }
+  return val;
+};
+
+/**
  * Validates a long hexadecimal number (4 bytes / 8 characters).
  *
  * Reference: ST_LongHexNumber in OOXML specification

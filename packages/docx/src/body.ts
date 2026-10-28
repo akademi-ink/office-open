@@ -10,7 +10,7 @@
 import type { UniversalMeasure } from "@office-open/core";
 import { xsdJcAlignment } from "@office-open/core";
 import { toUint8Array } from "@office-open/core";
-import { hexColorValue, uCharHexNumber } from "@office-open/core";
+import { hexColorValue, themeShadeValue, uCharHexNumber } from "@office-open/core";
 import { stringifyVmlShape } from "@office-open/core";
 import { stringifyVmlBackground } from "@office-open/core";
 import { nextVmlShapeId } from "@office-open/core";
@@ -287,7 +287,7 @@ function stringifyDocumentBackground(opts: DocumentBackgroundOptions, ctx: BodyC
   if (opts.color !== undefined) attrs.push(`w:color="${hexColorValue(opts.color)}"`);
   if (opts.themeColor !== undefined) attrs.push(`w:themeColor="${opts.themeColor}"`);
   if (opts.themeShade !== undefined)
-    attrs.push(`w:themeShade="${uCharHexNumber(opts.themeShade)}"`);
+    attrs.push(`w:themeShade="${themeShadeValue(opts.themeShade)}"`);
   if (opts.themeTint !== undefined) attrs.push(`w:themeTint="${uCharHexNumber(opts.themeTint)}"`);
   const attrStr = attrs.join(" ");
 
