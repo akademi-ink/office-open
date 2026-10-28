@@ -115,7 +115,10 @@ function parseHeaderFooterRef(
     }
   });
 
-  if (children.length === 0) return undefined;
+  // An explicitly referenced empty part is NOT the same as an absent
+  // reference: Word's per-section inheritance links only absent refs, so a
+  // blank header/footer must stay blank instead of inheriting the previous
+  // section's running PAGE field. Keep the empty slot through the model.
   const partName = path.split("/").pop() ?? path;
   return { children, partName };
 }
