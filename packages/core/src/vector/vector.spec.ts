@@ -142,6 +142,15 @@ describe("vml style", () => {
     };
     expect(parseVmlShapeStyle(parseVmlStyle(stringifyVmlStyle(style)))).toEqual(style);
   });
+
+  it("emits a recomputed style string verbatim", () => {
+    expect(stringifyVmlStyle("width:0pt;height:1.5pt")).toBe("width:0pt;height:1.5pt");
+  });
+
+  it("never writes an undefined property name", () => {
+    const style = { width: 0, height: "1.5pt", unknown: undefined } as unknown as VmlShapeStyle;
+    expect(stringifyVmlStyle(style)).toBe("width:0;height:1.5pt");
+  });
 });
 
 describe("v:shape", () => {

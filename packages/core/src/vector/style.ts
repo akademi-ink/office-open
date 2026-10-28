@@ -60,12 +60,18 @@ const styleToKeyMap: Record<keyof VmlShapeStyle, string> = {
  * (`"width:100pt;height:50pt"`), translating property names via
  * {@link styleToKeyMap}.
  */
-export function stringifyVmlStyle(style: VmlShapeStyle): string {
+export function stringifyVmlStyle(style: VmlShapeStyle | string): string {
+  // A promoted VML origin recomputes its layout as a style *string*
+  // (`width:0pt;height:1.5pt`); emit it verbatim instead of iterating its
+  // characters (which produced `undefined:w;undefined:i;…`).
+  if (typeof style === "string") return style;
   return Object.entries(style)
-    .map(([key, value]) => {
+    .flatMap(([key, value]) => {
+      const cssKey = styleToKeyMap[key as keyof VmlShapeStyle];
+      if (cssKey === undefined || value === undefined) return [];
       // VML's CSS-style vocabulary spells booleans t/f (mso-fit-shape-to-text:t).
       const text = typeof value === "boolean" ? (value ? "t" : "f") : String(value);
-      return `${styleToKeyMap[key as keyof VmlShapeStyle]}:${text}`;
+      return [`${cssKey}:${text}`];
     })
     .join(";");
 }
