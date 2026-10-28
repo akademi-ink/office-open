@@ -319,6 +319,11 @@ export function parseBody(body: Element, ctx: DocxReadContext): SectionOptions[]
   interface SectionBoundary {
     index: number;
     sectPr: Element;
+    /** The sectPr is a direct w:body child (the invalid-but-Word-authored
+     *  mid-body form), not a paragraph's pPr. Word treats a section starting
+     *  after it as a hard section page top: the first paragraph's own
+     *  space-before is dropped (the Teknik DAFTAR GAMBAR/LAMBANG headings). */
+    bodyLevel: boolean;
   }
 
   const bodyChildren: Element[] = [];
@@ -326,8 +331,9 @@ export function parseBody(body: Element, ctx: DocxReadContext): SectionOptions[]
 
   for (const child of body.elements ?? []) {
     if (child.name === "w:sectPr") {
-      // Final section properties (last section)
-      boundaries.push({ index: bodyChildren.length, sectPr: child });
+      // A body-level sectPr: the final section's properties, or (in the
+      // Word-authored mid-body form) a hard section break.
+      boundaries.push({ index: bodyChildren.length, sectPr: child, bodyLevel: true });
     } else {
       bodyChildren.push(child);
 
@@ -337,7 +343,7 @@ export function parseBody(body: Element, ctx: DocxReadContext): SectionOptions[]
         if (pPr) {
           const sectPr = findChild(pPr, "w:sectPr");
           if (sectPr) {
-            boundaries.push({ index: bodyChildren.length, sectPr });
+            boundaries.push({ index: bodyChildren.length, sectPr, bodyLevel: false });
           }
         }
       }
@@ -357,7 +363,7 @@ export function parseBody(body: Element, ctx: DocxReadContext): SectionOptions[]
   const sections: SectionOptions[] = [];
   let start = 0;
 
-  for (const boundary of boundaries) {
+  for (const [boundaryIndex, boundary] of boundaries.entries()) {
     // A sectPr inside a paragraph's pPr marks that paragraph as the final
     // content paragraph of its section. Its runs/drawings ARE section content
     // (e.g. an inline image), so include it in the slice — the paragraph parser
@@ -379,8 +385,19 @@ export function parseBody(body: Element, ctx: DocxReadContext): SectionOptions[]
     delete cleanProps.parsedHeaderPartNames;
     delete cleanProps.parsedFooterPartNames;
 
+    const sectionChildren = parseBodyChildren(sectionElements, ctx);
+    // The section starting after a body-level sectPr begins at a hard section
+    // page top: Word drops its first paragraph's own space-before (the
+    // previous section's after is not the whole story — a bare section-end
+    // ghost otherwise leaves 4pt and pushes the whole page ~3pt down).
+    if (boundaryIndex > 0 && boundaries[boundaryIndex - 1]!.bodyLevel) {
+      const first = sectionChildren.find((child) => "paragraph" in child);
+      if (first && "paragraph" in first && typeof first.paragraph === "object") {
+        (first.paragraph as Record<string, unknown>).dropPageTopBefore = true;
+      }
+    }
     const section = {
-      children: parseBodyChildren(sectionElements, ctx),
+      children: sectionChildren,
       properties: cleanProps,
       ...(parsedHeaders
         ? {
