@@ -886,21 +886,30 @@ export function parseParagraphProperties(
       const val = attr(framePr, attrName);
       if (val !== undefined) frame[optName] = val;
     }
-    // Position: absolute coordinates (w:x/w:y) vs alignment (w:xAlign/w:yAlign)
+    // Position per axis: w:x/w:y are absolute coordinates, w:xAlign/w:yAlign
+    // are alignment. The axes are independent (CT_FramePr choice per axis),
+    // so Word writes w:y="1" together with w:xAlign="center" — reading the
+    // whole frame as "absolute" whenever ANY coordinate exists dropped the
+    // alignment. Keep both: the layout resolves the alignment, and the writer
+    // still omits it for an absolute frame so existing documents regenerate
+    // byte-stably (see framePrStr).
     const x = attrMeasure(framePr, "w:x") as number | UniversalMeasure;
     const y = attrMeasure(framePr, "w:y") as number | UniversalMeasure;
     const xAlign = attr(framePr, "w:xAlign");
     const yAlign = attr(framePr, "w:yAlign");
-    if (x !== undefined || y !== undefined) {
+    const position: { x?: number | UniversalMeasure; y?: number | UniversalMeasure } = {};
+    if (x !== undefined) position.x = x;
+    if (y !== undefined) position.y = y;
+    const alignment: { x?: string; y?: string } = {};
+    if (xAlign) alignment.x = xAlign;
+    if (yAlign) alignment.y = yAlign;
+    if (Object.keys(position).length > 0) {
       frame.type = "absolute";
-      frame.position = { ...(x !== undefined ? { x } : {}), ...(y !== undefined ? { y } : {}) };
-    } else if (xAlign || yAlign) {
+      frame.position = position;
+    } else if (Object.keys(alignment).length > 0) {
       frame.type = "alignment";
-      frame.alignment = {
-        ...(xAlign ? { x: xAlign } : {}),
-        ...(yAlign ? { y: yAlign } : {}),
-      };
     }
+    if (Object.keys(alignment).length > 0) frame.alignment = alignment;
     // Anchor (hAnchor/vAnchor)
     const hAnchor = attr(framePr, "w:hAnchor");
     const vAnchor = attr(framePr, "w:vAnchor");

@@ -198,11 +198,17 @@ function cnfStyleStr(opts: CnfConditionalOptions): string {
 function framePrStr(opts: FrameOptions): string {
   const alignment = (opts as { alignment?: { x?: string; y?: string } }).alignment;
   const position = (opts as { position?: { x?: number; y?: number } }).position;
+  // A frame with ANY absolute coordinate was historically parsed as
+  // "absolute" and lost its per-axis xAlign/yAlign. The parser now keeps both
+  // axes (Word writes w:y with w:xAlign), but the writer keeps the historical
+  // output: emitting the alignment back would rewrite every such paragraph in
+  // an already-published master. The layout still reads `alignment`.
+  const absolute = position?.x !== undefined || position?.y !== undefined;
   // Twip-measured attributes normalize UniversalMeasure to plain integers
   // (same rule as w:pgSz/w:pgMar in section properties).
   const a = attrsRaw({
-    "w:xAlign": alignment?.x,
-    "w:yAlign": alignment?.y,
+    "w:xAlign": absolute ? undefined : alignment?.x,
+    "w:yAlign": absolute ? undefined : alignment?.y,
     "w:hAnchor": opts.anchor?.horizontal,
     "w:anchorLock": opts.anchorLock,
     "w:vAnchor": opts.anchor?.vertical,
