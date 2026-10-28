@@ -10,6 +10,7 @@ import type { Element } from "@office-open/xml";
 import { parseAltChunk } from "@parts/alt-chunk/alt-chunk-parse";
 import { parseCustomXmlBlock } from "@parts/custom-xml/custom-xml-parse";
 import { parseSectionPropertiesEl } from "@parts/document/body/section-properties/descriptor";
+import { parse as parseXmlFragment } from "@office-open/xml";
 import type { SectionPropertiesOptions } from "@parts/document/body/section-properties/section-properties";
 import { parseSdtBlock } from "@parts/sdt/sdt-parse";
 import type { TableOfContentsOptions } from "@parts/table-of-contents/table-of-contents-properties";
@@ -224,6 +225,83 @@ export function parseSectionChild(el: Element, ctx: DocxReadContext): SectionChi
   }
 }
 
+// ── Nested section properties (sectPr inside block content) ─────────────────
+
+/** Common namespaces a stored `nestedSectionPropertiesXml` fragment can use.
+ *  `stringifyElement` writes the element alone (no xmlns declarations), so a
+ *  standalone parse needs the wrapper to supply them. */
+const NESTED_SECTPR_NS =
+  'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ' +
+  'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" ' +
+  'xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" ' +
+  'xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"';
+
+/** Parse the verbatim `w:sectPr` string back into an element. */
+function parseNestedSectPrXml(xml: string): Element | undefined {
+  try {
+    const root = parseXmlFragment(
+      `<?xml version="1.0"?><w:document ${NESTED_SECTPR_NS}>${xml}</w:document>`,
+    );
+    return root.elements?.[0]?.elements?.[0];
+  } catch {
+    return undefined;
+  }
+}
+
+/** A section break carried by a paragraph the section model does not split on
+ *  (a block SDT, a table cell, a textbox) still paginates in Word: it closes
+ *  the section at that paragraph. Parse the retained raw sectPr into the same
+ *  structured shape a body boundary carries — properties plus the referenced
+ *  header/footer content — WITHOUT touching the ownership map, so the model
+ *  keeps the paragraph where it is and the raw XML round-trips verbatim. The
+ *  layout projection uses this to open a virtual section; generate ignores it
+ *  and re-emits `nestedSectionPropertiesXml` byte-faithfully. */
+function attachNestedSectionProperties(children: SectionChild[], ctx: DocxReadContext): void {
+  for (const child of children) {
+    if ("paragraph" in child) {
+      const paragraph = child.paragraph;
+      if (typeof paragraph !== "object" || paragraph === null) continue;
+      const record = paragraph as Record<string, unknown>;
+      if (record.nestedSectionProperties !== undefined) continue;
+      const xml = record.nestedSectionPropertiesXml;
+      if (typeof xml !== "string" || xml === "") continue;
+      const sectPr = parseNestedSectPrXml(xml);
+      if (!sectPr) continue;
+      const parsed = parseSectionProperties(sectPr, ctx);
+      const { parsedHeaders, parsedFooters, parsedHeaderPartNames, parsedFooterPartNames, ...properties } =
+        parsed;
+      const nested: Record<string, unknown> = { properties };
+      if (parsedHeaders) {
+        nested.headers = {
+          ...parsedHeaders,
+          ...(parsedHeaderPartNames ? { partNames: parsedHeaderPartNames } : {}),
+        };
+      }
+      if (parsedFooters) {
+        nested.footers = {
+          ...parsedFooters,
+          ...(parsedFooterPartNames ? { partNames: parsedFooterPartNames } : {}),
+        };
+      }
+      record.nestedSectionProperties = nested;
+      continue;
+    }
+    if ("sdt" in child) {
+      attachNestedSectionProperties((child.sdt.children ?? []) as SectionChild[], ctx);
+      continue;
+    }
+    if ("customXml" in child) {
+      const custom = child.customXml as { children?: SectionChild[] };
+      if (Array.isArray(custom.children)) attachNestedSectionProperties(custom.children, ctx);
+      continue;
+    }
+    if ("textbox" in child) {
+      const box = child.textbox as { children?: SectionChild[] };
+      if (Array.isArray(box.children)) attachNestedSectionProperties(box.children, ctx);
+    }
+  }
+}
+
 // ── Body parsing with section splitting ───────────────────────────────────────
 
 /**
@@ -270,11 +348,9 @@ export function parseBody(body: Element, ctx: DocxReadContext): SectionOptions[]
 
   // If no boundaries, the whole body is one section
   if (boundaries.length === 0) {
-    return [
-      {
-        children: parseBodyChildren(bodyChildren, ctx),
-      },
-    ];
+    const children = parseBodyChildren(bodyChildren, ctx);
+    attachNestedSectionProperties(children, ctx);
+    return [{ children }];
   }
 
   // Split into sections
@@ -324,6 +400,7 @@ export function parseBody(body: Element, ctx: DocxReadContext): SectionOptions[]
         : {}),
     } as SectionOptions;
 
+    attachNestedSectionProperties(section.children, ctx);
     sections.push(section);
     start = boundary.index;
   }
