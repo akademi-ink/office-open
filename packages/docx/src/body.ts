@@ -1031,6 +1031,8 @@ interface FieldRunState {
   /** The outer field's begin run — checked for a co-located pagination hint. */
   beginRunEl?: Element;
   collectingResult: boolean;
+  /** A separate marker was seen, even when no result run follows it. */
+  sawSeparate: boolean;
   /** Instruction-stage run elements (begin → separate/end), buffered for the
    *  plain-shape check at the closing end marker. */
   instrRunEls: Element[];
@@ -1055,6 +1057,7 @@ const initialFieldRunState = (): FieldRunState => ({
   pendingInstruction: "",
   pendingResult: "",
   collectingResult: false,
+  sawSeparate: false,
   instrRunEls: [],
   resultRunEls: [],
 });
@@ -1127,6 +1130,7 @@ function feedFieldRun(
       state.beginRunEl = run;
       state.resultRPr = undefined;
       state.collectingResult = false;
+      state.sawSeparate = false;
       state.depth = 1;
       state.instrRunEls = [];
       state.resultRunEls = [];
@@ -1136,6 +1140,7 @@ function feedFieldRun(
         return { consumed: true };
       }
       state.collectingResult = true;
+      state.sawSeparate = true;
       state.resultRunEls = [];
     } else if (fctype === "end" && state.kind) {
       if (state.kind === "complex" && state.depth > 1) {
@@ -1155,6 +1160,7 @@ function feedFieldRun(
         // Mark the result present when the field carried any result run — an
         // empty-text result still round-trips its separate marker.
         if (state.resultRunEls.length > 0) cf.result = state.pendingResult;
+        if (state.sawSeparate) cf.hasSeparate = true;
         if (state.controlRPr) cf.rPrXml = state.controlRPr;
         if (state.resultRPr) cf.resultRPrXml = state.resultRPr;
         const resultRPrEl = state.resultRunEls[0] && findChild(state.resultRunEls[0], "w:rPr");
@@ -1611,6 +1617,9 @@ function parseHyperlinkChild(child: Element, ctx: DocxReadContext): ParagraphChi
   const hl: Partial<HyperlinkInlineOptions> = {};
   const rId = attr(child, "r:id");
   if (rId) {
+    // Keep the source id: the writer reuses it when free, which is what keeps
+    // document.xml byte-stable across repeated parse→generate cycles.
+    hl.sourceRid = rId;
     // rId numbering is per-part: a hyperlink inside a footnote/header
     // resolves against that part's own rels first, then document.xml's.
     const target =

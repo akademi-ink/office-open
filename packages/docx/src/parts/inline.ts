@@ -78,20 +78,25 @@ function stringifyComplexFieldRuns(cf: ComplexFieldOptions, isDelete = false): s
     (cf.instruction !== ""
       ? `<w:r>${ctrl}<${instrTag} xml:space="preserve">${escapeXml(cf.instruction)}</${instrTag}></w:r>`
       : "");
-  // `separate` + the result run are emitted only when there is a cached
-  // result; a result-less field round-trips as begin/instrText/end. Result
-  // runs go verbatim when the source split them beyond the plain template.
+  // `separate` is emitted when the source carried one, even with an empty
+  // result (footer PAGE fields write begin/instr/separate/end with no result
+  // run). Result runs go verbatim when the source split them beyond the plain
+  // template.
+  const separateXml =
+    cf.hasSeparate === true || cf.resultRunsXml !== undefined || cf.result !== undefined
+      ? `<w:r>${ctrl}<w:fldChar w:fldCharType="separate"/></w:r>`
+      : "";
   const resultXml =
     cf.resultRunsXml !== undefined
-      ? `<w:r>${ctrl}<w:fldChar w:fldCharType="separate"/></w:r>` + cf.resultRunsXml
+      ? cf.resultRunsXml
       : cf.result !== undefined
-        ? `<w:r>${ctrl}<w:fldChar w:fldCharType="separate"/></w:r>` +
-          `<w:r>${res}<${textTag} xml:space="preserve">${escapeXml(cf.result)}</${textTag}></w:r>`
+        ? `<w:r>${res}<${textTag} xml:space="preserve">${escapeXml(cf.result)}</${textTag}></w:r>`
         : "";
   const lrpb = cf.lastRenderedPageBreak ? "<w:lastRenderedPageBreak/>" : "";
   return (
     `<w:r>${ctrl}${lrpb}<w:fldChar w:fldCharType="begin"/></w:r>` +
     instrXml +
+    separateXml +
     resultXml +
     `<w:r>${cf.endRPrXml ?? ctrl}<w:fldChar w:fldCharType="end"/></w:r>`
   );

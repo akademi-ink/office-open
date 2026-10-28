@@ -36,6 +36,29 @@ function documentXml(output: Uint8Array): string {
   return new TextDecoder().decode(unzipSync(output)["word/document.xml"]);
 }
 
+const RESULTLESS_FIELD =
+  '<w:p><w:r><w:fldChar w:fldCharType="begin"/></w:r>' +
+  '<w:r><w:instrText xml:space="preserve">PAGE</w:instrText></w:r>' +
+  '<w:r><w:fldChar w:fldCharType="separate"/></w:r>' +
+  '<w:r><w:fldChar w:fldCharType="end"/></w:r></w:p>';
+
+describe("a result-less complex field", () => {
+  it("keeps its separate marker through a generate fixed point", async () => {
+    const parsed = parseDocumentSync(packageOf(RESULTLESS_FIELD));
+    const children = parsed.sections?.[0]?.children ?? [];
+    expect(children[0]).toMatchObject({
+      paragraph: { children: [{ complexField: { instruction: "PAGE", hasSeparate: true } }] },
+    });
+
+    const output = await generateDocument(parsed, { type: "uint8array" });
+    const xml = documentXml(output);
+    expect(xml.match(/w:fldCharType="begin"/g)).toHaveLength(1);
+    expect(xml.match(/w:fldCharType="separate"/g)).toHaveLength(1);
+    expect(xml.match(/w:fldCharType="end"/g)).toHaveLength(1);
+    expect(parseDocumentSync(output).sections?.[0]?.children).toEqual(parsed.sections?.[0]?.children);
+  });
+});
+
 describe("paragraphs crossed by a multi-paragraph complex field", () => {
   it("parse as editable paragraphs whose marker runs stay verbatim", () => {
     const children = parseDocumentSync(packageOf(BIBLIOGRAPHY)).sections?.[0]?.children ?? [];

@@ -78,6 +78,10 @@ export interface ComplexFieldOptions {
    *  the cached value across runs with per-run properties — e.g. Word's
    *  locale-mixed date results where every segment carries its own rFonts. */
   resultRunsXml?: string;
+  /** The source carried a separate marker even when the cached result had no
+   *  runs (a footer PAGE field with an empty result). Round-trips the marker
+   *  instead of collapsing the field to begin/instrText/end. */
+  hasSeparate?: boolean;
   /** A pagination hint Word parked on the begin run itself (w:r >
    * w:lastRenderedPageBreak + w:fldChar begin in one run). */
   lastRenderedPageBreak?: boolean;
