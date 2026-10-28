@@ -163,6 +163,9 @@ export type ParagraphChild =
         docLocation?: string;
         /** Add the target to the navigation history (CT_Hyperlink `@history`) */
         history?: boolean;
+        /** Source relationship id captured on parse. The writer reuses it when
+         *  the slot is free so a parse→generate cycle keeps `r:id` stable. */
+        sourceRid?: string;
         /** Link content: text runs plus drawings (image links) and other
          *  run-level children the paragraph dispatch serializes. */
         children?: (RunOptions | string | ParagraphChild)[];

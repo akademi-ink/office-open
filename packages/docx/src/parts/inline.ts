@@ -776,7 +776,23 @@ export function stringifyChildDispatch(
       // per reference even when the URL repeats (sharing would collapse the
       // source's per-reference entries on round-trip).
       const relType = RELATIONSHIP_TYPES.hyperlink;
-      const linkId = `rId${ctx.viewWrapper.relationships.add(relType, hl.url, TargetModeType.EXTERNAL)}`;
+      const relationships = ctx.viewWrapper.relationships;
+      // Reuse the source rId when its slot is free: auto ids depend on how many
+      // relationships were registered first, which differs between the source
+      // package and a regenerated one (gen2 grew more rels → hyperlink moved
+      // rId20 → rId27). Keeping the source id makes parse→generate a fixed point.
+      const sourceRid = hl.sourceRid;
+      const reusable = sourceRid !== undefined
+        && /^rId[1-9]\d*$/u.test(sourceRid)
+        && !relationships.hasId(sourceRid);
+      const linkId = reusable
+        ? (relationships.addRelationship(
+            Number(sourceRid.slice("rId".length)),
+            relType,
+            hl.url,
+            TargetModeType.EXTERNAL,
+          ), sourceRid)
+        : `rId${relationships.add(relType, hl.url, TargetModeType.EXTERNAL)}`;
       const attrs = [`r:id="${linkId}"`];
       pushHlAttrs(attrs);
       return `<w:hyperlink ${attrs.join(" ")}>${body}</w:hyperlink>`;

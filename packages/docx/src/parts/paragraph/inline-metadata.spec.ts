@@ -204,6 +204,31 @@ describe("ruby annotation parse", () => {
   });
 });
 
+describe("hyperlink source rId", () => {
+  it("captures the source relationship id on parse", () => {
+    const read = {
+      currentPart: "word/document.xml",
+      docx: {
+        partRefs: {
+          partHyperlinks: new Map([
+            ["word/document.xml", new Map([["rId20", "https://example.com/a"]])],
+          ]),
+          hyperlinks: new Map([["rId20", "https://example.com/a"]]),
+        },
+      },
+    } as unknown as DocxReadContext;
+    const doc = parseXml(
+      `<w:p ${W_NS}><w:hyperlink r:id="rId20"><w:r><w:t>one</w:t></w:r></w:hyperlink></w:p>`,
+    );
+    const opts = parseParagraph(doc.elements![0]!, read) as { children?: unknown[] };
+    const link = findChildByKey(opts, "hyperlink");
+    expect(link!.hyperlink).toMatchObject({
+      url: "https://example.com/a",
+      sourceRid: "rId20",
+    });
+  });
+});
+
 describe("hyperlink relationships", () => {
   const hlWriteCtx = {
     viewWrapper: {
@@ -216,6 +241,41 @@ describe("hyperlink relationships", () => {
     },
   } as never;
   let relationships: Array<{ type: string; target: string; mode: string }>;
+
+  it("reuses a captured source rId when its slot is free", () => {
+    const ids = new Set<string>();
+    const added: Array<{ id: string; target: string }> = [];
+    const ctx = {
+      viewWrapper: {
+        relationships: {
+          hasId: (id: string) => ids.has(id),
+          addRelationship: (id: number, _type: string, target: string) => {
+            ids.add(`rId${id}`);
+            added.push({ id: `rId${id}`, target });
+          },
+          add: () => {
+            throw new Error("auto id must not be used when the source id is free");
+          },
+        },
+      },
+    } as never;
+    const xml = stringifyParagraph(
+      {
+        children: [
+          {
+            hyperlink: {
+              url: "https://example.com/a",
+              sourceRid: "rId20",
+              children: ["one"],
+            },
+          },
+        ],
+      },
+      ctx,
+    );
+    expect(xml).toContain('r:id="rId20"');
+    expect(added).toEqual([{ id: "rId20", target: "https://example.com/a" }]);
+  });
 
   it("registers one relationship per hyperlink element even for a repeated URL", () => {
     relationships = [];
