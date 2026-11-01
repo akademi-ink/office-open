@@ -15,6 +15,9 @@ export const RELATIONSHIP_TYPES = {
   diagramStyleMs: "http://schemas.microsoft.com/office/2007/relationships/diagramStyle",
   mediaMs: "http://schemas.microsoft.com/office/2007/relationships/media",
   commentsExtendedMs: "http://schemas.microsoft.com/office/2011/relationships/commentsExtended",
+  commentsIdsMs: "http://schemas.microsoft.com/office/2016/09/relationships/commentsIds",
+  commentsExtensibleMs:
+    "http://schemas.microsoft.com/office/2018/08/relationships/commentsExtensible",
   peopleMs: "http://schemas.microsoft.com/office/2011/relationships/people",
   aFChunk: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/aFChunk",
   attachedTemplate:
@@ -239,8 +242,12 @@ export class Relationships {
    * part content references the source rIds, so re-emit the rel at its exact
    * source id whenever that slot is still free — renumbering would dangle
    * those references. Skips rels already registered under the same
-   * kind+target (the model absorbed them); falls back to an auto id for
-   * non-numeric source ids.
+   * kind+target (the model absorbed them).
+   *
+   * The source id is reused verbatim for non-numeric ids too (`rIdChartEx`
+   * and friends are legal OPC ids): a passthrough drawing keeps the exact
+   * string, so mapping it to a fresh numeric id would dangle the reference
+   * even though the relationship was re-emitted.
    */
   public claimSourceRel(rel: {
     relationshipType: string;
@@ -249,17 +256,16 @@ export class Relationships {
     targetMode?: "External";
   }): void {
     if (this.hasRelationship(rel.relationshipType, rel.target)) return;
-    const numeric = /^rId(\d+)$/.exec(rel.rId);
-    if (numeric && !this.hasId(rel.rId)) {
+    if (!this.hasId(rel.rId)) {
       this.addRelationship(
-        Number(numeric[1]),
+        rel.rId,
         rel.relationshipType as RelationshipType,
         rel.target,
         rel.targetMode,
       );
-    } else {
-      this.add(rel.relationshipType as RelationshipType, rel.target, rel.targetMode);
+      return;
     }
+    this.add(rel.relationshipType as RelationshipType, rel.target, rel.targetMode);
   }
 
   /**

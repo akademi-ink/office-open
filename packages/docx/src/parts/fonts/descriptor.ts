@@ -9,10 +9,8 @@
 import type { CustomDescriptor } from "@office-open/core/descriptor";
 import { attr, attrBool, escapeXml, findChild } from "@office-open/xml";
 import type { Element } from "@office-open/xml";
-import {
-  DocumentAttributeNamespaces,
-  documentNamespaceAttributes,
-} from "@parts/document/document-attributes";
+import { DocumentAttributeNamespaces } from "@parts/document/document-attributes";
+import { rootNamespaceAttributes } from "@parts/document/extension-registry";
 import type { FontSignature } from "@parts/fonts/font-table";
 import type { EmbeddedFontOptionsWithKey } from "@parts/fonts/font-wrapper";
 
@@ -24,7 +22,7 @@ export interface FontTableInput {
 
 // ── XML helpers ──
 
-const NS = documentNamespaceAttributes([
+const NS = rootNamespaceAttributes([
   "mc",
   "r",
   "w",
@@ -104,9 +102,7 @@ export const fontTableDesc: CustomDescriptor<FontTableInput> = {
         return uri === undefined ? [] : [` xmlns:${prefix}="${uri}"`];
       })
       .join("");
-    const parts: string[] = [
-      `<w:fonts ${NS}${requiredNs} mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh">`,
-    ];
+    const parts: string[] = [`<w:fonts ${NS}${requiredNs}>`];
     for (const font of opts.fonts) {
       const xml = fontXml(font);
       parts.push(

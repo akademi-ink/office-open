@@ -34,6 +34,7 @@ import {
 } from "../body";
 import { DocxReadContext } from "../context";
 import { setBodyParseChild } from "../parts";
+import { replaceRelsWithPlaceholders } from "../util/replace-media-placeholders";
 import { stringifyElement } from "../util/stringify-element";
 
 // ── Section properties parser ────────────────────────────────────────────────
@@ -215,15 +216,25 @@ export function parseSectionChild(el: Element, ctx: DocxReadContext): SectionChi
       // ends grouped after a heading). Carry them as first-class children so
       // they round-trip even though they are not wrapped in a paragraph.
       const bookmarkStart = parseBookmarkStartOptions(el);
-      return bookmarkStart ? { bookmarkStart } : { rawXml: stringifyElement(el) };
+      return bookmarkStart ? { bookmarkStart } : rawSectionChild(el, ctx);
     }
     case "w:bookmarkEnd": {
       const bookmarkEnd = parseBookmarkEndOptions(el);
-      return bookmarkEnd ? { bookmarkEnd } : { rawXml: stringifyElement(el) };
+      return bookmarkEnd ? { bookmarkEnd } : rawSectionChild(el, ctx);
     }
     default:
-      return { rawXml: stringifyElement(el) };
+      return rawSectionChild(el, ctx);
   }
+}
+
+/**
+ * Carry an unmodeled body-level element verbatim. Relationship refs become
+ * `{fileName}` placeholders plus `rawMedia`, so the block stringifier
+ * re-registers the binaries instead of emitting dangling source rIds.
+ */
+function rawSectionChild(el: Element, ctx: DocxReadContext): SectionChild {
+  const { rawXml, rawMedia } = replaceRelsWithPlaceholders(stringifyElement(el), ctx);
+  return rawMedia.length > 0 ? { rawXml, rawMedia } : { rawXml };
 }
 
 // ── Nested section properties (sectPr inside block content) ─────────────────

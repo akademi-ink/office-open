@@ -28,10 +28,12 @@ import { parse as parseXml } from "@office-open/xml";
 import type { Element } from "@office-open/xml";
 import { sectionPropertiesDesc } from "@parts/document/body/section-properties/descriptor";
 import { documentNamespaceAttributes } from "@parts/document/document-attributes";
+import type { DocumentAttributeNamespace } from "@parts/document/document-attributes";
 import type {
   BackgroundRawMediaOptions,
   DocumentBackgroundOptions,
 } from "@parts/document/document-background";
+import { extensionIgnorableAttribute } from "@parts/document/extension-registry";
 import { parseDrawingRun } from "@parts/drawing/drawing-parse";
 import { FontWrapper } from "@parts/fonts/font-wrapper";
 import type { BordersOptions } from "@parts/paragraph/formatting/border";
@@ -86,6 +88,7 @@ import {
   paragraphIdentityAttrs,
   stringifyParagraphProperties,
 } from "./parts/paragraph/stringify";
+import { registerRawMedia } from "./util/raw-media";
 import { replaceRelsWithPlaceholders } from "./util/replace-media-placeholders";
 import { stringifyElement } from "./util/stringify-element";
 
@@ -242,7 +245,10 @@ export function stringifyBodyChild(
     return `<w:bookmarkEnd ${a.join(" ")}/>`;
   }
   if ("rawXml" in child) {
-    return child.rawXml;
+    // Block-level verbatim passthrough — its `{fileName}` placeholders must be
+    // resolved through the media store so the compiler assigns them fresh
+    // relationship ids instead of the source rIds dangling.
+    return registerRawMedia(child.rawXml, child.rawMedia, ctx.file.media);
   }
 
   throw new Error("Unknown section child type");
@@ -255,33 +261,7 @@ function stringifyDocumentBackground(opts: DocumentBackgroundOptions, ctx: BodyC
   // (VML pattern fills, texture images). Register each referenced media item
   // so the compiler resolves the `{fileName}` placeholders into rIds.
   if (opts.rawXml) {
-    // Remap into a local — the caller's options object is shared, serializable
-    // data, and writing the dedup renames back would leak this generate run's
-    // media numbering into the next run's input.
-    let xml = opts.rawXml;
-    if (opts.rawMedia) {
-      for (const m of opts.rawMedia) {
-        const data = toUint8Array(m.data);
-        const entry = ctx.file.media.addMedia(
-          data,
-          m.type,
-          (fileName) =>
-            ({
-              type: m.type,
-              data,
-              fileName,
-              transformation: { emus: { x: 0, y: 0 }, pixels: { x: 0, y: 0 } },
-            }) as MediaData,
-          m.fileName,
-        );
-        // Dedup may reuse an earlier file name; remap the placeholder so the
-        // compiler resolves it to the shared media relationship.
-        if (entry.fileName !== m.fileName) {
-          xml = xml.split(`{${m.fileName}}`).join(`{${entry.fileName}}`);
-        }
-      }
-    }
-    return xml;
+    return registerRawMedia(opts.rawXml, opts.rawMedia, ctx.file.media);
   }
 
   const attrs: string[] = [];
@@ -365,8 +345,8 @@ function stringifyTextbox(
 
 // ── Document body ──
 
-/** Document-level namespace string (cached, MS Word declaration order). */
-const DOC_NS = documentNamespaceAttributes([
+/** Prefixes declared on `<w:document>`, in MS Word declaration order. */
+const DOC_PREFIXES = [
   "wpc",
   "mc",
   "o",
@@ -399,7 +379,16 @@ const DOC_NS = documentNamespaceAttributes([
   "w16",
   "w16sdtdh",
   "w16se",
-]);
+] as const satisfies readonly DocumentAttributeNamespace[];
+
+/** Document-level namespace string (cached, MS Word declaration order). */
+const DOC_NS = documentNamespaceAttributes(DOC_PREFIXES);
+
+/**
+ * `mc:Ignorable` for the document root, derived from the extension registry so
+ * a prefix that is declared here but unknown to an older consumer is skippable.
+ */
+const DOC_IGNORABLE = extensionIgnorableAttribute(DOC_PREFIXES);
 
 /**
  * Stringify the complete document.xml from context data.
@@ -425,11 +414,9 @@ export function stringifyDocumentXml(ctx: DocxWriteContext, docCtx: BodyContext)
   // again only when a real Strict serialiser (purl.oclc.org namespaces, no
   // Transitional-only elements) exists.
   //
-  // mc:Ignorable must list every extension prefix declared on this element
-  // that we emit or pass through; `w16se` is emitted by `w:sym` (parts/inline)
-  // and was previously missing.
-  const DOC_IGNORABLE = "w14 w15 wp14 w16cex w16cid w16 w16sdtdh w16se";
-  parts.push(`<w:document ${DOC_NS} mc:Ignorable="${DOC_IGNORABLE}">`);
+  // mc:Ignorable lists every extension prefix declared on this element that a
+  // consumer may skip (registry-derived; `w16se` is emitted by `w:sym`).
+  parts.push(`<w:document ${DOC_NS}${DOC_IGNORABLE}>`);
 
   // Background (if any)
   if (ctx._options.background) {
@@ -1481,8 +1468,12 @@ function parseDrawingRunChild(child: Element, ctx: DocxReadContext): ParagraphCh
   const drawingChild = parseDrawingRun(drawingEl, ctx);
   if (!drawingChild) {
     // Unrecognized drawing payload (lockedCanvas, future graphicData URIs) —
-    // keep the whole run verbatim instead of dropping the drawing.
-    return { rawXml: stringifyElement(child) };
+    // keep the whole run verbatim instead of dropping the drawing. Its
+    // relationship refs become `{fileName}` placeholders + `rawMedia` so the
+    // compiler re-registers the binaries instead of emitting dangling source
+    // rIds (a:blip r:embed inside a future graphicData is exactly this case).
+    const { rawXml, rawMedia } = replaceRelsWithPlaceholders(stringifyElement(child), ctx);
+    return rawMedia.length > 0 ? { rawXml, rawMedia } : { rawXml };
   }
   // Parse the wrapping run's rPr into structured fields so round-trip stays
   // editable (drawings/shapes can be wrapped in <w:r><w:rPr>…</w:rPr>…).
@@ -1631,8 +1622,11 @@ function parseTrackChangeRuns(
       }
     } else if (sub.name !== "w:rPr") {
       // Any other range markup the wrapper may hold (bookmarks, permissions,
-      // move ranges, …) stays verbatim at its position.
-      out.push({ rawXml: stringifyElement(sub) });
+      // move ranges, …) stays verbatim at its position. Relationship refs
+      // become `{fileName}` placeholders + `rawMedia` so an unknown wrapper
+      // child carrying r:id/r:embed does not emit a dangling source rId.
+      const { rawXml, rawMedia } = replaceRelsWithPlaceholders(stringifyElement(sub), ctx);
+      out.push(rawMedia.length > 0 ? { rawXml, rawMedia } : { rawXml });
     }
   }
   return out;

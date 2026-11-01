@@ -19,7 +19,14 @@ import {
 import type { PartCtxFactory } from "../compiler";
 import type { DocxWriteContext } from "../context";
 import { commentsDesc, endnotesDesc, footnotesDesc } from "../parts";
-import { XML_DECL, registerPartMedia, resolvePartCharts, resolvePartMedia } from "./shared";
+import {
+  XML_DECL,
+  claimPartPassthroughRelationships,
+  registerPartMedia,
+  reservePartSourceRids,
+  resolvePartCharts,
+  resolvePartMedia,
+} from "./shared";
 
 /**
  * Comments carried by the document: those the caller listed explicitly
@@ -58,18 +65,22 @@ export function compileNotesParts(
   // relationships before serializing the part's rels.
   const comments = mergedCommentChildren(ctx);
   if (comments.length > 0) {
+    const commentsSource = "word/comments.xml";
+    reservePartSourceRids(ctx.comments.relationships, ctx, commentsSource);
     const commentCtx = mkCtx({ relationships: ctx.comments.relationships });
     const commentXmlData = XML_DECL + (commentsDesc.stringify(comments, commentCtx) ?? "");
     // Sampled after stringify, like the document and footnote counts below.
     const commentRelCount = ctx.comments.relationships.nextRelationshipId;
-    const resolved = resolvePartMedia(commentXmlData, ctx, commentRelCount);
-    registerPartMedia(ctx.comments.relationships, ctx, resolved);
+    const resolved = resolvePartMedia(commentXmlData, ctx, commentRelCount, commentsSource);
+    registerPartMedia(ctx.comments.relationships, ctx, resolved, commentsSource);
     const commentXml = resolvePartCharts(
       resolved.xml,
       ctx,
       ctx.comments.relationships,
       resolved.embeddingOffset + resolved.embeddingRefs.length,
+      commentsSource,
     );
+    claimPartPassthroughRelationships(ctx.comments.relationships, ctx, commentsSource);
     result.Comments = {
       data: replaceNumberingPlaceholders(commentXml, ctx.numbering.concreteNumbering),
       path: "word/comments.xml",
@@ -84,6 +95,8 @@ export function compileNotesParts(
   // Footnotes: stringify and register media/embedding relationships eagerly so
   // the relationshipCount used to gate footnotes.xml.rels reflects the final
   // state (see FootNotesRelationships).
+  const footnotesSource = "word/footnotes.xml";
+  reservePartSourceRids(ctx.footNotes.relationships, ctx, footnotesSource);
   const footnoteCtx = mkCtx({
     relationships: ctx.footNotes.relationships,
   });
@@ -99,14 +112,21 @@ export function compileNotesParts(
       footnoteCtx,
     ) ?? "");
   const footnoteRelCount = ctx.footNotes.relationships.nextRelationshipId;
-  const footnoteResolved = resolvePartMedia(footnoteXmlData, ctx, footnoteRelCount);
-  registerPartMedia(ctx.footNotes.relationships, ctx, footnoteResolved);
+  const footnoteResolved = resolvePartMedia(
+    footnoteXmlData,
+    ctx,
+    footnoteRelCount,
+    footnotesSource,
+  );
+  registerPartMedia(ctx.footNotes.relationships, ctx, footnoteResolved, footnotesSource);
   const footnoteXml = resolvePartCharts(
     footnoteResolved.xml,
     ctx,
     ctx.footNotes.relationships,
     footnoteResolved.embeddingOffset + footnoteResolved.embeddingRefs.length,
+    footnotesSource,
   );
+  claimPartPassthroughRelationships(ctx.footNotes.relationships, ctx, footnotesSource);
   if (ctx.hasFootnotes) {
     result.FootNotes = {
       data: replaceNumberingPlaceholders(footnoteXml, ctx.numbering.concreteNumbering),
@@ -122,6 +142,8 @@ export function compileNotesParts(
 
   // Endnotes: same eager-registration shape as footnotes.
   if (ctx.hasEndnotes) {
+    const endnotesSource = "word/endnotes.xml";
+    reservePartSourceRids(ctx.endnotes.relationships, ctx, endnotesSource);
     const endnoteCtx = mkCtx({
       relationships: ctx.endnotes.relationships,
     });
@@ -137,14 +159,16 @@ export function compileNotesParts(
         endnoteCtx,
       ) ?? "");
     const endnoteRelCount = ctx.endnotes.relationships.nextRelationshipId;
-    const resolved = resolvePartMedia(endnoteXmlData, ctx, endnoteRelCount);
-    registerPartMedia(ctx.endnotes.relationships, ctx, resolved);
+    const resolved = resolvePartMedia(endnoteXmlData, ctx, endnoteRelCount, endnotesSource);
+    registerPartMedia(ctx.endnotes.relationships, ctx, resolved, endnotesSource);
     const endnoteXml = resolvePartCharts(
       resolved.xml,
       ctx,
       ctx.endnotes.relationships,
       resolved.embeddingOffset + resolved.embeddingRefs.length,
+      endnotesSource,
     );
+    claimPartPassthroughRelationships(ctx.endnotes.relationships, ctx, endnotesSource);
     result.Endnotes = {
       data: replaceNumberingPlaceholders(endnoteXml, ctx.numbering.concreteNumbering),
       path: "word/endnotes.xml",

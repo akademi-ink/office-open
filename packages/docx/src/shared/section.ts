@@ -10,6 +10,7 @@ import type { CustomXmlBlockOptions } from "@parts/custom-xml";
  * @module
  */
 import type { SectionPropertiesOptions } from "@parts/document/body/section-properties";
+import type { BackgroundRawMediaOptions } from "@parts/document/document-background/document-background";
 import type { MarkupRangeOptions, BookmarkStartOptions } from "@parts/paragraph/links/bookmark";
 import type { ParagraphOptions } from "@parts/paragraph/paragraph";
 import type { RunPropertiesOptions } from "@parts/paragraph/run/properties";
@@ -59,8 +60,14 @@ export type SectionChild =
   | { customXml: CustomXmlBlockOptions }
   | { bookmarkStart: BookmarkStartOptions }
   | { bookmarkEnd: MarkupRangeOptions }
-  /** Verbatim body-level XML captured on parse for elements without a structured shape. */
-  | { rawXml: string };
+  /**
+   * Verbatim body-level XML captured on parse for elements without a
+   * structured shape. Relationship refs (`r:id`/`r:embed`/`r:link`) are
+   * `{fileName}` placeholders; `rawMedia` holds the referenced binaries so
+   * generate re-registers them instead of emitting dangling source rIds.
+   * Round-trip only — do not hand-author.
+   */
+  | { rawXml: string; rawMedia?: BackgroundRawMediaOptions[] };
 
 /**
  * Options for a document section.

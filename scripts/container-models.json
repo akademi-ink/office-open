@@ -50,7 +50,8 @@
           "min": 1,
           "max": 1
         }
-      ]
+      ],
+      "requiredAttrs": ["DataBindingLoadMode"]
     },
     "Map": {
       "ct": ["CT_Map"],
@@ -60,6 +61,17 @@
           "min": 0,
           "max": 1
         }
+      ],
+      "requiredAttrs": [
+        "Append",
+        "AutoFit",
+        "ID",
+        "Name",
+        "PreserveFormat",
+        "PreserveSortAFLayout",
+        "RootElement",
+        "SchemaID",
+        "ShowImportExportValidationErrors"
       ],
       "variantElements": ["DataBinding"]
     },
@@ -77,6 +89,7 @@
           "max": "unbounded"
         }
       ],
+      "requiredAttrs": ["SelectionNamespaces"],
       "variantElements": ["Map", "Schema"]
     },
     "Schema": {
@@ -87,7 +100,8 @@
           "min": 1,
           "max": 1
         }
-      ]
+      ],
+      "requiredAttrs": ["ID"]
     },
     "a:accent1": {
       "ct": ["CT_Color"],
@@ -281,11 +295,13 @@
     },
     "a:alpha": {
       "ct": ["CT_PositiveFixedPercentage"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "a:alphaBiLevel": {
       "ct": ["CT_AlphaBiLevelEffect"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["thresh"]
     },
     "a:alphaCeiling": {
       "ct": ["CT_AlphaCeilingEffect"],
@@ -338,7 +354,8 @@
     },
     "a:alphaOff": {
       "ct": ["CT_FixedPercentage"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "a:alphaOutset": {
       "ct": ["CT_AlphaOutsetEffect"],
@@ -346,15 +363,18 @@
     },
     "a:alphaRepl": {
       "ct": ["CT_AlphaReplaceEffect"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["a"]
     },
     "a:anchor": {
       "ct": ["CT_Point3D"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["x", "y", "z"]
     },
     "a:arcTo": {
       "ct": ["CT_Path2DArcTo"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["hR", "stAng", "swAng", "wR"]
     },
     "a:audioCd": {
       "ct": ["CT_AudioCD"],
@@ -386,6 +406,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["r:link"],
       "variantElements": ["a:extLst"]
     },
     "a:avLst": {
@@ -555,7 +576,8 @@
     },
     "a:biLevel": {
       "ct": ["CT_BiLevelEffect"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["thresh"]
     },
     "a:bldChart": {
       "ct": ["CT_AnimationChartBuildProperties"],
@@ -574,6 +596,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["blend"],
       "variantElements": ["a:cont"]
     },
     "a:blip": {
@@ -654,15 +677,18 @@
     },
     "a:blue": {
       "ct": ["CT_Percentage"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "a:blueMod": {
       "ct": ["CT_Percentage"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "a:blueOff": {
       "ct": ["CT_Percentage"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "a:blur": {
       "ct": ["CT_BlurEffect"],
@@ -735,7 +761,8 @@
     },
     "a:buAutoNum": {
       "ct": ["CT_TextAutonumberBullet"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["type"]
     },
     "a:buBlip": {
       "ct": ["CT_TextBlipBullet"],
@@ -750,7 +777,8 @@
     },
     "a:buChar": {
       "ct": ["CT_TextCharBullet"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["char"]
     },
     "a:buClr": {
       "ct": ["CT_Color"],
@@ -784,7 +812,8 @@
     },
     "a:buFont": {
       "ct": ["CT_TextFont"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["typeface"]
     },
     "a:buFontTx": {
       "ct": ["CT_TextBulletTypefaceFollowText"],
@@ -796,11 +825,13 @@
     },
     "a:buSzPct": {
       "ct": ["CT_TextBulletSizePercent"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "a:buSzPts": {
       "ct": ["CT_TextBulletSizePoint"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "a:buSzTx": {
       "ct": ["CT_TextBulletSizeFollowText"],
@@ -899,6 +930,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["id", "name"],
       "variantElements": ["a:extLst", "a:hlinkClick", "a:hlinkHover"]
     },
     "a:cNvSpPr": {
@@ -926,6 +958,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["prst"],
       "variantElements": ["a:rot"]
     },
     "a:cell3D": {
@@ -951,15 +984,18 @@
     },
     "a:chExt": {
       "ct": ["CT_PositiveSize2D"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["cx", "cy"]
     },
     "a:chOff": {
       "ct": ["CT_Point2D"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["x", "y"]
     },
     "a:chart": {
       "ct": ["CT_AnimationChartElement"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["bldStep"]
     },
     "a:close": {
       "ct": ["CT_Path2DClose"],
@@ -1015,6 +1051,20 @@
           "min": 0,
           "max": 1
         }
+      ],
+      "requiredAttrs": [
+        "accent1",
+        "accent2",
+        "accent3",
+        "accent4",
+        "accent5",
+        "accent6",
+        "bg1",
+        "bg2",
+        "folHlink",
+        "hlink",
+        "tx1",
+        "tx2"
       ],
       "variantElements": ["a:extLst"]
     },
@@ -1113,6 +1163,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["name"],
       "variantElements": [
         "a:accent1",
         "a:accent2",
@@ -1272,7 +1323,8 @@
     },
     "a:cs": {
       "ct": ["CT_TextFont"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["typeface"]
     },
     "a:cubicBezTo": {
       "ct": ["CT_Path2DCubicBezierTo"],
@@ -1378,6 +1430,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["ang"],
       "variantElements": ["a:pos"]
     },
     "a:cxnLst": {
@@ -1674,7 +1727,8 @@
     },
     "a:ds": {
       "ct": ["CT_DashStop"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["d", "sp"]
     },
     "a:duotone": {
       "ct": ["CT_DuotoneEffect"],
@@ -1704,7 +1758,8 @@
     },
     "a:ea": {
       "ct": ["CT_TextFont"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["typeface"]
     },
     "a:effect": {
       "ct": ["CT_EffectReference", "CT_EffectProperties"],
@@ -1864,6 +1919,7 @@
           "pick": "one"
         }
       ],
+      "requiredAttrs": ["idx"],
       "variantElements": [
         "a:hslClr",
         "a:prstClr",
@@ -1908,11 +1964,13 @@
     },
     "a:end": {
       "ct": ["CT_AudioCDTime"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["track"]
     },
     "a:endCxn": {
       "ct": ["CT_Connection"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["id", "idx"]
     },
     "a:endParaRPr": {
       "ct": ["CT_TextCharacterProperties"],
@@ -2167,6 +2225,7 @@
           "pick": "one"
         }
       ],
+      "requiredAttrs": ["blend"],
       "variantElements": [
         "a:blipFill",
         "a:gradFill",
@@ -2197,6 +2256,7 @@
           "pick": "one"
         }
       ],
+      "requiredAttrs": ["idx"],
       "variantElements": [
         "a:hslClr",
         "a:prstClr",
@@ -2291,6 +2351,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["id"],
       "variantElements": ["a:pPr", "a:rPr", "a:t"]
     },
     "a:fmtScheme": {
@@ -2393,6 +2454,7 @@
           "pick": "one"
         }
       ],
+      "requiredAttrs": ["idx"],
       "variantElements": [
         "a:hslClr",
         "a:prstClr",
@@ -2421,6 +2483,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["name"],
       "variantElements": ["a:extLst", "a:majorFont", "a:minorFont"]
     },
     "a:gamma": {
@@ -2429,7 +2492,8 @@
     },
     "a:gd": {
       "ct": ["CT_GeomGuide"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["fmla", "name"]
     },
     "a:gdLst": {
       "ct": ["CT_GeomGuideList"],
@@ -2509,7 +2573,8 @@
           "min": 0,
           "max": "unbounded"
         }
-      ]
+      ],
+      "requiredAttrs": ["uri"]
     },
     "a:graphicFrame": {
       "ct": ["CT_GvmlGraphicalObjectFrame"],
@@ -2558,15 +2623,18 @@
     },
     "a:green": {
       "ct": ["CT_Percentage"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "a:greenMod": {
       "ct": ["CT_Percentage"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "a:greenOff": {
       "ct": ["CT_Percentage"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "a:gridCol": {
       "ct": ["CT_TableCol"],
@@ -2577,6 +2645,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["w"],
       "variantElements": ["a:extLst"]
     },
     "a:grpFill": {
@@ -2700,6 +2769,7 @@
           "pick": "one"
         }
       ],
+      "requiredAttrs": ["pos"],
       "variantElements": [
         "a:hslClr",
         "a:prstClr",
@@ -2878,6 +2948,7 @@
           "pick": "any"
         }
       ],
+      "requiredAttrs": ["hue", "lum", "sat"],
       "variantElements": [
         "a:alpha",
         "a:alphaMod",
@@ -2911,15 +2982,18 @@
     },
     "a:hue": {
       "ct": ["CT_PositiveFixedAngle"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "a:hueMod": {
       "ct": ["CT_PositivePercentage"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "a:hueOff": {
       "ct": ["CT_Angle"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "a:innerShdw": {
       "ct": ["CT_InnerShadowEffect"],
@@ -3013,7 +3087,8 @@
     },
     "a:latin": {
       "ct": ["CT_TextFont"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["typeface"]
     },
     "a:left": {
       "ct": ["CT_ThemeableLineStyle"],
@@ -3036,6 +3111,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["dir", "rig"],
       "variantElements": ["a:rot"]
     },
     "a:lin": {
@@ -3350,6 +3426,7 @@
           "pick": "one"
         }
       ],
+      "requiredAttrs": ["idx"],
       "variantElements": [
         "a:hslClr",
         "a:prstClr",
@@ -3628,11 +3705,13 @@
     },
     "a:lumMod": {
       "ct": ["CT_Percentage"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "a:lumOff": {
       "ct": ["CT_Percentage"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "a:lvl1pPr": {
       "ct": ["CT_TextParagraphProperties"],
@@ -4443,7 +4522,8 @@
     },
     "a:norm": {
       "ct": ["CT_Vector3D"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["dx", "dy", "dz"]
     },
     "a:normAutofit": {
       "ct": ["CT_TextNormalAutofit"],
@@ -4573,7 +4653,8 @@
     },
     "a:off": {
       "ct": ["CT_Point2D"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["x", "y"]
     },
     "a:outerShdw": {
       "ct": ["CT_OuterShadowEffect"],
@@ -4609,6 +4690,20 @@
           "min": 0,
           "max": 1
         }
+      ],
+      "requiredAttrs": [
+        "accent1",
+        "accent2",
+        "accent3",
+        "accent4",
+        "accent5",
+        "accent6",
+        "bg1",
+        "bg2",
+        "folHlink",
+        "hlink",
+        "tx1",
+        "tx2"
       ],
       "variantElements": ["a:extLst"]
     },
@@ -4803,7 +4898,8 @@
     },
     "a:pos": {
       "ct": ["CT_AdjPoint2D"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["x", "y"]
     },
     "a:prstClr": {
       "ct": ["CT_PresetColor"],
@@ -4844,6 +4940,7 @@
           "pick": "any"
         }
       ],
+      "requiredAttrs": ["val"],
       "variantElements": [
         "a:alpha",
         "a:alphaMod",
@@ -4888,6 +4985,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["prst"],
       "variantElements": ["a:avLst"]
     },
     "a:prstShdw": {
@@ -4907,6 +5005,7 @@
           "pick": "one"
         }
       ],
+      "requiredAttrs": ["prst"],
       "variantElements": [
         "a:hslClr",
         "a:prstClr",
@@ -4925,11 +5024,13 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["prst"],
       "variantElements": ["a:avLst"]
     },
     "a:pt": {
       "ct": ["CT_AdjPoint2D"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["x", "y"]
     },
     "a:quadBezTo": {
       "ct": ["CT_Path2DQuadBezierTo"],
@@ -4951,6 +5052,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["r:link"],
       "variantElements": ["a:extLst"]
     },
     "a:r": {
@@ -5081,19 +5183,23 @@
     },
     "a:rect": {
       "ct": ["CT_GeomRect"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["b", "l", "r", "t"]
     },
     "a:red": {
       "ct": ["CT_Percentage"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "a:redMod": {
       "ct": ["CT_Percentage"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "a:redOff": {
       "ct": ["CT_Percentage"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "a:reflection": {
       "ct": ["CT_ReflectionEffect"],
@@ -5117,7 +5223,8 @@
     },
     "a:rot": {
       "ct": ["CT_SphereCoords"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["lat", "lon", "rev"]
     },
     "a:round": {
       "ct": ["CT_LineJoinRound"],
@@ -5129,15 +5236,18 @@
     },
     "a:sat": {
       "ct": ["CT_Percentage"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "a:satMod": {
       "ct": ["CT_Percentage"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "a:satOff": {
       "ct": ["CT_Percentage"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "a:scene3d": {
       "ct": ["CT_Scene3D"],
@@ -5204,6 +5314,7 @@
           "pick": "any"
         }
       ],
+      "requiredAttrs": ["val"],
       "variantElements": [
         "a:alpha",
         "a:alphaMod",
@@ -5274,6 +5385,7 @@
           "pick": "any"
         }
       ],
+      "requiredAttrs": ["b", "g", "r"],
       "variantElements": [
         "a:alpha",
         "a:alphaMod",
@@ -5323,15 +5435,18 @@
     },
     "a:shade": {
       "ct": ["CT_PositiveFixedPercentage"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "a:snd": {
       "ct": ["CT_EmbeddedWAVAudioFile"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:embed"]
     },
     "a:softEdge": {
       "ct": ["CT_SoftEdgesEffect"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["rad"]
     },
     "a:solidFill": {
       "ct": ["CT_SolidColorFillProperties"],
@@ -5565,11 +5680,13 @@
     },
     "a:spcPct": {
       "ct": ["CT_TextSpacingPercent"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "a:spcPts": {
       "ct": ["CT_TextSpacingPoint"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "a:srcRect": {
       "ct": ["CT_RelativeRect"],
@@ -5614,6 +5731,7 @@
           "pick": "any"
         }
       ],
+      "requiredAttrs": ["val"],
       "variantElements": [
         "a:alpha",
         "a:alphaMod",
@@ -5647,11 +5765,13 @@
     },
     "a:st": {
       "ct": ["CT_AudioCDTime"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["track"]
     },
     "a:stCxn": {
       "ct": ["CT_Connection"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["id", "idx"]
     },
     "a:stretch": {
       "ct": ["CT_StretchInfoProperties"],
@@ -5708,15 +5828,18 @@
     },
     "a:sx": {
       "ct": ["CT_Ratio"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["d", "n"]
     },
     "a:sy": {
       "ct": ["CT_Ratio"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["d", "n"]
     },
     "a:sym": {
       "ct": ["CT_TextFont"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["typeface"]
     },
     "a:sysClr": {
       "ct": ["CT_SystemColor"],
@@ -5757,6 +5880,7 @@
           "pick": "any"
         }
       ],
+      "requiredAttrs": ["val"],
       "variantElements": [
         "a:alpha",
         "a:alphaMod",
@@ -5882,6 +6006,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["styleId", "styleName"],
       "variantElements": [
         "a:band1H",
         "a:band1V",
@@ -6081,6 +6206,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["styleId", "styleName"],
       "variantElements": [
         "a:band1H",
         "a:band1V",
@@ -6108,6 +6234,7 @@
           "max": "unbounded"
         }
       ],
+      "requiredAttrs": ["def"],
       "variantElements": ["a:tblStyle"]
     },
     "a:tc": {
@@ -6472,6 +6599,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["h"],
       "variantElements": ["a:extLst", "a:tc"]
     },
     "a:tr2bl": {
@@ -6648,7 +6776,8 @@
     },
     "a:up": {
       "ct": ["CT_Vector3D"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["dx", "dy", "dz"]
     },
     "a:useSpRect": {
       "ct": ["CT_GvmlUseShapeRectangle"],
@@ -6663,11 +6792,13 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["r:link"],
       "variantElements": ["a:extLst"]
     },
     "a:wavAudioFile": {
       "ct": ["CT_EmbeddedWAVAudioFile"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:embed"]
     },
     "a:wholeTbl": {
       "ct": ["CT_TablePartStyle"],
@@ -7054,11 +7185,13 @@
     },
     "c:axId": {
       "ct": ["CT_UnsignedInt"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:axPos": {
       "ct": ["CT_AxPos"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:backWall": {
       "ct": ["CT_Surface"],
@@ -7088,7 +7221,8 @@
     },
     "c:backward": {
       "ct": ["CT_Double"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:bandFmt": {
       "ct": ["CT_BandFmt"],
@@ -7686,23 +7820,41 @@
           "max": 1
         }
       ],
+      "requiredAttrs": [
+        "accent1",
+        "accent2",
+        "accent3",
+        "accent4",
+        "accent5",
+        "accent6",
+        "bg1",
+        "bg2",
+        "folHlink",
+        "hlink",
+        "tx1",
+        "tx2"
+      ],
       "variantElements": ["a:extLst"]
     },
     "c:crossAx": {
       "ct": ["CT_UnsignedInt"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:crossBetween": {
       "ct": ["CT_CrossBetween"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:crosses": {
       "ct": ["CT_Crosses"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:crossesAt": {
       "ct": ["CT_Double"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:custSplit": {
       "ct": ["CT_CustSplit"],
@@ -7717,7 +7869,8 @@
     },
     "c:custUnit": {
       "ct": ["CT_Double"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:dLbl": {
       "ct": ["CT_DLbl"],
@@ -7793,7 +7946,8 @@
     },
     "c:dLblPos": {
       "ct": ["CT_DLblPos"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:dLbls": {
       "ct": ["CT_DLbls"],
@@ -8326,7 +8480,8 @@
     },
     "c:errDir": {
       "ct": ["CT_ErrDir"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:errValType": {
       "ct": ["CT_ErrValType"],
@@ -8334,7 +8489,8 @@
     },
     "c:explosion": {
       "ct": ["CT_UnsignedInt"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:ext": {
       "ct": ["CT_Extension"],
@@ -8366,6 +8522,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["r:id"],
       "variantElements": ["c:autoUpdate"]
     },
     "c:firstSliceAng": {
@@ -8400,7 +8557,8 @@
     },
     "c:fmtId": {
       "ct": ["CT_UnsignedInt"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:formatting": {
       "ct": ["CT_Boolean"],
@@ -8408,7 +8566,8 @@
     },
     "c:forward": {
       "ct": ["CT_Double"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:gapDepth": {
       "ct": ["CT_GapAmount"],
@@ -8424,7 +8583,8 @@
     },
     "c:h": {
       "ct": ["CT_Double"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:hMode": {
       "ct": ["CT_LayoutMode"],
@@ -8494,11 +8654,13 @@
     },
     "c:idx": {
       "ct": ["CT_UnsignedInt"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:intercept": {
       "ct": ["CT_Double"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:invertIfNegative": {
       "ct": ["CT_Boolean"],
@@ -8506,7 +8668,8 @@
     },
     "c:lang": {
       "ct": ["CT_TextLanguageID"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:layout": {
       "ct": ["CT_Layout"],
@@ -8530,7 +8693,8 @@
     },
     "c:lblAlgn": {
       "ct": ["CT_LblAlgn"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:lblOffset": {
       "ct": ["CT_LblOffset"],
@@ -8549,7 +8713,8 @@
     },
     "c:legacyDrawingHF": {
       "ct": ["CT_RelId"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "c:legend": {
       "ct": ["CT_Legend"],
@@ -8756,7 +8921,8 @@
     },
     "c:logBase": {
       "ct": ["CT_LogBase"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:lvl": {
       "ct": ["CT_Lvl"],
@@ -8790,7 +8956,8 @@
     },
     "c:majorUnit": {
       "ct": ["CT_AxisUnit"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:manualLayout": {
       "ct": ["CT_ManualLayout"],
@@ -8887,11 +9054,13 @@
     },
     "c:max": {
       "ct": ["CT_Double"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:min": {
       "ct": ["CT_Double"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:minorGridlines": {
       "ct": ["CT_ChartLines"],
@@ -8914,7 +9083,8 @@
     },
     "c:minorUnit": {
       "ct": ["CT_AxisUnit"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:minus": {
       "ct": ["CT_NumDataSource"],
@@ -9006,7 +9176,8 @@
     },
     "c:numFmt": {
       "ct": ["CT_NumFmt"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["formatCode"]
     },
     "c:numLit": {
       "ct": ["CT_NumData"],
@@ -9150,7 +9321,8 @@
     },
     "c:pageMargins": {
       "ct": ["CT_PageMargins"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["b", "footer", "header", "l", "r", "t"]
     },
     "c:pageSetup": {
       "ct": ["CT_PageSetup"],
@@ -9166,7 +9338,8 @@
     },
     "c:pictureFormat": {
       "ct": ["CT_PictureFormat"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:pictureOptions": {
       "ct": ["CT_PictureOptions"],
@@ -9207,7 +9380,8 @@
     },
     "c:pictureStackUnit": {
       "ct": ["CT_PictureStackUnit"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:pie3DChart": {
       "ct": ["CT_Pie3DChart"],
@@ -9502,11 +9676,13 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["idx"],
       "variantElements": ["c:v"]
     },
     "c:ptCount": {
       "ct": ["CT_UnsignedInt"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:rAngAx": {
       "ct": ["CT_Boolean"],
@@ -9665,7 +9841,8 @@
     },
     "c:secondPiePt": {
       "ct": ["CT_UnsignedInt"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:secondPieSize": {
       "ct": ["CT_SecondPieSize"],
@@ -10078,7 +10255,8 @@
     },
     "c:splitPos": {
       "ct": ["CT_Double"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:splitType": {
       "ct": ["CT_SplitType"],
@@ -10198,7 +10376,8 @@
     },
     "c:style": {
       "ct": ["CT_Style"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:surface3DChart": {
       "ct": ["CT_Surface3DChart"],
@@ -10264,11 +10443,13 @@
     },
     "c:symbol": {
       "ct": ["CT_MarkerStyle"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:thickness": {
       "ct": ["CT_Thickness"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:tickLblPos": {
       "ct": ["CT_TickLblPos"],
@@ -10276,11 +10457,13 @@
     },
     "c:tickLblSkip": {
       "ct": ["CT_Skip"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:tickMarkSkip": {
       "ct": ["CT_Skip"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:title": {
       "ct": ["CT_Title"],
@@ -10719,7 +10902,8 @@
     },
     "c:w": {
       "ct": ["CT_Double"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:wMode": {
       "ct": ["CT_LayoutMode"],
@@ -10731,7 +10915,8 @@
     },
     "c:x": {
       "ct": ["CT_Double"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:xMode": {
       "ct": ["CT_LayoutMode"],
@@ -10751,7 +10936,8 @@
     },
     "c:y": {
       "ct": ["CT_Double"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "c:yMode": {
       "ct": ["CT_LayoutMode"],
@@ -10793,6 +10979,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["name"],
       "variantElements": ["extLst", "fieldGroup", "mpMap", "sharedItems"]
     },
     "cacheFields": {
@@ -10836,6 +11023,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["count", "uniqueName"],
       "variantElements": ["extLst", "fieldsUsage", "groupLevels"]
     },
     "cacheSource": {
@@ -10848,6 +11036,7 @@
           "pick": "one"
         }
       ],
+      "requiredAttrs": ["type"],
       "variantElements": ["consolidation", "extLst", "worksheetSource"]
     },
     "calcChain": {
@@ -10910,6 +11099,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["mdx", "name"],
       "variantElements": ["extLst"]
     },
     "calculatedMembers": {
@@ -11068,6 +11258,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["id", "name"],
       "variantElements": ["a:extLst", "a:hlinkClick", "a:hlinkHover"]
     },
     "cdr:cNvSpPr": {
@@ -11109,7 +11300,8 @@
     },
     "cdr:ext": {
       "ct": ["CT_PositiveSize2D"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["cx", "cy"]
     },
     "cdr:from": {
       "ct": ["CT_Marker"],
@@ -11574,11 +11766,13 @@
           "max": "unbounded"
         }
       ],
+      "requiredAttrs": ["type"],
       "variantElements": ["cellSmartTagPr"]
     },
     "cellSmartTagPr": {
       "ct": ["CT_CellSmartTagPr"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["key", "val"]
     },
     "cellSmartTags": {
       "ct": ["CT_CellSmartTags"],
@@ -11589,6 +11783,7 @@
           "max": "unbounded"
         }
       ],
+      "requiredAttrs": ["r"],
       "variantElements": ["cellSmartTag"]
     },
     "cellStyle": {
@@ -11600,6 +11795,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["xfId"],
       "variantElements": ["extLst"]
     },
     "cellStyleXfs": {
@@ -11626,7 +11822,8 @@
     },
     "cellWatch": {
       "ct": ["CT_CellWatch"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r"]
     },
     "cellWatches": {
       "ct": ["CT_CellWatches"],
@@ -11679,6 +11876,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["priority"],
       "variantElements": ["colorScale", "dataBar", "extLst", "formula", "iconSet"]
     },
     "cfvo": {
@@ -11690,11 +11888,13 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["type"],
       "variantElements": ["extLst"]
     },
     "charset": {
       "ct": ["CT_IntProperty"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "chartFormat": {
       "ct": ["CT_ChartFormat"],
@@ -11705,6 +11905,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["chart", "format"],
       "variantElements": ["pivotArea"]
     },
     "chartFormats": {
@@ -11811,7 +12012,8 @@
     },
     "col": {
       "ct": ["CT_Col"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["max", "min"]
     },
     "colBreaks": {
       "ct": ["CT_PageBreak"],
@@ -11848,7 +12050,8 @@
     },
     "colHierarchyUsage": {
       "ct": ["CT_HierarchyUsage"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["hierarchyUsage"]
     },
     "colItems": {
       "ct": ["CT_colItems"],
@@ -11926,6 +12129,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["authorId", "ref"],
       "variantElements": ["commentPr", "text"]
     },
     "commentList": {
@@ -11989,6 +12193,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["priority"],
       "variantElements": ["extLst", "pivotAreas"]
     },
     "conditionalFormats": {
@@ -12052,6 +12257,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["id", "refreshedVersion"],
       "variantElements": ["dbPr", "extLst", "olapPr", "parameters", "textPr", "webPr"]
     },
     "connections": {
@@ -12090,6 +12296,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["r:id", "shapeId"],
       "variantElements": ["controlPr"]
     },
     "controlPr": {
@@ -12131,7 +12338,8 @@
     },
     "customPr": {
       "ct": ["CT_CustomProperty"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["name", "r:id"]
     },
     "customProperties": {
       "ct": ["CT_CustomProperties"],
@@ -12198,6 +12406,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["guid"],
       "variantElements": [
         "autoFilter",
         "colBreaks",
@@ -12231,6 +12440,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["activeSheetId", "guid", "name", "windowHeight", "windowWidth"],
       "variantElements": ["extLst"]
     },
     "customWorkbookViews": {
@@ -12253,6 +12463,7 @@
           "max": "unbounded"
         }
       ],
+      "requiredAttrs": ["v"],
       "variantElements": ["x"]
     },
     "dataBar": {
@@ -12291,6 +12502,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["fld"],
       "variantElements": ["extLst"]
     },
     "dataFields": {
@@ -12333,6 +12545,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["sqref"],
       "variantElements": ["formula1", "formula2"]
     },
     "dataValidations": {
@@ -12348,11 +12561,13 @@
     },
     "dateGroupItem": {
       "ct": ["CT_DateGroupItem"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["dateTimeGrouping", "year"]
     },
     "dbPr": {
       "ct": ["CT_DbPr"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["connection"]
     },
     "ddeItem": {
       "ct": ["CT_DdeItem"],
@@ -12385,11 +12600,13 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["ddeService", "ddeTopic"],
       "variantElements": ["ddeItems"]
     },
     "definedName": {
       "ct": ["CT_ExternalDefinedName", "CT_DefinedName"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["name"]
     },
     "definedNames": {
       "ct": ["CT_ExternalDefinedNames", "CT_DefinedNames"],
@@ -12404,11 +12621,13 @@
     },
     "deletedField": {
       "ct": ["CT_DeletedField"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["name"]
     },
     "dgm:adj": {
       "ct": ["CT_Adj"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["idx", "val"]
     },
     "dgm:adjLst": {
       "ct": ["CT_AdjLst"],
@@ -12435,6 +12654,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["type"],
       "variantElements": ["dgm:extLst", "dgm:param"]
     },
     "dgm:animLvl": {
@@ -12485,7 +12705,8 @@
     },
     "dgm:cat": {
       "ct": ["CT_CTCategory", "CT_Category", "CT_SDCategory"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["pri", "type"]
     },
     "dgm:catLst": {
       "ct": ["CT_CTCategories", "CT_Categories", "CT_SDCategories"],
@@ -12588,6 +12809,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["uniqueId"],
       "variantElements": ["dgm:catLst", "dgm:desc", "dgm:extLst", "dgm:title"]
     },
     "dgm:colorsDefHdrLst": {
@@ -12610,6 +12832,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["type"],
       "variantElements": ["dgm:extLst"]
     },
     "dgm:constrLst": {
@@ -12632,6 +12855,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["destId", "destOrd", "modelId", "srcId", "srcOrd"],
       "variantElements": ["dgm:extLst"]
     },
     "dgm:cxnLst": {
@@ -12678,7 +12902,8 @@
     },
     "dgm:desc": {
       "ct": ["CT_CTDescription", "CT_Description", "CT_SDDescription"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "dgm:dir": {
       "ct": ["CT_Direction"],
@@ -12835,6 +13060,7 @@
           "pick": "any"
         }
       ],
+      "requiredAttrs": ["func", "op", "val"],
       "variantElements": [
         "dgm:alg",
         "dgm:choose",
@@ -12926,6 +13152,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["uniqueId"],
       "variantElements": ["dgm:catLst", "dgm:desc", "dgm:extLst", "dgm:title"]
     },
     "dgm:layoutDefHdrLst": {
@@ -13005,7 +13232,8 @@
     },
     "dgm:param": {
       "ct": ["CT_Parameter"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["type", "val"]
     },
     "dgm:prSet": {
       "ct": ["CT_ElemPropSet"],
@@ -13119,6 +13347,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["modelId"],
       "variantElements": ["dgm:extLst", "dgm:prSet", "dgm:spPr", "dgm:t"]
     },
     "dgm:ptLst": {
@@ -13134,7 +13363,8 @@
     },
     "dgm:relIds": {
       "ct": ["CT_RelIds"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:cs", "r:dm", "r:lo", "r:qs"]
     },
     "dgm:resizeHandles": {
       "ct": ["CT_ResizeHandles"],
@@ -13149,6 +13379,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["type"],
       "variantElements": ["dgm:extLst"]
     },
     "dgm:ruleLst": {
@@ -13422,6 +13653,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["uniqueId"],
       "variantElements": ["dgm:catLst", "dgm:desc", "dgm:extLst", "dgm:title"]
     },
     "dgm:styleDefHdrLst": {
@@ -13474,6 +13706,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["name"],
       "variantElements": [
         "dgm:effectClrLst",
         "dgm:extLst",
@@ -13511,7 +13744,8 @@
     },
     "dgm:title": {
       "ct": ["CT_CTName", "CT_Name", "CT_SDName"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "dgm:txEffectClrLst": {
       "ct": ["CT_Colors"],
@@ -13823,11 +14057,13 @@
     },
     "drawing": {
       "ct": ["CT_Drawing"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "drawingHF": {
       "ct": ["CT_DrawingHF"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "dxf": {
       "ct": ["CT_Dxf"],
@@ -13883,7 +14119,8 @@
     },
     "dynamicFilter": {
       "ct": ["CT_DynamicFilter"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["type"]
     },
     "e": {
       "ct": ["CT_Error"],
@@ -13899,6 +14136,7 @@
           "max": "unbounded"
         }
       ],
+      "requiredAttrs": ["v"],
       "variantElements": ["tpls", "x"]
     },
     "end": {
@@ -13968,6 +14206,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["r:id"],
       "variantElements": ["definedNames", "sheetDataSet", "sheetNames"]
     },
     "externalLink": {
@@ -13989,7 +14228,8 @@
     },
     "externalReference": {
       "ct": ["CT_ExternalReference"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "externalReferences": {
       "ct": ["CT_ExternalReferences"],
@@ -14008,7 +14248,8 @@
     },
     "family": {
       "ct": ["CT_IntProperty", "CT_FontFamily"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "fgColor": {
       "ct": ["CT_Color"],
@@ -14016,7 +14257,8 @@
     },
     "field": {
       "ct": ["CT_Field"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["x"]
     },
     "fieldGroup": {
       "ct": ["CT_FieldGroup"],
@@ -14041,7 +14283,8 @@
     },
     "fieldUsage": {
       "ct": ["CT_FieldUsage"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["x"]
     },
     "fieldsUsage": {
       "ct": ["CT_FieldsUsage"],
@@ -14123,6 +14366,7 @@
           "pick": "one"
         }
       ],
+      "requiredAttrs": ["colId"],
       "variantElements": [
         "colorFilter",
         "customFilters",
@@ -14260,6 +14504,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["name"],
       "variantElements": ["bk", "extLst"]
     },
     "gradientFill": {
@@ -14282,6 +14527,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["caption", "name", "uniqueName"],
       "variantElements": ["groupMembers"]
     },
     "groupItems": {
@@ -14310,6 +14556,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["caption", "uniqueName"],
       "variantElements": ["extLst", "groups"]
     },
     "groupLevels": {
@@ -14325,7 +14572,8 @@
     },
     "groupMember": {
       "ct": ["CT_GroupMember"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["uniqueName"]
     },
     "groupMembers": {
       "ct": ["CT_GroupMembers"],
@@ -14368,6 +14616,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["dateTime", "guid", "maxSheetId", "r:id", "userName"],
       "variantElements": ["extLst", "reviewedList", "sheetIdMap"]
     },
     "headerFooter": {
@@ -14422,6 +14671,7 @@
           "max": "unbounded"
         }
       ],
+      "requiredAttrs": ["guid"],
       "variantElements": ["header"]
     },
     "horizontal": {
@@ -14437,7 +14687,8 @@
     },
     "hyperlink": {
       "ct": ["CT_Hyperlink"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["ref"]
     },
     "hyperlinks": {
       "ct": ["CT_Hyperlinks"],
@@ -14463,7 +14714,8 @@
     },
     "iconFilter": {
       "ct": ["CT_IconFilter"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["iconSet"]
     },
     "iconSet": {
       "ct": ["CT_IconSet"],
@@ -14478,7 +14730,8 @@
     },
     "ignoredError": {
       "ct": ["CT_IgnoredError"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["sqref"]
     },
     "ignoredErrors": {
       "ct": ["CT_IgnoredErrors"],
@@ -14509,7 +14762,8 @@
     },
     "inputCells": {
       "ct": ["CT_InputCells"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r", "val"]
     },
     "is": {
       "ct": ["CT_Rst"],
@@ -14554,11 +14808,13 @@
     },
     "k": {
       "ct": ["CT_MdxKPI"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["n", "np", "p"]
     },
     "kpi": {
       "ct": ["CT_PCDKPI"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["uniqueName", "value"]
     },
     "kpis": {
       "ct": ["CT_PCDKPIs"],
@@ -14621,15 +14877,18 @@
     },
     "legacyDrawing": {
       "ct": ["CT_LegacyDrawing"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "legacyDrawingHF": {
       "ct": ["CT_LegacyDrawing"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "location": {
       "ct": ["CT_Location"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["firstDataCol", "firstDataRow", "firstHeaderRow", "ref"]
     },
     "m": {
       "ct": ["CT_TableMissing", "CT_Missing"],
@@ -14700,7 +14959,8 @@
     },
     "m:argSz": {
       "ct": ["CT_Integer2"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:bar": {
       "ct": ["CT_Bar"],
@@ -14736,11 +14996,13 @@
     },
     "m:baseJc": {
       "ct": ["CT_YAlign"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:begChr": {
       "ct": ["CT_Char"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:borderBox": {
       "ct": ["CT_BorderBox"],
@@ -14885,23 +15147,28 @@
     },
     "m:cGp": {
       "ct": ["CT_UnSignedInteger"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:cGpRule": {
       "ct": ["CT_SpacingRule"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:cSp": {
       "ct": ["CT_UnSignedInteger"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:chr": {
       "ct": ["CT_Char"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:count": {
       "ct": ["CT_Integer255"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:ctrlPr": {
       "ct": ["CT_CtrlPr"],
@@ -15531,7 +15798,8 @@
     },
     "m:endChr": {
       "ct": ["CT_Char"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:eqArr": {
       "ct": ["CT_EqArr"],
@@ -15900,15 +16168,18 @@
     },
     "m:intLim": {
       "ct": ["CT_LimLoc"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:interSp": {
       "ct": ["CT_TwipsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:intraSp": {
       "ct": ["CT_TwipsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:jc": {
       "ct": ["CT_OMathJc"],
@@ -15916,7 +16187,8 @@
     },
     "m:lMargin": {
       "ct": ["CT_TwipsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:lim": {
       "ct": ["CT_OMathArg"],
@@ -16102,7 +16374,8 @@
     },
     "m:limLoc": {
       "ct": ["CT_LimLoc"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:limLow": {
       "ct": ["CT_LimLow"],
@@ -16369,7 +16642,8 @@
     },
     "m:mcJc": {
       "ct": ["CT_XAlign"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:mcPr": {
       "ct": ["CT_MCPr"],
@@ -16437,7 +16711,8 @@
     },
     "m:naryLim": {
       "ct": ["CT_LimLoc"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:naryPr": {
       "ct": ["CT_NaryPr"],
@@ -16928,15 +17203,18 @@
     },
     "m:pos": {
       "ct": ["CT_TopBot"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:postSp": {
       "ct": ["CT_TwipsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:preSp": {
       "ct": ["CT_TwipsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:r": {
       "ct": ["CT_R"],
@@ -17072,7 +17350,8 @@
     },
     "m:rMargin": {
       "ct": ["CT_TwipsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:rPr": {
       "ct": ["CT_RPR"],
@@ -17104,11 +17383,13 @@
     },
     "m:rSp": {
       "ct": ["CT_UnSignedInteger"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:rSpRule": {
       "ct": ["CT_SpacingRule"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:rad": {
       "ct": ["CT_Rad"],
@@ -17296,7 +17577,8 @@
     },
     "m:sepChr": {
       "ct": ["CT_Char"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:show": {
       "ct": ["CT_OnOff"],
@@ -17304,7 +17586,8 @@
     },
     "m:shp": {
       "ct": ["CT_Shp"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:smallFrac": {
       "ct": ["CT_OnOff"],
@@ -17712,15 +17995,18 @@
     },
     "m:type": {
       "ct": ["CT_FType"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:vertJc": {
       "ct": ["CT_TopBot"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:wrapIndent": {
       "ct": ["CT_TwipsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["m:val"]
     },
     "m:wrapRight": {
       "ct": ["CT_OnOff"],
@@ -17747,6 +18033,7 @@
           "max": "unbounded"
         }
       ],
+      "requiredAttrs": ["first"],
       "variantElements": ["tp"]
     },
     "map": {
@@ -17774,6 +18061,7 @@
           "pick": "one"
         }
       ],
+      "requiredAttrs": ["f", "n"],
       "variantElements": ["k", "ms", "p", "t"]
     },
     "mdxMetadata": {
@@ -17789,7 +18077,8 @@
     },
     "measureGroup": {
       "ct": ["CT_MeasureGroup"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["caption", "name"]
     },
     "measureGroups": {
       "ct": ["CT_MeasureGroups"],
@@ -17804,7 +18093,8 @@
     },
     "member": {
       "ct": ["CT_Member"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["name"]
     },
     "members": {
       "ct": ["CT_Members"],
@@ -17819,7 +18109,8 @@
     },
     "mergeCell": {
       "ct": ["CT_MergeCell"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["ref"]
     },
     "mergeCells": {
       "ct": ["CT_MergeCells"],
@@ -17894,7 +18185,8 @@
     },
     "metadataType": {
       "ct": ["CT_MetadataType"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["minSupportedVersion", "name"]
     },
     "metadataTypes": {
       "ct": ["CT_MetadataTypes"],
@@ -17909,7 +18201,8 @@
     },
     "mp": {
       "ct": ["CT_MemberProperty"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["field"]
     },
     "mpMap": {
       "ct": ["CT_X"],
@@ -17946,6 +18239,7 @@
           "max": "unbounded"
         }
       ],
+      "requiredAttrs": ["ns"],
       "variantElements": ["n"]
     },
     "n": {
@@ -17966,7 +18260,8 @@
     },
     "name": {
       "ct": ["CT_FontName"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "nc": {
       "ct": ["CT_Cell"],
@@ -18037,7 +18332,8 @@
     },
     "numFmt": {
       "ct": ["CT_NumFmt"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["formatCode", "numFmtId"]
     },
     "numFmts": {
       "ct": ["CT_NumFmts"],
@@ -18081,7 +18377,8 @@
     },
     "o:clippath": {
       "ct": ["CT_ClipPath"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["o:v"]
     },
     "o:colormenu": {
       "ct": ["CT_ColorMenu"],
@@ -18161,6 +18458,7 @@
           "max": "unbounded"
         }
       ],
+      "requiredAttrs": ["id"],
       "variantElements": ["o:proxy"]
     },
     "o:regrouptable": {
@@ -18388,7 +18686,8 @@
     },
     "oleItem": {
       "ct": ["CT_OleItem"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["name"]
     },
     "oleItems": {
       "ct": ["CT_OleItems"],
@@ -18410,6 +18709,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["progId", "r:id"],
       "variantElements": ["oleItems"]
     },
     "oleObject": {
@@ -18421,6 +18721,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["shapeId"],
       "variantElements": ["objectPr"]
     },
     "oleObjects": {
@@ -18436,7 +18737,8 @@
     },
     "oleSize": {
       "ct": ["CT_OleSize"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["ref"]
     },
     "outline": {
       "ct": ["CT_BooleanProperty"],
@@ -18448,7 +18750,8 @@
     },
     "p": {
       "ct": ["CT_MdxMemeberProp"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["n", "np"]
     },
     "p:anim": {
       "ct": ["CT_TLAnimateBehavior"],
@@ -18667,6 +18970,7 @@
           "pick": "one"
         }
       ],
+      "requiredAttrs": ["idx"],
       "variantElements": [
         "a:hslClr",
         "a:prstClr",
@@ -18682,7 +18986,8 @@
     },
     "p:bldDgm": {
       "ct": ["CT_TLBuildDiagram"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["grpId", "spid"]
     },
     "p:bldGraphic": {
       "ct": ["CT_TLGraphicalObjectBuild"],
@@ -18694,6 +18999,7 @@
           "pick": "one"
         }
       ],
+      "requiredAttrs": ["grpId", "spid"],
       "variantElements": ["p:bldAsOne", "p:bldSub"]
     },
     "p:bldLst": {
@@ -18710,7 +19016,8 @@
     },
     "p:bldOleChart": {
       "ct": ["CT_TLOleBuildChart"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["grpId", "spid"]
     },
     "p:bldP": {
       "ct": ["CT_TLBuildParagraph"],
@@ -18721,6 +19028,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["grpId", "spid"],
       "variantElements": ["p:tmplLst"]
     },
     "p:bldSub": {
@@ -18836,15 +19144,18 @@
     },
     "p:bold": {
       "ct": ["CT_EmbeddedFontDataId"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "p:boldItalic": {
       "ct": ["CT_EmbeddedFontDataId"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "p:boolVal": {
       "ct": ["CT_TLAnimVariantBooleanVal"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "p:browse": {
       "ct": ["CT_ShowInfoBrowse"],
@@ -18992,6 +19303,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["id", "name"],
       "variantElements": ["a:extLst", "a:hlinkClick", "a:hlinkHover"]
     },
     "p:cNvSpPr": {
@@ -19118,7 +19430,8 @@
     },
     "p:charRg": {
       "ct": ["CT_IndexRange"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["end", "st"]
     },
     "p:checker": {
       "ct": ["CT_OrientationTransition"],
@@ -19176,6 +19489,20 @@
           "min": 0,
           "max": 1
         }
+      ],
+      "requiredAttrs": [
+        "accent1",
+        "accent2",
+        "accent3",
+        "accent4",
+        "accent5",
+        "accent6",
+        "bg1",
+        "bg2",
+        "folHlink",
+        "hlink",
+        "tx1",
+        "tx2"
       ],
       "variantElements": ["a:extLst"]
     },
@@ -19262,6 +19589,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["authorId", "idx"],
       "variantElements": ["p:extLst", "p:pos", "p:text"]
     },
     "p:cmAuthor": {
@@ -19273,6 +19601,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["clrIdx", "id", "initials", "lastIdx", "name"],
       "variantElements": ["p:extLst"]
     },
     "p:cmAuthorLst": {
@@ -19326,7 +19655,8 @@
     },
     "p:contentPart": {
       "ct": ["CT_Rel"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "p:control": {
       "ct": ["CT_Control"],
@@ -19361,7 +19691,8 @@
     },
     "p:custData": {
       "ct": ["CT_CustomerData"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "p:custDataLst": {
       "ct": ["CT_CustomerDataList"],
@@ -19393,6 +19724,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["id"],
       "variantElements": ["p:extLst", "p:sldLst"]
     },
     "p:custShowLst": {
@@ -19616,7 +19948,8 @@
           "min": 0,
           "max": "unbounded"
         }
-      ]
+      ],
+      "requiredAttrs": ["uri"]
     },
     "p:extLst": {
       "ct": ["CT_ExtensionListModify", "CT_ExtensionList"],
@@ -19635,11 +19968,13 @@
     },
     "p:fltVal": {
       "ct": ["CT_TLAnimVariantFloatVal"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "p:font": {
       "ct": ["CT_TextFont"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["typeface"]
     },
     "p:from": {
       "ct": ["CT_Color", "CT_TLPoint"],
@@ -19707,7 +20042,8 @@
     },
     "p:gridSpacing": {
       "ct": ["CT_PositiveSize2D"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["cx", "cy"]
     },
     "p:grpSp": {
       "ct": ["CT_GroupShape"],
@@ -19848,6 +20184,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["r:id"],
       "variantElements": ["p:extLst"]
     },
     "p:handoutMasterIdLst": {
@@ -19874,7 +20211,8 @@
     },
     "p:hsl": {
       "ct": ["CT_TLByHslColorTransform"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["h", "l", "s"]
     },
     "p:htmlPubPr": {
       "ct": ["CT_HtmlPublishProperties"],
@@ -19891,19 +20229,23 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["r:id"],
       "variantElements": ["p:custShow", "p:extLst", "p:sldAll", "p:sldRg"]
     },
     "p:inkTgt": {
       "ct": ["CT_TLSubShapeId"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["spid"]
     },
     "p:intVal": {
       "ct": ["CT_TLAnimVariantIntegerVal"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "p:italic": {
       "ct": ["CT_EmbeddedFontDataId"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "p:iterate": {
       "ct": ["CT_TLIterateData"],
@@ -19919,7 +20261,8 @@
     },
     "p:kinsoku": {
       "ct": ["CT_Kinsoku"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["invalEndChars", "invalStChars"]
     },
     "p:kiosk": {
       "ct": ["CT_ShowInfoKiosk"],
@@ -20037,6 +20380,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["r:id"],
       "variantElements": ["p:extLst"]
     },
     "p:notesMasterIdLst": {
@@ -20125,7 +20469,8 @@
     },
     "p:notesSz": {
       "ct": ["CT_PositiveSize2D"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["cx", "cy"]
     },
     "p:notesTextViewPr": {
       "ct": ["CT_NotesTextViewProperties"],
@@ -20308,7 +20653,8 @@
     },
     "p:oleChartEl": {
       "ct": ["CT_TLOleChartTargetElement"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["type"]
     },
     "p:oleObj": {
       "ct": ["CT_OleObject"],
@@ -20329,7 +20675,8 @@
     },
     "p:origin": {
       "ct": ["CT_Point2D"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["x", "y"]
     },
     "p:otherStyle": {
       "ct": ["CT_TextListStyle"],
@@ -20427,7 +20774,8 @@
     },
     "p:pRg": {
       "ct": ["CT_IndexRange"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["end", "st"]
     },
     "p:par": {
       "ct": ["CT_TLTimeNodeParallel"],
@@ -20525,7 +20873,8 @@
     },
     "p:pos": {
       "ct": ["CT_Point2D"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["x", "y"]
     },
     "p:present": {
       "ct": ["CT_Empty"],
@@ -20708,7 +21057,8 @@
     },
     "p:rCtr": {
       "ct": ["CT_TLPoint"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["x", "y"]
     },
     "p:random": {
       "ct": ["CT_Empty"],
@@ -20720,23 +21070,28 @@
     },
     "p:regular": {
       "ct": ["CT_EmbeddedFontDataId"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "p:restoredLeft": {
       "ct": ["CT_NormalViewPortion"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["sz"]
     },
     "p:restoredTop": {
       "ct": ["CT_NormalViewPortion"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["sz"]
     },
     "p:rgb": {
       "ct": ["CT_TLByRgbColorTransform"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["b", "g", "r"]
     },
     "p:rtn": {
       "ct": ["CT_TLTriggerRuntimeNode"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "p:scale": {
       "ct": ["CT_Scale2D"],
@@ -20872,6 +21227,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["id", "r:id"],
       "variantElements": ["p:extLst"]
     },
     "p:sldIdLst": {
@@ -20930,6 +21286,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["r:id"],
       "variantElements": ["p:extLst"]
     },
     "p:sldLayoutIdLst": {
@@ -21018,6 +21375,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["r:id"],
       "variantElements": ["p:extLst"]
     },
     "p:sldMasterIdLst": {
@@ -21033,7 +21391,8 @@
     },
     "p:sldRg": {
       "ct": ["CT_IndexRange"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["end", "st"]
     },
     "p:sldSyncPr": {
       "ct": ["CT_SlideSyncProperties"],
@@ -21044,11 +21403,13 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["clientInsertedTime", "serverSldId", "serverSldModifiedTime"],
       "variantElements": ["p:extLst"]
     },
     "p:sldSz": {
       "ct": ["CT_SlideSize"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["cx", "cy"]
     },
     "p:sldTgt": {
       "ct": ["CT_Empty"],
@@ -21072,11 +21433,13 @@
     },
     "p:smartTags": {
       "ct": ["CT_SmartTags"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "p:snd": {
       "ct": ["CT_EmbeddedWAVAudioFile"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:embed"]
     },
     "p:sndAc": {
       "ct": ["CT_TransitionSoundAction"],
@@ -21092,7 +21455,8 @@
     },
     "p:sndTgt": {
       "ct": ["CT_EmbeddedWAVAudioFile"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:embed"]
     },
     "p:sorterViewPr": {
       "ct": ["CT_SlideSorterViewProperties"],
@@ -21223,6 +21587,7 @@
           "pick": "one"
         }
       ],
+      "requiredAttrs": ["spid"],
       "variantElements": ["p:bg", "p:graphicEl", "p:oleChartEl", "p:subSp", "p:txEl"]
     },
     "p:spTree": {
@@ -21290,7 +21655,8 @@
     },
     "p:strVal": {
       "ct": ["CT_TLAnimVariantStringVal"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "p:strips": {
       "ct": ["CT_CornerDirectionTransition"],
@@ -21324,7 +21690,8 @@
     },
     "p:subSp": {
       "ct": ["CT_TLSubShapeId"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["spid"]
     },
     "p:subTnLst": {
       "ct": ["CT_TimeNodeList"],
@@ -21368,7 +21735,8 @@
     },
     "p:tag": {
       "ct": ["CT_StringTag"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["name", "val"]
     },
     "p:tagLst": {
       "ct": ["CT_TagList"],
@@ -21383,7 +21751,8 @@
     },
     "p:tags": {
       "ct": ["CT_TagsData"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "p:tav": {
       "ct": ["CT_TLTimeAnimateValue"],
@@ -21515,11 +21884,13 @@
     },
     "p:tmAbs": {
       "ct": ["CT_TLIterateIntervalTime"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "p:tmPct": {
       "ct": ["CT_TLIterateIntervalPercentage"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "p:tmpl": {
       "ct": ["CT_TLTemplate"],
@@ -21545,7 +21916,8 @@
     },
     "p:tn": {
       "ct": ["CT_TLTriggerTimeNodeID"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "p:tnLst": {
       "ct": ["CT_TimeNodeList"],
@@ -21886,6 +22258,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["fld"],
       "variantElements": ["extLst"]
     },
     "pageFields": {
@@ -21901,11 +22274,13 @@
     },
     "pageItem": {
       "ct": ["CT_PageItem"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["name"]
     },
     "pageMargins": {
       "ct": ["CT_PageMargins"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["bottom", "footer", "header", "left", "right", "top"]
     },
     "pageSetUpPr": {
       "ct": ["CT_PageSetUpPr"],
@@ -21963,7 +22338,8 @@
     },
     "phoneticPr": {
       "ct": ["CT_PhoneticPr"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["fontId"]
     },
     "pic:blipFill": {
       "ct": ["CT_BlipFillProperties"],
@@ -22022,6 +22398,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["id", "name"],
       "variantElements": ["a:extLst", "a:hlinkClick", "a:hlinkHover"]
     },
     "pic:nvPicPr": {
@@ -22135,7 +22512,8 @@
     },
     "picture": {
       "ct": ["CT_SheetBackgroundPicture"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "pivotArea": {
       "ct": ["CT_PivotArea"],
@@ -22166,7 +22544,8 @@
     },
     "pivotCache": {
       "ct": ["CT_PivotCache"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["cacheId", "r:id"]
     },
     "pivotCacheDefinition": {
       "ct": ["CT_PivotCacheDefinition"],
@@ -22432,6 +22811,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["cacheId", "dataCaption", "name"],
       "variantElements": [
         "chartFormats",
         "colFields",
@@ -22469,6 +22849,7 @@
           "max": "unbounded"
         }
       ],
+      "requiredAttrs": ["name", "sqref"],
       "variantElements": ["securityDescriptor"]
     },
     "protectedRanges": {
@@ -22503,6 +22884,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["mdx"],
       "variantElements": ["tpls"]
     },
     "queryCache": {
@@ -22530,6 +22912,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["connectionId", "name"],
       "variantElements": ["extLst", "queryTableRefresh"]
     },
     "queryTableDeletedFields": {
@@ -22552,6 +22935,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["id"],
       "variantElements": ["extLst"]
     },
     "queryTableFields": {
@@ -22609,7 +22993,8 @@
     },
     "rFont": {
       "ct": ["CT_FontName"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "rPh": {
       "ct": ["CT_PhoneticRun"],
@@ -22620,6 +23005,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["eb", "sb"],
       "variantElements": ["t"]
     },
     "rPr": {
@@ -22668,7 +23054,8 @@
     },
     "raf": {
       "ct": ["CT_RevisionAutoFormatting"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["ref", "sheetId"]
     },
     "rangePr": {
       "ct": ["CT_RangePr"],
@@ -22691,7 +23078,8 @@
     },
     "rc": {
       "ct": ["CT_MetadataRecord"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["t", "v"]
     },
     "rcc": {
       "ct": ["CT_RevisionCellChange"],
@@ -22722,19 +23110,23 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["rId", "sId"],
       "variantElements": ["extLst", "nc", "ndxf", "oc", "odxf"]
     },
     "rcft": {
       "ct": ["CT_RevisionConflict"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["rId"]
     },
     "rcmt": {
       "ct": ["CT_RevisionComment"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["author", "cell", "guid", "sheetId"]
     },
     "rcv": {
       "ct": ["CT_RevisionCustomView"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["action", "guid"]
     },
     "rdn": {
       "ct": ["CT_RevisionDefinedName"],
@@ -22755,6 +23147,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["name", "rId"],
       "variantElements": ["extLst", "formula", "oldFormula"]
     },
     "reference": {
@@ -22786,7 +23179,8 @@
     },
     "reviewed": {
       "ct": ["CT_Reviewed"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["rId"]
     },
     "reviewedList": {
       "ct": ["CT_ReviewedRevisions"],
@@ -22851,6 +23245,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["sheetId", "sqref"],
       "variantElements": ["dxf", "extLst"]
     },
     "rgbColor": {
@@ -22870,7 +23265,8 @@
     },
     "ris": {
       "ct": ["CT_RevisionInsertSheet"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["name", "rId", "sheetId", "sheetPosition"]
     },
     "rm": {
       "ct": ["CT_RevisionMove"],
@@ -22882,6 +23278,7 @@
           "pick": "any"
         }
       ],
+      "requiredAttrs": ["destination", "rId", "sheetId", "source"],
       "variantElements": ["rcc", "rfmt", "undo"]
     },
     "row": {
@@ -22935,7 +23332,8 @@
     },
     "rowHierarchyUsage": {
       "ct": ["CT_HierarchyUsage"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["hierarchyUsage"]
     },
     "rowItems": {
       "ct": ["CT_rowItems"],
@@ -22950,7 +23348,8 @@
     },
     "rqt": {
       "ct": ["CT_RevisionQueryTableField"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["fieldId", "ref", "sheetId"]
     },
     "rrc": {
       "ct": ["CT_RevisionRowColumn"],
@@ -22962,6 +23361,7 @@
           "pick": "any"
         }
       ],
+      "requiredAttrs": ["action", "rId", "ref", "sId"],
       "variantElements": ["rcc", "rfmt", "undo"]
     },
     "rsnm": {
@@ -22973,6 +23373,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["newName", "oldName", "rId", "sheetId"],
       "variantElements": ["extLst"]
     },
     "s": {
@@ -22989,6 +23390,7 @@
           "max": "unbounded"
         }
       ],
+      "requiredAttrs": ["v"],
       "variantElements": ["tpls", "x"]
     },
     "scenario": {
@@ -23000,6 +23402,7 @@
           "max": "unbounded"
         }
       ],
+      "requiredAttrs": ["name"],
       "variantElements": ["inputCells"]
     },
     "scenarios": {
@@ -23015,7 +23418,8 @@
     },
     "scheme": {
       "ct": ["CT_FontScheme"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "selection": {
       "ct": ["CT_Selection"],
@@ -23050,6 +23454,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["maxRank", "setDefinition"],
       "variantElements": ["sortByTuple", "tpls"]
     },
     "sets": {
@@ -23081,7 +23486,8 @@
     },
     "sheet": {
       "ct": ["CT_Sheet"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["name", "r:id", "sheetId"]
     },
     "sheetCalcPr": {
       "ct": ["CT_SheetCalcPr"],
@@ -23111,11 +23517,13 @@
     },
     "sheetFormatPr": {
       "ct": ["CT_SheetFormatPr"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["defaultRowHeight"]
     },
     "sheetId": {
       "ct": ["CT_SheetId"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "sheetIdMap": {
       "ct": ["CT_SheetIdMap"],
@@ -23192,6 +23600,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["workbookViewId"],
       "variantElements": ["extLst", "pane", "pivotSelection", "selection"]
     },
     "sheetViews": {
@@ -23261,6 +23670,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["connectionId", "id", "r"],
       "variantElements": ["extLst", "xmlCellPr"]
     },
     "singleXmlCells": {
@@ -23332,7 +23742,8 @@
     },
     "sortCondition": {
       "ct": ["CT_SortCondition"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["ref"]
     },
     "sortState": {
       "ct": ["CT_SortState"],
@@ -23348,6 +23759,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["ref"],
       "variantElements": ["extLst", "sortCondition"]
     },
     "sst": {
@@ -23386,6 +23798,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["position"],
       "variantElements": ["color"]
     },
     "strike": {
@@ -23467,7 +23880,8 @@
     },
     "sz": {
       "ct": ["CT_FontSize"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "t": {
       "ct": ["CT_MdxTuple"],
@@ -23513,6 +23927,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["displayName", "id", "ref"],
       "variantElements": ["autoFilter", "extLst", "sortState", "tableColumns", "tableStyleInfo"]
     },
     "tableColumn": {
@@ -23539,6 +23954,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["id", "name"],
       "variantElements": ["calculatedColumnFormula", "extLst", "totalsRowFormula", "xmlColumnPr"]
     },
     "tableColumns": {
@@ -23554,7 +23970,8 @@
     },
     "tablePart": {
       "ct": ["CT_TablePart"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "tableParts": {
       "ct": ["CT_TableParts"],
@@ -23576,11 +23993,13 @@
           "max": "unbounded"
         }
       ],
+      "requiredAttrs": ["name"],
       "variantElements": ["tableStyleElement"]
     },
     "tableStyleElement": {
       "ct": ["CT_TableStyleElement"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["type"]
     },
     "tableStyleInfo": {
       "ct": ["CT_TableStyleInfo"],
@@ -23674,7 +24093,8 @@
     },
     "top10": {
       "ct": ["CT_Top10"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "totalsRowFormula": {
       "ct": ["CT_TableFormula"],
@@ -23703,7 +24123,8 @@
     },
     "tpl": {
       "ct": ["CT_Tuple"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["item"]
     },
     "tpls": {
       "ct": ["CT_Tuples"],
@@ -23718,7 +24139,8 @@
     },
     "tr": {
       "ct": ["CT_VolTopicRef"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r", "s"]
     },
     "tupleCache": {
       "ct": ["CT_TupleCache"],
@@ -23757,7 +24179,8 @@
     },
     "undo": {
       "ct": ["CT_UndoInfo"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["dr", "exp", "index"]
     },
     "userInfo": {
       "ct": ["CT_SharedUser"],
@@ -23768,6 +24191,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["dateTime", "guid", "id", "name"],
       "variantElements": ["extLst"]
     },
     "users": {
@@ -24808,7 +25232,8 @@
     },
     "vertAlign": {
       "ct": ["CT_VerticalAlignFontProperty"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["val"]
     },
     "vertical": {
       "ct": ["CT_BorderPr"],
@@ -24830,6 +25255,7 @@
           "max": "unbounded"
         }
       ],
+      "requiredAttrs": ["type"],
       "variantElements": ["main"]
     },
     "volTypes": {
@@ -24911,6 +25337,7 @@
           "max": 9
         }
       ],
+      "requiredAttrs": ["w:abstractNumId"],
       "variantElements": [
         "w:lvl",
         "w:multiLevelType",
@@ -24923,7 +25350,8 @@
     },
     "w:abstractNumId": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:active": {
       "ct": ["CT_OnOff"],
@@ -24931,15 +25359,18 @@
     },
     "w:activeRecord": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:activeWritingStyle": {
       "ct": ["CT_WritingStyle"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:appName", "w:checkStyle", "w:dllVersion", "w:lang", "w:vendorID"]
     },
     "w:addressFieldName": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:adjustLineHeightInTable": {
       "ct": ["CT_OnOff"],
@@ -24951,11 +25382,13 @@
     },
     "w:alias": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:aliases": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:alignBordersAndEdges": {
       "ct": ["CT_OnOff"],
@@ -24997,7 +25430,8 @@
     },
     "w:altName": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:alwaysMergeEmptyNamespace": {
       "ct": ["CT_OnOff"],
@@ -25017,19 +25451,23 @@
     },
     "w:attachedSchema": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:attachedTemplate": {
       "ct": ["CT_Rel"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "w:attr": {
       "ct": ["CT_Attr"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:name", "w:val"]
     },
     "w:autoCaption": {
       "ct": ["CT_AutoCaption"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:caption", "w:name"]
     },
     "w:autoCaptions": {
       "ct": ["CT_AutoCaptions"],
@@ -25107,11 +25545,13 @@
     },
     "w:bar": {
       "ct": ["CT_Border"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:basedOn": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:bdo": {
       "ct": ["CT_BdoContentRun"],
@@ -25235,11 +25675,13 @@
     },
     "w:bdr": {
       "ct": ["CT_Border"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:behavior": {
       "ct": ["CT_DocPartBehavior"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:behaviors": {
       "ct": ["CT_DocPartBehaviors"],
@@ -25255,7 +25697,8 @@
     },
     "w:between": {
       "ct": ["CT_Border"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:bibliography": {
       "ct": ["CT_Empty"],
@@ -25397,7 +25840,8 @@
     },
     "w:bookFoldPrintingSheets": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:bookFoldRevPrinting": {
       "ct": ["CT_OnOff"],
@@ -25405,11 +25849,13 @@
     },
     "w:bookmarkEnd": {
       "ct": ["CT_MarkupRange"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:id"]
     },
     "w:bookmarkStart": {
       "ct": ["CT_Bookmark"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:id", "w:name"]
     },
     "w:bordersDoNotSurroundFooter": {
       "ct": ["CT_OnOff"],
@@ -25449,7 +25895,8 @@
     },
     "w:caption": {
       "ct": ["CT_Caption"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:name"]
     },
     "w:captions": {
       "ct": ["CT_Captions"],
@@ -25485,19 +25932,23 @@
     },
     "w:cellDel": {
       "ct": ["CT_TrackChange"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:author", "w:id"]
     },
     "w:cellIns": {
       "ct": ["CT_TrackChange"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:author", "w:id"]
     },
     "w:cellMerge": {
       "ct": ["CT_CellMergeTrackChange"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:author", "w:id"]
     },
     "w:characterSpacingControl": {
       "ct": ["CT_CharacterSpacing"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:charset": {
       "ct": ["CT_Charset"],
@@ -25527,7 +25978,8 @@
     },
     "w:checkErrors": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:checked": {
       "ct": ["CT_OnOff"],
@@ -25539,7 +25991,8 @@
     },
     "w:clickAndTypeStyle": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:clrSchemeMapping": {
       "ct": ["CT_ColorSchemeMapping"],
@@ -25555,11 +26008,13 @@
     },
     "w:colDelim": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:color": {
       "ct": ["CT_Color"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:cols": {
       "ct": ["CT_Columns"],
@@ -25574,7 +26029,8 @@
     },
     "w:column": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:comboBox": {
       "ct": ["CT_SdtComboBox"],
@@ -25662,6 +26118,7 @@
           ]
         }
       ],
+      "requiredAttrs": ["w:author", "w:id"],
       "variantElements": [
         "m:oMath",
         "m:oMathPara",
@@ -25697,15 +26154,18 @@
     },
     "w:commentRangeEnd": {
       "ct": ["CT_MarkupRange"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:id"]
     },
     "w:commentRangeStart": {
       "ct": ["CT_MarkupRange"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:id"]
     },
     "w:commentReference": {
       "ct": ["CT_Markup"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:id"]
     },
     "w:comments": {
       "ct": ["CT_Comments"],
@@ -26127,15 +26587,18 @@
     },
     "w:connectString": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:consecutiveHyphenLimit": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:contentPart": {
       "ct": ["CT_Rel"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "w:contextualSpacing": {
       "ct": ["CT_OnOff"],
@@ -26249,6 +26712,7 @@
           ]
         }
       ],
+      "requiredAttrs": ["w:element"],
       "variantElements": [
         "m:oMath",
         "m:oMathPara",
@@ -26293,35 +26757,43 @@
     },
     "w:customXmlDelRangeEnd": {
       "ct": ["CT_Markup"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:id"]
     },
     "w:customXmlDelRangeStart": {
       "ct": ["CT_TrackChange"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:author", "w:id"]
     },
     "w:customXmlInsRangeEnd": {
       "ct": ["CT_Markup"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:id"]
     },
     "w:customXmlInsRangeStart": {
       "ct": ["CT_TrackChange"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:author", "w:id"]
     },
     "w:customXmlMoveFromRangeEnd": {
       "ct": ["CT_Markup"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:id"]
     },
     "w:customXmlMoveFromRangeStart": {
       "ct": ["CT_TrackChange"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:author", "w:id"]
     },
     "w:customXmlMoveToRangeEnd": {
       "ct": ["CT_Markup"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:id"]
     },
     "w:customXmlMoveToRangeStart": {
       "ct": ["CT_TrackChange"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:author", "w:id"]
     },
     "w:customXmlPr": {
       "ct": ["CT_CustomXmlPr"],
@@ -26341,15 +26813,18 @@
     },
     "w:dataBinding": {
       "ct": ["CT_DataBinding"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:storeItemID", "w:xpath"]
     },
     "w:dataSource": {
       "ct": ["CT_Rel"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "w:dataType": {
       "ct": ["CT_MailMergeDataType"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:date": {
       "ct": ["CT_SdtDate"],
@@ -26379,7 +26854,8 @@
     },
     "w:dateFormat": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:dayLong": {
       "ct": ["CT_Empty"],
@@ -26412,7 +26888,8 @@
     },
     "w:decimalSymbol": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:default": {
       "ct": ["CT_OnOff", "CT_DecimalNumber", "CT_String"],
@@ -26420,11 +26897,13 @@
     },
     "w:defaultTabStop": {
       "ct": ["CT_TwipsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:defaultTableStyle": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:del": {
       "ct": ["CT_MathCtrlDel", "CT_RPrChange", "CT_TrackChange", "CT_RunTrackChange"],
@@ -26545,6 +27024,7 @@
           ]
         }
       ],
+      "requiredAttrs": ["w:author", "w:id"],
       "variantElements": [
         "m:acc",
         "m:bar",
@@ -26610,11 +27090,13 @@
     },
     "w:description": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:destination": {
       "ct": ["CT_MailMergeDest"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:dir": {
       "ct": ["CT_DirContentRun"],
@@ -26750,11 +27232,13 @@
     },
     "w:displayHorizontalDrawingGridEvery": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:displayVerticalDrawingGridEvery": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:div": {
       "ct": ["CT_Div"],
@@ -26800,6 +27284,7 @@
           "max": "unbounded"
         }
       ],
+      "requiredAttrs": ["w:id"],
       "variantElements": [
         "w:blockQuote",
         "w:bodyDiv",
@@ -26839,7 +27324,8 @@
     },
     "w:divId": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:divs": {
       "ct": ["CT_Divs"],
@@ -27135,11 +27621,13 @@
     },
     "w:docPartCategory": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:docPartGallery": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:docPartList": {
       "ct": ["CT_SdtDocPart"],
@@ -27250,7 +27738,8 @@
     },
     "w:docVar": {
       "ct": ["CT_DocVar"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:name", "w:val"]
     },
     "w:docVars": {
       "ct": ["CT_DocVars"],
@@ -27285,7 +27774,8 @@
     },
     "w:documentType": {
       "ct": ["CT_DocType"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:drawing": {
       "ct": ["CT_Drawing"],
@@ -27301,19 +27791,23 @@
     },
     "w:drawingGridHorizontalOrigin": {
       "ct": ["CT_TwipsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:drawingGridHorizontalSpacing": {
       "ct": ["CT_TwipsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:drawingGridVerticalOrigin": {
       "ct": ["CT_TwipsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:drawingGridVerticalSpacing": {
       "ct": ["CT_TwipsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:dropDownList": {
       "ct": ["CT_SdtDropDownList"],
@@ -27340,27 +27834,33 @@
     },
     "w:effect": {
       "ct": ["CT_TextEffect"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:em": {
       "ct": ["CT_Em"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:embedBold": {
       "ct": ["CT_FontRel"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "w:embedBoldItalic": {
       "ct": ["CT_FontRel"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "w:embedItalic": {
       "ct": ["CT_FontRel"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "w:embedRegular": {
       "ct": ["CT_FontRel"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "w:embedSystemFonts": {
       "ct": ["CT_OnOff"],
@@ -27380,7 +27880,8 @@
     },
     "w:encoding": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:end": {
       "ct": ["CT_Border", "CT_TblWidth"],
@@ -27461,6 +27962,7 @@
           ]
         }
       ],
+      "requiredAttrs": ["w:id"],
       "variantElements": [
         "m:oMath",
         "m:oMathPara",
@@ -27531,7 +28033,8 @@
     },
     "w:endnoteReference": {
       "ct": ["CT_FtnEdnRef"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:id"]
     },
     "w:endnotes": {
       "ct": ["CT_Endnotes"],
@@ -27546,7 +28049,8 @@
     },
     "w:entryMacro": {
       "ct": ["CT_MacroName"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:equation": {
       "ct": ["CT_Empty"],
@@ -27558,7 +28062,8 @@
     },
     "w:exitMacro": {
       "ct": ["CT_MacroName"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:fHdr": {
       "ct": ["CT_OnOff"],
@@ -27566,7 +28071,8 @@
     },
     "w:family": {
       "ct": ["CT_FontFamily"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:ffData": {
       "ct": ["CT_FFData"],
@@ -27663,7 +28169,8 @@
     },
     "w:fitText": {
       "ct": ["CT_FitText"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:flatBorders": {
       "ct": ["CT_OnOff"],
@@ -27679,6 +28186,7 @@
           "pick": "one"
         }
       ],
+      "requiredAttrs": ["w:fldCharType"],
       "variantElements": ["w:ffData", "w:fldData", "w:numberingChange"]
     },
     "w:fldData": {
@@ -27773,6 +28281,7 @@
           ]
         }
       ],
+      "requiredAttrs": ["w:instr"],
       "variantElements": [
         "m:oMath",
         "m:oMathPara",
@@ -27870,6 +28379,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["w:name"],
       "variantElements": [
         "w:altName",
         "w:charset",
@@ -27897,7 +28407,8 @@
     },
     "w:footerReference": {
       "ct": ["CT_HdrFtrRef"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id", "w:type"]
     },
     "w:footnote": {
       "ct": ["CT_FtnEdnSepRef", "CT_FtnEdn"],
@@ -27974,6 +28485,7 @@
           ]
         }
       ],
+      "requiredAttrs": ["w:id"],
       "variantElements": [
         "m:oMath",
         "m:oMathPara",
@@ -28048,7 +28560,8 @@
     },
     "w:footnoteReference": {
       "ct": ["CT_FtnEdnRef"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:id"]
     },
     "w:footnotes": {
       "ct": ["CT_Footnotes"],
@@ -28075,7 +28588,8 @@
     },
     "w:format": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:formsDesign": {
       "ct": ["CT_OnOff"],
@@ -28150,7 +28664,8 @@
     },
     "w:frameLayout": {
       "ct": ["CT_FrameLayout"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:framePr": {
       "ct": ["CT_FramePr"],
@@ -28331,7 +28846,8 @@
     },
     "w:gallery": {
       "ct": ["CT_DocPartGallery"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:glossaryDocument": {
       "ct": ["CT_GlossaryDocument"],
@@ -28351,11 +28867,13 @@
     },
     "w:gridAfter": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:gridBefore": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:gridCol": {
       "ct": ["CT_TblGridCol"],
@@ -28363,7 +28881,8 @@
     },
     "w:gridSpan": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:group": {
       "ct": ["CT_Empty"],
@@ -28505,15 +29024,18 @@
     },
     "w:header": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:headerReference": {
       "ct": ["CT_HdrFtrRef"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id", "w:type"]
     },
     "w:headerSource": {
       "ct": ["CT_Rel"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "w:headers": {
       "ct": ["CT_Headers"],
@@ -28548,19 +29070,23 @@
     },
     "w:highlight": {
       "ct": ["CT_Highlight"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:hps": {
       "ct": ["CT_HpsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:hpsBaseText": {
       "ct": ["CT_HpsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:hpsRaise": {
       "ct": ["CT_HpsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:hyperlink": {
       "ct": ["CT_Hyperlink"],
@@ -28684,7 +29210,8 @@
     },
     "w:hyphenationZone": {
       "ct": ["CT_TwipsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:i": {
       "ct": ["CT_OnOff"],
@@ -28696,7 +29223,8 @@
     },
     "w:id": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:ignoreMixedContent": {
       "ct": ["CT_OnOff"],
@@ -28704,7 +29232,8 @@
     },
     "w:ilvl": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:imprint": {
       "ct": ["CT_OnOff"],
@@ -28833,6 +29362,7 @@
           ]
         }
       ],
+      "requiredAttrs": ["w:author", "w:id"],
       "variantElements": [
         "m:acc",
         "m:bar",
@@ -28890,11 +29420,13 @@
     },
     "w:insideH": {
       "ct": ["CT_Border"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:insideV": {
       "ct": ["CT_Border"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:instrText": {
       "ct": ["CT_Text"],
@@ -28906,7 +29438,8 @@
     },
     "w:jc": {
       "ct": ["CT_Jc", "CT_JcTable"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:keepLines": {
       "ct": ["CT_OnOff"],
@@ -28918,7 +29451,8 @@
     },
     "w:kern": {
       "ct": ["CT_HpsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:kinsoku": {
       "ct": ["CT_OnOff"],
@@ -28926,7 +29460,8 @@
     },
     "w:label": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:lang": {
       "ct": ["CT_Language"],
@@ -28965,7 +29500,8 @@
     },
     "w:lid": {
       "ct": ["CT_Lang"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:lineWrapLikeWord6": {
       "ct": ["CT_OnOff"],
@@ -28973,7 +29509,8 @@
     },
     "w:link": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:linkStyles": {
       "ct": ["CT_OnOff"],
@@ -28989,7 +29526,8 @@
     },
     "w:listEntry": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:listItem": {
       "ct": ["CT_SdtListItem"],
@@ -28997,7 +29535,8 @@
     },
     "w:listSeparator": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:lnNumType": {
       "ct": ["CT_LineNumber"],
@@ -29013,11 +29552,13 @@
     },
     "w:longDesc": {
       "ct": ["CT_Rel"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "w:lsdException": {
       "ct": ["CT_LsdException"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:name"]
     },
     "w:lvl": {
       "ct": ["CT_Lvl"],
@@ -29083,6 +29624,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["w:ilvl"],
       "variantElements": [
         "w:isLgl",
         "w:legacy",
@@ -29100,7 +29642,8 @@
     },
     "w:lvlJc": {
       "ct": ["CT_Jc"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:lvlOverride": {
       "ct": ["CT_NumLvl"],
@@ -29116,15 +29659,18 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["w:ilvl"],
       "variantElements": ["w:lvl", "w:startOverride"]
     },
     "w:lvlPicBulletId": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:lvlRestart": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:lvlText": {
       "ct": ["CT_LevelText"],
@@ -29239,39 +29785,48 @@
     },
     "w:mailSubject": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:mainDocumentType": {
       "ct": ["CT_MailMergeDocType"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:mappedName": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:marBottom": {
       "ct": ["CT_SignedTwipsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:marH": {
       "ct": ["CT_PixelsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:marLeft": {
       "ct": ["CT_SignedTwipsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:marRight": {
       "ct": ["CT_SignedTwipsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:marTop": {
       "ct": ["CT_SignedTwipsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:marW": {
       "ct": ["CT_PixelsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:matchSrc": {
       "ct": ["CT_OnOff"],
@@ -29279,7 +29834,8 @@
     },
     "w:maxLength": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:mirrorIndents": {
       "ct": ["CT_OnOff"],
@@ -29416,6 +29972,7 @@
           ]
         }
       ],
+      "requiredAttrs": ["w:author", "w:id"],
       "variantElements": [
         "m:acc",
         "m:bar",
@@ -29472,11 +30029,13 @@
     },
     "w:moveFromRangeEnd": {
       "ct": ["CT_MarkupRange"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:id"]
     },
     "w:moveFromRangeStart": {
       "ct": ["CT_MoveBookmark"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:author", "w:date", "w:id", "w:name"]
     },
     "w:moveTo": {
       "ct": ["CT_TrackChange", "CT_RunTrackChange"],
@@ -29597,6 +30156,7 @@
           ]
         }
       ],
+      "requiredAttrs": ["w:author", "w:id"],
       "variantElements": [
         "m:acc",
         "m:bar",
@@ -29653,19 +30213,23 @@
     },
     "w:moveToRangeEnd": {
       "ct": ["CT_MarkupRange"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:id"]
     },
     "w:moveToRangeStart": {
       "ct": ["CT_MoveBookmark"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:author", "w:date", "w:id", "w:name"]
     },
     "w:movie": {
       "ct": ["CT_Rel"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "w:multiLevelType": {
       "ct": ["CT_MultiLevelType"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:mwSmallCaps": {
       "ct": ["CT_OnOff"],
@@ -29677,7 +30241,8 @@
     },
     "w:next": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:noBorder": {
       "ct": ["CT_OnOff"],
@@ -29705,11 +30270,13 @@
     },
     "w:noLineBreaksAfter": {
       "ct": ["CT_Kinsoku"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:lang", "w:val"]
     },
     "w:noLineBreaksBefore": {
       "ct": ["CT_Kinsoku"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:lang", "w:val"]
     },
     "w:noProof": {
       "ct": ["CT_OnOff"],
@@ -29741,7 +30308,8 @@
     },
     "w:nsid": {
       "ct": ["CT_LongHexNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:num": {
       "ct": ["CT_Num"],
@@ -29757,19 +30325,23 @@
           "max": 9
         }
       ],
+      "requiredAttrs": ["w:numId"],
       "variantElements": ["w:abstractNumId", "w:lvlOverride"]
     },
     "w:numFmt": {
       "ct": ["CT_NumFmt"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:numId": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:numIdMacAtCleanup": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:numPicBullet": {
       "ct": ["CT_NumPicBullet"],
@@ -29781,6 +30353,7 @@
           "pick": "one"
         }
       ],
+      "requiredAttrs": ["w:numPicBulletId"],
       "variantElements": ["w:drawing", "w:pict"]
     },
     "w:numPr": {
@@ -29811,15 +30384,18 @@
     },
     "w:numRestart": {
       "ct": ["CT_NumRestart"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:numStart": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:numStyleLink": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:numbering": {
       "ct": ["CT_Numbering"],
@@ -29849,7 +30425,8 @@
     },
     "w:numberingChange": {
       "ct": ["CT_TrackChangeNumbering"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:author", "w:id"]
     },
     "w:oMath": {
       "ct": ["CT_OnOff"],
@@ -29886,11 +30463,13 @@
     },
     "w:objectEmbed": {
       "ct": ["CT_ObjectEmbed"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "w:objectLink": {
       "ct": ["CT_ObjectLink"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id", "w:updateMode"]
     },
     "w:odso": {
       "ct": ["CT_Odso"],
@@ -29957,7 +30536,8 @@
     },
     "w:outlineLvl": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:overflowPunct": {
       "ct": ["CT_OnOff"],
@@ -30357,6 +30937,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["w:author", "w:id"],
       "variantElements": ["w:pPr"]
     },
     "w:pPrDefault": {
@@ -30372,7 +30953,8 @@
     },
     "w:pStyle": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:pageBreakBefore": {
       "ct": ["CT_OnOff"],
@@ -30380,7 +30962,8 @@
     },
     "w:panose1": {
       "ct": ["CT_Panose"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:paperSrc": {
       "ct": ["CT_PaperSource"],
@@ -30388,11 +30971,13 @@
     },
     "w:permEnd": {
       "ct": ["CT_Perm"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:id"]
     },
     "w:permStart": {
       "ct": ["CT_PermStart"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:id"]
     },
     "w:personal": {
       "ct": ["CT_OnOff"],
@@ -30434,7 +31019,16 @@
     },
     "w:pgMar": {
       "ct": ["CT_PageMar"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": [
+        "w:bottom",
+        "w:footer",
+        "w:gutter",
+        "w:header",
+        "w:left",
+        "w:right",
+        "w:top"
+      ]
     },
     "w:pgNum": {
       "ct": ["CT_Empty"],
@@ -30482,11 +31076,13 @@
     },
     "w:pitch": {
       "ct": ["CT_Pitch"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:pixelsPerInch": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:placeholder": {
       "ct": ["CT_Placeholder", "CT_String"],
@@ -30501,11 +31097,13 @@
     },
     "w:pos": {
       "ct": ["CT_FtnPos", "CT_EdnPos"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:position": {
       "ct": ["CT_SignedHpsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:printBodyTextBeforeHeader": {
       "ct": ["CT_OnOff"],
@@ -30533,11 +31131,13 @@
     },
     "w:printerSettings": {
       "ct": ["CT_Rel"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "w:proofErr": {
       "ct": ["CT_ProofErr"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:type"]
     },
     "w:proofState": {
       "ct": ["CT_Proof"],
@@ -30545,7 +31145,8 @@
     },
     "w:ptab": {
       "ct": ["CT_PTab"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:alignment", "w:leader", "w:relativeTo"]
     },
     "w:qFormat": {
       "ct": ["CT_OnOff"],
@@ -30553,7 +31154,8 @@
     },
     "w:query": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:r": {
       "ct": ["CT_R"],
@@ -30776,6 +31378,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["w:author", "w:id"],
       "variantElements": ["w:rPr"]
     },
     "w:rPrDefault": {
@@ -30791,11 +31394,13 @@
     },
     "w:rStyle": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:readModeInkLockDown": {
       "ct": ["CT_ReadingModeInkLockDown"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:actualPg", "w:fontSz", "w:h", "w:w"]
     },
     "w:recipientData": {
       "ct": ["CT_RecipientData", "CT_Rel"],
@@ -30843,7 +31448,8 @@
     },
     "w:result": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:revisionView": {
       "ct": ["CT_TrackChangesView"],
@@ -30859,11 +31465,13 @@
     },
     "w:rsid": {
       "ct": ["CT_LongHexNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:rsidRoot": {
       "ct": ["CT_LongHexNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:rsids": {
       "ct": ["CT_DocRsids"],
@@ -31008,7 +31616,8 @@
     },
     "w:rubyAlign": {
       "ct": ["CT_RubyAlign"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:rubyBase": {
       "ct": ["CT_RubyContent"],
@@ -31172,7 +31781,8 @@
     },
     "w:scrollbar": {
       "ct": ["CT_FrameScrollbar"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:sdt": {
       "ct": ["CT_SdtRun", "CT_SdtBlock", "CT_SdtRow", "CT_SdtCell"],
@@ -31579,6 +32189,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["w:author", "w:id"],
       "variantElements": ["w:sectPr"]
     },
     "w:selectFldWithFirstOrLastChar": {
@@ -32208,7 +32819,8 @@
     },
     "w:shd": {
       "ct": ["CT_Shd"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:showBreaksInFrames": {
       "ct": ["CT_OnOff"],
@@ -32228,11 +32840,13 @@
     },
     "w:sig": {
       "ct": ["CT_FontSig"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:csb0", "w:csb1", "w:usb0", "w:usb1", "w:usb2", "w:usb3"]
     },
     "w:size": {
       "ct": ["CT_HpsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:sizeAuto": {
       "ct": ["CT_OnOff"],
@@ -32330,6 +32944,7 @@
           ]
         }
       ],
+      "requiredAttrs": ["w:element"],
       "variantElements": [
         "m:oMath",
         "m:oMathPara",
@@ -32393,7 +33008,8 @@
     },
     "w:sourceFileName": {
       "ct": ["CT_Rel"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "w:spaceForUL": {
       "ct": ["CT_OnOff"],
@@ -32417,7 +33033,8 @@
     },
     "w:src": {
       "ct": ["CT_Rel"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "w:start": {
       "ct": ["CT_Border", "CT_TblWidth", "CT_DecimalNumber"],
@@ -32425,7 +33042,8 @@
     },
     "w:startOverride": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:statusText": {
       "ct": ["CT_FFStatusText"],
@@ -32584,7 +33202,8 @@
     },
     "w:styleLink": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:styleLockQFSet": {
       "ct": ["CT_OnOff"],
@@ -32600,7 +33219,8 @@
     },
     "w:stylePaneSortMethod": {
       "ct": ["CT_StyleSort"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:styles": {
       "ct": ["CT_Styles"],
@@ -32625,7 +33245,8 @@
     },
     "w:subDoc": {
       "ct": ["CT_Rel"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "w:subFontBySize": {
       "ct": ["CT_OnOff"],
@@ -32633,11 +33254,13 @@
     },
     "w:suff": {
       "ct": ["CT_LevelSuffix"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:summaryLength": {
       "ct": ["CT_DecimalNumberOrPrecent"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:suppressAutoHyphens": {
       "ct": ["CT_OnOff"],
@@ -32681,11 +33304,13 @@
     },
     "w:sz": {
       "ct": ["CT_HpsMeasure", "CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:szCs": {
       "ct": ["CT_HpsMeasure"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:t": {
       "ct": ["CT_Text"],
@@ -32697,11 +33322,13 @@
     },
     "w:tabIndex": {
       "ct": ["CT_UnsignedDecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:table": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:tabs": {
       "ct": ["CT_Tabs"],
@@ -32716,11 +33343,13 @@
     },
     "w:tag": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:targetScreenSz": {
       "ct": ["CT_TargetScreenSz"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:tbl": {
       "ct": ["CT_Tbl"],
@@ -32916,7 +33545,8 @@
     },
     "w:tblCaption": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:tblCellMar": {
       "ct": ["CT_TblCellMar"],
@@ -32960,7 +33590,8 @@
     },
     "w:tblDescription": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:tblGrid": {
       "ct": ["CT_TblGridBase", "CT_TblGrid"],
@@ -32987,6 +33618,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["w:id"],
       "variantElements": ["w:tblGrid"]
     },
     "w:tblHeader": {
@@ -33007,7 +33639,8 @@
     },
     "w:tblOverlap": {
       "ct": ["CT_TblOverlap"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:tblPr": {
       "ct": ["CT_TblPrBase", "CT_TblPr"],
@@ -33133,6 +33766,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["w:author", "w:id"],
       "variantElements": ["w:tblPr"]
     },
     "w:tblPrEx": {
@@ -33211,15 +33845,18 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["w:author", "w:id"],
       "variantElements": ["w:tblPrEx"]
     },
     "w:tblStyle": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:tblStyleColBandSize": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:tblStylePr": {
       "ct": ["CT_TblStylePr"],
@@ -33250,11 +33887,13 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["w:type"],
       "variantElements": ["w:pPr", "w:rPr", "w:tblPr", "w:tcPr", "w:trPr"]
     },
     "w:tblStyleRowBandSize": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:tblW": {
       "ct": ["CT_TblWidth"],
@@ -33600,6 +34239,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["w:author", "w:id"],
       "variantElements": ["w:tcPr"]
     },
     "w:tcW": {
@@ -33616,11 +34256,13 @@
     },
     "w:textAlignment": {
       "ct": ["CT_TextAlignment"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:textDirection": {
       "ct": ["CT_TextDirection"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:textInput": {
       "ct": ["CT_FFTextInput"],
@@ -33650,7 +34292,8 @@
     },
     "w:textboxTightWrap": {
       "ct": ["CT_TextboxTightWrap"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:themeFontLang": {
       "ct": ["CT_Language"],
@@ -33658,7 +34301,8 @@
     },
     "w:title": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:titlePg": {
       "ct": ["CT_OnOff"],
@@ -33666,11 +34310,13 @@
     },
     "w:tl2br": {
       "ct": ["CT_Border"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:tmpl": {
       "ct": ["CT_LongHexNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:top": {
       "ct": ["CT_Border", "CT_TopPageBorder", "CT_TblWidth"],
@@ -33796,7 +34442,8 @@
     },
     "w:tr2bl": {
       "ct": ["CT_Border"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:trHeight": {
       "ct": ["CT_Height"],
@@ -33867,6 +34514,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["w:author", "w:id"],
       "variantElements": ["w:trPr"]
     },
     "w:trackRevisions": {
@@ -34013,11 +34661,13 @@
     },
     "w:udl": {
       "ct": ["CT_String"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:uiPriority": {
       "ct": ["CT_DecimalNumber"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:ulTrailSpace": {
       "ct": ["CT_OnOff"],
@@ -34033,7 +34683,8 @@
     },
     "w:uniqueTag": {
       "ct": ["CT_Base64Binary"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:updateFields": {
       "ct": ["CT_OnOff"],
@@ -34077,7 +34728,8 @@
     },
     "w:vAlign": {
       "ct": ["CT_VerticalJc"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:vMerge": {
       "ct": ["CT_VMerge"],
@@ -34089,11 +34741,13 @@
     },
     "w:vertAlign": {
       "ct": ["CT_VerticalAlignRun"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:view": {
       "ct": ["CT_View"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:val"]
     },
     "w:viewMergedData": {
       "ct": ["CT_OnOff"],
@@ -34234,7 +34888,8 @@
     },
     "w:zoom": {
       "ct": ["CT_Zoom"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["w:percent"]
     },
     "webPr": {
       "ct": ["CT_WebPr"],
@@ -34249,7 +34904,8 @@
     },
     "webPublishItem": {
       "ct": ["CT_WebPublishItem"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["destinationFile", "divId", "id", "sourceType"]
     },
     "webPublishItems": {
       "ct": ["CT_WebPublishItems"],
@@ -34264,7 +34920,8 @@
     },
     "webPublishObject": {
       "ct": ["CT_WebPublishObject"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["destinationFile", "divId", "id"]
     },
     "webPublishObjects": {
       "ct": ["CT_WebPublishObjects"],
@@ -34722,6 +35379,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["allowOverlap", "behindDoc", "layoutInCell", "locked", "relativeHeight"],
       "variantElements": [
         "a:graphic",
         "wp:cNvGraphicFramePr",
@@ -34923,6 +35581,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["id", "name"],
       "variantElements": ["a:extLst", "a:hlinkClick", "a:hlinkHover"]
     },
     "wp:cNvSpPr": {
@@ -34960,6 +35619,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["r:id"],
       "variantElements": ["wp:extLst", "wp:nvContentPartPr", "wp:xfrm"]
     },
     "wp:docPr": {
@@ -34981,11 +35641,13 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["id", "name"],
       "variantElements": ["a:extLst", "a:hlinkClick", "a:hlinkHover"]
     },
     "wp:effectExtent": {
       "ct": ["CT_EffectExtent"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["b", "l", "r", "t"]
     },
     "wp:extLst": {
       "ct": ["CT_OfficeArtExtensionList"],
@@ -35000,7 +35662,8 @@
     },
     "wp:extent": {
       "ct": ["CT_PositiveSize2D"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["cx", "cy"]
     },
     "wp:graphicFrame": {
       "ct": ["CT_GraphicFrame"],
@@ -35166,7 +35829,8 @@
     },
     "wp:lineTo": {
       "ct": ["CT_Point2D"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["x", "y"]
     },
     "wp:linkedTxbx": {
       "ct": ["CT_LinkedTextboxInformation"],
@@ -35177,6 +35841,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["id", "seq"],
       "variantElements": ["wp:extLst"]
     },
     "wp:nvContentPartPr": {
@@ -35205,6 +35870,7 @@
           "pick": "one"
         }
       ],
+      "requiredAttrs": ["relativeFrom"],
       "variantElements": ["wp:align", "wp:posOffset"]
     },
     "wp:positionV": {
@@ -35217,11 +35883,13 @@
           "pick": "one"
         }
       ],
+      "requiredAttrs": ["relativeFrom"],
       "variantElements": ["wp:align", "wp:posOffset"]
     },
     "wp:simplePos": {
       "ct": ["CT_Point2D"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["x", "y"]
     },
     "wp:spPr": {
       "ct": ["CT_ShapeProperties"],
@@ -35297,7 +35965,8 @@
     },
     "wp:start": {
       "ct": ["CT_Point2D"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["x", "y"]
     },
     "wp:style": {
       "ct": ["CT_ShapeStyle"],
@@ -35573,6 +36242,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["wrapText"],
       "variantElements": ["wp:effectExtent"]
     },
     "wp:wrapThrough": {
@@ -35584,6 +36254,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["wrapText"],
       "variantElements": ["wp:wrapPolygon"]
     },
     "wp:wrapTight": {
@@ -35595,6 +36266,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["wrapText"],
       "variantElements": ["wp:wrapPolygon"]
     },
     "wp:wrapTopAndBottom": {
@@ -35759,6 +36431,7 @@
           "pick": "any"
         }
       ],
+      "requiredAttrs": ["ObjectType"],
       "variantElements": [
         "x:Accel",
         "x:Accel2",
@@ -35988,6 +36661,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["id", "name"],
       "variantElements": ["a:extLst", "a:hlinkClick", "a:hlinkHover"]
     },
     "xdr:cNvSpPr": {
@@ -36012,7 +36686,8 @@
     },
     "xdr:contentPart": {
       "ct": ["CT_Rel"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["r:id"]
     },
     "xdr:cxnSp": {
       "ct": ["CT_Connector"],
@@ -36037,7 +36712,8 @@
     },
     "xdr:ext": {
       "ct": ["CT_PositiveSize2D"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["cx", "cy"]
     },
     "xdr:from": {
       "ct": ["CT_Marker"],
@@ -36320,7 +36996,8 @@
     },
     "xdr:pos": {
       "ct": ["CT_Point2D"],
-      "slots": []
+      "slots": [],
+      "requiredAttrs": ["x", "y"]
     },
     "xdr:sp": {
       "ct": ["CT_Shape"],
@@ -36600,6 +37277,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["id"],
       "variantElements": ["extLst", "xmlPr"]
     },
     "xmlColumnPr": {
@@ -36611,6 +37289,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["mapId", "xmlDataType", "xpath"],
       "variantElements": ["extLst"]
     },
     "xmlPr": {
@@ -36622,6 +37301,7 @@
           "max": 1
         }
       ],
+      "requiredAttrs": ["mapId", "xmlDataType", "xpath"],
       "variantElements": ["extLst"]
     }
   }

@@ -6,6 +6,7 @@
 export * from "./opc";
 export * from "./smartart";
 export * from "./chart";
+export * from "./chartex";
 export * from "./table";
 export * from "./picture";
 export * from "./connector";

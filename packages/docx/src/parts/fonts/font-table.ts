@@ -11,6 +11,7 @@ import type { DataType } from "@office-open/core";
 import { element } from "@office-open/xml";
 
 import { documentNamespaceRecord } from "../document/document-attributes";
+import { extensionIgnorablePrefixes } from "../document/extension-registry";
 import { createRegularFont } from "./create-regular-font";
 import type { CharacterSet } from "./font";
 import type { EmbeddedFontOptionsWithKey } from "./font-wrapper";
@@ -110,25 +111,28 @@ export interface EmbeddedFontOptions {
  * </xsd:complexType>
  * ```
  */
+/** Prefixes declared on the w:fonts root (Word's declaration order). */
+const FONT_TABLE_PREFIXES = [
+  "mc",
+  "r",
+  "w",
+  "w14",
+  "w15",
+  "w16",
+  "w16cex",
+  "w16cid",
+  "w16sdtdh",
+  "w16se",
+] as const;
+
 export const createFontTable = (fonts: EmbeddedFontOptionsWithKey[]): string =>
   // https://c-rex.net/projects/samples/ooxml/e1/Part4/OOXML_P4_DOCX_Font_topic_ID0ERNCU.html
   // http://www.datypic.com/sc/ooxml/e-w_fonts.html
   element(
     "w:fonts",
     {
-      ...documentNamespaceRecord([
-        "mc",
-        "r",
-        "w",
-        "w14",
-        "w15",
-        "w16",
-        "w16cex",
-        "w16cid",
-        "w16sdtdh",
-        "w16se",
-      ]),
-      "mc:Ignorable": "w14 w15 w16se w16cid w16 w16cex w16sdtdh",
+      ...documentNamespaceRecord(FONT_TABLE_PREFIXES),
+      "mc:Ignorable": extensionIgnorablePrefixes(FONT_TABLE_PREFIXES),
     },
     fonts.map((font, i) =>
       createRegularFont({

@@ -19,7 +19,7 @@ import type { CustomDescriptor } from "@office-open/core/descriptor";
 import { attr, escapeXml, findChild } from "@office-open/xml";
 import type { Element } from "@office-open/xml";
 
-import { documentNamespaceAttributes } from "../document/document-attributes";
+import { rootNamespaceAttributes } from "../document/extension-registry";
 import type {
   SettingsOptions,
   DocumentProtectionOptions,
@@ -804,25 +804,24 @@ function stringifyCompatibility(opts: CompatibilityOptions): string {
 
 // ── Namespace attributes ──
 
-const SETTINGS_NS =
-  documentNamespaceAttributes([
-    "m",
-    "mc",
-    "o",
-    "r",
-    "v",
-    "w",
-    "w10",
-    "w14",
-    "w15",
-    "wne",
-    "wp",
-    "wp14",
-    "wpc",
-    "wpg",
-    "wpi",
-    "wps",
-  ]) + ' mc:Ignorable="w14 w15 wp14"';
+const SETTINGS_NS = rootNamespaceAttributes([
+  "m",
+  "mc",
+  "o",
+  "r",
+  "v",
+  "w",
+  "w10",
+  "w14",
+  "w15",
+  "wne",
+  "wp",
+  "wp14",
+  "wpc",
+  "wpg",
+  "wpi",
+  "wps",
+]);
 
 // ── Descriptor ──
 

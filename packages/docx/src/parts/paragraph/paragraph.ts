@@ -109,8 +109,9 @@ export type TrackChangeChild =
   | { complexField: ComplexFieldOptions }
   | { formField: FormFieldOptions }
   | { proofErr: "spellStart" | "spellEnd" | "gramStart" | "gramEnd" }
-  // A field marker run kept verbatim when the field crosses the wrapper
-  | { rawXml: string }
+  // Unmodeled wrapper markup kept verbatim (field marker runs, range markup).
+  // Relationship refs are `{fileName}` placeholders backed by `rawMedia`.
+  | { rawXml: string; rawMedia?: BackgroundRawMediaOptions[] }
   // Drawings inserted as revisions (w:ins around the drawing's w:r)
   | { picture: PictureOptions }
   | { chart: ChartOptions }

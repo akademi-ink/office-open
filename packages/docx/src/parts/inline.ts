@@ -10,7 +10,7 @@
  * @module
  */
 
-import { RELATIONSHIP_TYPES, hpsMeasureValue, toUint8Array } from "@office-open/core";
+import { RELATIONSHIP_TYPES, hpsMeasureValue } from "@office-open/core";
 import { TargetModeType } from "@office-open/core";
 import { escapeXml } from "@office-open/xml";
 import { subDocDesc } from "@parts/bodychildren";
@@ -39,10 +39,10 @@ import {
 } from "@parts/paragraph/run/run";
 import type { SymbolRunOptions } from "@parts/paragraph/run/symbol-run";
 import { stringifyPict, type PictOptions } from "@parts/pict";
-import type { MediaData } from "@shared/media/data";
 import { autoRevisionId } from "@shared/track-revision/track-revision";
 
 import type { BodyContext } from "../context";
+import { registerRawMedia } from "../util/raw-media";
 import { checkboxSymbolRunInner, stringifyCustomXmlShell, stringifySdtShell } from "./bodychildren";
 import { stringifyDrawingChild } from "./inline-drawings";
 import { stringifyMath, stringifyMathParagraph } from "./paragraph/math/stringify";
@@ -578,27 +578,7 @@ function stringifyRawXmlChild(
   child: { rawXml: string; rawMedia?: BackgroundRawMediaOptions[] },
   ctx: BodyContext,
 ): string {
-  let xml = child.rawXml;
-  if (!child.rawMedia) return xml;
-  for (const m of child.rawMedia) {
-    const data = toUint8Array(m.data);
-    const entry = ctx.file.media.addMedia(
-      data,
-      m.type,
-      (fileName) =>
-        ({
-          type: m.type,
-          data,
-          fileName,
-          transformation: { emus: { x: 0, y: 0 }, pixels: { x: 0, y: 0 } },
-        }) as MediaData,
-      m.fileName,
-    );
-    if (entry.fileName !== m.fileName) {
-      xml = xml.split(`{${m.fileName}}`).join(`{${entry.fileName}}`);
-    }
-  }
-  return xml;
+  return registerRawMedia(child.rawXml, child.rawMedia, ctx.file.media);
 }
 
 export function stringifyChildDispatch(

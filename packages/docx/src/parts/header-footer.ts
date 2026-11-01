@@ -17,6 +17,7 @@ import { stringifyBodyChild } from "../body";
 import type { BodyContext } from "../context";
 import { DocumentAttributeNamespaces } from "./document/document-attributes";
 import type { DocumentAttributeNamespace } from "./document/document-attributes";
+import { extensionIgnorablePrefixes } from "./document/extension-registry";
 
 /**
  * Reference to a header or footer from a section — just the relationship id
@@ -128,10 +129,8 @@ export function stringifyHeaderFooter(
   // footers carry different namespace sets (w16se/w16cid exist on headers but
   // not on footers). Deriving the list from `namespaces` keeps the part
   // MCE-valid for both kinds.
-  const ignorable = ["w14", "w15", "wp14", "w16se", "w16cid"].filter((prefix) =>
-    (namespaces as string[]).includes(prefix),
-  );
-  attrParts.push(`mc:Ignorable="${ignorable.join(" ")}"`);
+  const ignorable = extensionIgnorablePrefixes(namespaces);
+  if (ignorable) attrParts.push(`mc:Ignorable="${ignorable}"`);
   const attrStr = attrParts.join(" ");
 
   const childParts: string[] = [];

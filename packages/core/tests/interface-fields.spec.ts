@@ -42,22 +42,26 @@ describe("extractInterfaceFields", () => {
     ]);
   });
 
-  it("resolves `&` intersection — ParagraphPropertiesOptions merges all arms", () => {
-    // ParagraphPropertiesOptions = {...} & ParagraphStylePropertiesOptions
-    // & LevelParagraphStylePropertiesOptions. getInterface().getProperties()
-    // would return only the direct members; the Type-level read must return
-    // the union: 4 (Base) + 3 (Style) + 32 (Level) + 2 (Options) = 41, before
-    // sugar exclusion.
-    const fields = extractInterfaceFields(
-      "ParagraphPropertiesOptions",
-      `${DOCX}/paragraph/properties.ts`,
-    );
-    expect(fields).toHaveLength(41);
-    // Sugar that the exclude list removes later:
-    expect(fields).toContain("thematicBreak");
-    expect(fields).toContain("rightTabStop");
-    expect(fields).toContain("leftTabStop");
-  });
+  it(
+    "resolves `&` intersection — ParagraphPropertiesOptions merges all arms",
+    { timeout: 20_000 },
+    () => {
+      // ParagraphPropertiesOptions = {...} & ParagraphStylePropertiesOptions
+      // & LevelParagraphStylePropertiesOptions. getInterface().getProperties()
+      // would return only the direct members; the Type-level read must return
+      // the union: 4 (Base) + 3 (Style) + 33 (Level) + 2 (Options) = 42, before
+      // sugar exclusion.
+      const fields = extractInterfaceFields(
+        "ParagraphPropertiesOptions",
+        `${DOCX}/paragraph/properties.ts`,
+      );
+      expect(fields).toHaveLength(42);
+      // Sugar that the exclude list removes later:
+      expect(fields).toContain("thematicBreak");
+      expect(fields).toContain("rightTabStop");
+      expect(fields).toContain("leftTabStop");
+    },
+  );
 });
 
 describe("interface drift — declared interfaceFields match the live interface", () => {

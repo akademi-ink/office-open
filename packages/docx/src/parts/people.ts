@@ -2,7 +2,12 @@
  * People descriptor — produces word/people.xml (Word 2013+ comment authors).
  *
  * Each w15:person carries the display author plus an optional contact
- * address; Word pairs them with comments by author string equality.
+ * address. This part is Word's display-name directory: CT_Person has no
+ * paraId/durable-id attribute, so it is the one comment part whose entries
+ * cannot be linked to a comment by anything but `@w15:author`. Everything
+ * that *can* be keyed by identity — thread links, resolved state, creation
+ * time — goes through the paraId → durableId chain instead (see
+ * comments-link.ts, linkCommentMetadata).
  *
  * Reference: ISO/IEC 29500-4 wml.xsd, CT_People / CT_Person
  *

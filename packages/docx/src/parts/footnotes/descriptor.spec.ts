@@ -105,3 +105,31 @@ describe("footnotesDesc round-trip", () => {
     expect(xml).toContain("</w:tbl><w:p/></w:footnote>");
   });
 });
+
+describe("note id uniqueness", () => {
+  it("renumbers a system note whose id collides with a user note", () => {
+    const notes = new Map<number, never[]>();
+    notes.set(1, [{ paragraph: { children: ["fn body"] } }] as never);
+    const xml = footnotesDesc.stringify(
+      {
+        notes: notes as never,
+        separator: { id: -1, children: [{ paragraph: { children: ["sep"] } } as never] },
+        continuationSeparator: {
+          id: 0,
+          children: [{ paragraph: { children: ["cont"] } } as never],
+        },
+        // A hand-authored / foreign source can reuse a user id here.
+        continuationNotice: { id: 1, children: [{ paragraph: { children: ["note"] } } as never] },
+      },
+      writeCtx as never,
+    )!;
+    const ids = [...xml.matchAll(/<w:footnote\b[^>]*\bw:id="(-?\d+)"/g)].map((m) => m[1]);
+    expect(ids).toHaveLength(4);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids).toContain("1");
+    // The user note keeps the id the body's reference points at.
+    expect(xml).toContain('<w:footnote w:id="1">');
+    // The system note yields to a free id below the used range.
+    expect(xml).toContain('<w:footnote w:type="continuationNotice" w:id="-2">');
+  });
+});

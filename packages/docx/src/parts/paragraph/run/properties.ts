@@ -20,6 +20,7 @@ import type { EmphasisMarkType } from "./emphasis-mark";
 import type { ColorOptions } from "./formatting";
 import type { LanguageOptions } from "./language";
 import type { FontProperties } from "./run-fonts";
+import type { TextEffectsOptions } from "./text-effects";
 import type { UnderlineType } from "./underline";
 
 interface RunFontReference {
@@ -184,11 +185,22 @@ export interface RunStylePropertiesOptions {
   fitText?: number;
   complexScript?: boolean;
   eastAsianLayout?: EastAsianLayoutOptions;
-  /** Relationship ID for a content part (w:contentPart with r:id) */
+  /**
+   * Relationship id of a content part (`w:contentPart` with `r:id`). On
+   * round-trip the source id is re-registered on the owning part's rels (the
+   * part's relationships survive as passthrough parts), so it resolves
+   * instead of dangling; fresh authoring must register the target itself.
+   */
   contentPartRId?: string;
   /**
-   * Raw XML of w14:* text-effect children (glow/shadow/reflection/props3d/…)
-   * in the rPr extension slot — verbatim for round-trip fidelity.
+   * Word 2010 run text effects — ligatures, number form/spacing, stylistic
+   * sets, glow, shadow, reflection, text fill, 3-D scene/properties. Word
+   * writes these by default for Format › Font › Advanced and Text Effects.
+   */
+  textEffects?: TextEffectsOptions;
+  /**
+   * Raw XML of w14:* run-property children the typed model does not cover
+   * (`w14:textOutline`, future effects) — verbatim, round-trip only.
    */
   w14RawXml?: string;
   /**

@@ -13,7 +13,12 @@ export { createScRgbColor } from "./color/sc-rgb-color";
 export type { ScRgbColorOptions } from "./color/sc-rgb-color";
 export { createPresetColor, PresetColor } from "./color/preset-color";
 export type { PresetColorOptions } from "./color/preset-color";
-export { createColorTransforms } from "./color/color-transform";
+export {
+  ANGLE_TRANSFORMS,
+  BOOLEAN_TRANSFORMS,
+  PERCENT_TRANSFORMS,
+  createColorTransforms,
+} from "./color/color-transform";
 export type { ColorTransformOptions } from "./color/color-transform";
 
 // Fill
@@ -76,7 +81,10 @@ export { createScene3D } from "./three-d/scene-3d";
 export type {
   Scene3DOptions,
   CameraOptions,
+  CameraPreset,
   LightRigOptions,
+  LightRigType,
+  LightRigDirection,
   BackdropOptions,
   SphereCoords,
   Point3D,

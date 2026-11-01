@@ -42,6 +42,7 @@ import type {
   RunPropertiesOptions,
 } from "@parts/paragraph/run/properties";
 import type { FontProperties } from "@parts/paragraph/run/run-fonts";
+import { stringifyTextEffects } from "@parts/paragraph/run/text-effects";
 import type { BorderOptions } from "@shared/border";
 import { BorderStyle } from "@shared/border";
 import type { ShadingProperties } from "@shared/shading";
@@ -741,7 +742,9 @@ export function stringifyRunPropertiesInner(opts?: RunPropertiesOptions): string
     s += `<w:rPrChange w:author="${escapeXml(rev.author)}" w:date="${rev.date}" w:id="${rev.id ?? autoRevisionId()}"><w:rPr>${inner ?? ""}</w:rPr></w:rPrChange>`;
   }
 
-  // w14:* text effects — raw passthrough, emitted last (EG_RPrBase extension slot)
+  // w14:* text effects — typed effects first, then the residual raw children
+  // the model does not cover (EG_RPrBase extension slot, emitted last).
+  if (opts.textEffects) s += stringifyTextEffects(opts.textEffects);
   if (opts.w14RawXml) s += opts.w14RawXml;
 
   return s.length > 0 ? s : undefined;

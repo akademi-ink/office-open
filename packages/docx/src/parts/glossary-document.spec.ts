@@ -4,6 +4,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 import type { BodyContext } from "../context";
 import { parseSectionChild } from "../parse/body";
+import { Media } from "../shared/media";
 import { glossaryDesc } from "./glossary-document";
 import type { GlossaryDocumentOptions } from "./glossary-document";
 import { setTableParseChild } from "./table/descriptor";
@@ -13,6 +14,8 @@ const writeCtx = {
   addMedia: () => "",
   stringifyChild: (child: unknown) => (typeof child === "string" ? child : "<w:p/>"),
   fileData: {} as never,
+  // Verbatim `rawXml` children register the media their placeholders reference.
+  file: { media: new Media() } as never,
 } as unknown as BodyContext;
 
 const readCtx = {

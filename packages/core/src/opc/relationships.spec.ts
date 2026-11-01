@@ -102,6 +102,50 @@ describe("Relationships", () => {
     expect(rels.nextRelationshipId).toBe(1);
   });
 
+  it("claimSourceRel() keeps a non-numeric source id (rIdChartEx) verbatim", () => {
+    // A passthrough drawing keeps the exact id string, so renumbering the
+    // relationship to a fresh numeric id dangles the reference.
+    const rels = new Relationships();
+    rels.claimSourceRel({
+      relationshipType: "http://schemas.microsoft.com/office/2014/relationships/chartEx",
+      target: "charts/chartEx1.xml",
+      rId: "rIdChartEx",
+    });
+    expect(rels.serialize()).toContain('Id="rIdChartEx"');
+    expect(rels.hasId("rIdChartEx")).toBe(true);
+  });
+
+  it("claimSourceRel() renumbers only when the source slot is taken", () => {
+    const rels = new Relationships();
+    rels.addRelationship(
+      3,
+      "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image",
+      "media/pic.png",
+    );
+    rels.claimSourceRel({
+      relationshipType: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart",
+      target: "charts/chart1.xml",
+      rId: "rId3",
+    });
+    expect(rels.relationshipCount).toBe(2);
+    expect(
+      rels.idOf(
+        "http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart",
+        "charts/chart1.xml",
+      ),
+    ).toBe("rId4");
+  });
+
+  it("claimSourceRel() keeps a numeric source id when the slot is free", () => {
+    const rels = new Relationships();
+    rels.claimSourceRel({
+      relationshipType: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart",
+      target: "charts/chart1.xml",
+      rId: "rId18",
+    });
+    expect(rels.serialize()).toContain('Id="rId18"');
+  });
+
   it("reserveSourceRids() pre-claims one source part's ids from the passthrough list", () => {
     const rels = new Relationships();
     rels.reserveSourceRids("word/document.xml", [

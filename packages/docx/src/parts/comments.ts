@@ -19,46 +19,57 @@ import type { TableOptions } from "@parts/table/table";
 import { parseParagraph } from "../body";
 import type { BodyContext } from "../context";
 import type { DocxReadContext } from "../context";
+import type { DocumentAttributeNamespace } from "./document/document-attributes";
 import { documentNamespaceAttributes } from "./document/document-attributes";
+import { extensionIgnorableAttribute } from "./document/extension-registry";
 import { buildBookmarkStartAttrs, buildMarkupRangeAttrs, stringifyParagraphInline } from "./inline";
 
-/** Root namespace header shared by the comment-infrastructure parts
- *  (comments.xml, people.xml, commentsExtended.xml). Word writes the same
- *  declaration set plus mc:Ignorable on all three roots. */
+/** Prefixes declared on the comment-infrastructure roots (comments.xml,
+ *  people.xml, commentsExtended.xml, commentsIds.xml, commentsExtensible.xml)
+ *  in Word's declaration order. */
+const COMMENTS_PREFIXES = [
+  "aink",
+  "am3d",
+  "cx",
+  "cx1",
+  "cx2",
+  "cx3",
+  "cx4",
+  "cx5",
+  "cx6",
+  "cx7",
+  "cx8",
+  "m",
+  "mc",
+  "o",
+  "r",
+  "v",
+  "w",
+  "w10",
+  "w14",
+  "w15",
+  "w16",
+  "w16cex",
+  "w16cid",
+  "w16sdtdh",
+  "w16se",
+  "wne",
+  "wp",
+  "wp14",
+  "wpg",
+  "wpi",
+  "wps",
+] as const satisfies readonly DocumentAttributeNamespace[];
+
+/**
+ * Root namespace header shared by the comment-infrastructure parts
+ * (comments.xml, people.xml, commentsExtended.xml, commentsIds.xml,
+ * commentsExtensible.xml). `mc:Ignorable` is registry-derived from the
+ * declared prefixes, so a Word release that ignores the comment extensions
+ * still opens the part.
+ */
 export const COMMENTS_NS =
-  documentNamespaceAttributes([
-    "aink",
-    "am3d",
-    "cx",
-    "cx1",
-    "cx2",
-    "cx3",
-    "cx4",
-    "cx5",
-    "cx6",
-    "cx7",
-    "cx8",
-    "m",
-    "mc",
-    "o",
-    "r",
-    "v",
-    "w",
-    "w10",
-    "w14",
-    "w15",
-    "w16",
-    "w16cex",
-    "w16cid",
-    "w16sdtdh",
-    "w16se",
-    "wne",
-    "wp",
-    "wp14",
-    "wpg",
-    "wpi",
-    "wps",
-  ]) + ' mc:Ignorable="w14 w15 wp14 w16 w16cex w16cid w16sdtdh w16se"';
+  documentNamespaceAttributes(COMMENTS_PREFIXES) + extensionIgnorableAttribute(COMMENTS_PREFIXES);
 
 // ── Comment stringification ──
 

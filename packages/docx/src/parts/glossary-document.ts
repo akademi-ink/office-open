@@ -13,7 +13,7 @@ import {
   sectionPropertiesDesc,
 } from "@parts/document/body/section-properties/descriptor";
 import type { SectionPropertiesOptions } from "@parts/document/body/section-properties/section-properties";
-import { documentNamespaceAttributes } from "@parts/document/document-attributes";
+import { rootNamespaceAttributes } from "@parts/document/extension-registry";
 import type { SectionChild } from "@shared/section";
 
 /** Gallery type for building blocks (ST_DocPartGallery) */
@@ -132,7 +132,7 @@ import { stringifyBodyChild } from "../body";
 import type { BodyContext, DocxReadContext } from "../context";
 import { parseSectionChild } from "../parse/body";
 
-const GLOSSARY_NS = documentNamespaceAttributes([
+const GLOSSARY_NS = rootNamespaceAttributes([
   "wpc",
   "mc",
   "o",

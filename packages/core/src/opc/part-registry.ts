@@ -29,6 +29,8 @@
  * @module
  */
 
+import { CHART_EX_CONTENT_TYPE } from "../chartex";
+
 export type PartPresence =
   | { readonly kind: "always" }
   | { readonly kind: "conditional"; readonly flag: string }
@@ -163,6 +165,19 @@ export const DOCX_PARTS = {
       presence: { kind: "conditional", flag: "hasCommentsExtended" },
     },
     {
+      // Word 2016+ durable comment ids (w16cid) — emitted only when populated.
+      path: "word/commentsIds.xml",
+      contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsIds+xml",
+      presence: { kind: "conditional", flag: "hasCommentsIds" },
+    },
+    {
+      // Word 2018+ extensible comment metadata (w16cex) — same populated rule.
+      path: "word/commentsExtensible.xml",
+      contentType:
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtensible+xml",
+      presence: { kind: "conditional", flag: "hasCommentsExtensible" },
+    },
+    {
       path: "word/header${i}.xml",
       contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml",
       presence: { kind: "repeated", countFrom: "headerCount" },
@@ -181,6 +196,14 @@ export const DOCX_PARTS = {
       path: "word/charts/userShapes${i}.xml",
       contentType: "application/vnd.openxmlformats-officedocument.drawingml.chartUserShapes+xml",
       presence: { kind: "repeated", countFrom: "charts with user shapes" },
+    },
+    // chartEx (`cx:`) modern charts — preserved as opaque parts, never
+    // regenerated (PKG-12: preserve, do not model). Declared so a package
+    // round-tripped from Word is not reported as having an orphan part.
+    {
+      path: "word/charts/chartEx${i}.xml",
+      contentType: CHART_EX_CONTENT_TYPE,
+      presence: { kind: "conditional", flag: "chartEx parts (passthrough)" },
     },
     {
       path: "word/diagrams/data${i}.xml",

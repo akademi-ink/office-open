@@ -1,6 +1,7 @@
 import type { LongHexNumber } from "@office-open/core";
 import { escapeXml } from "@office-open/xml";
 import { documentNamespaceRecord } from "@parts/document/document-attributes";
+import { STYLES_PREFIXES, extensionIgnorablePrefixes } from "@parts/document/extension-registry";
 import { AlignmentType } from "@parts/paragraph";
 /**
  * Factory module for creating default document styles.
@@ -434,8 +435,8 @@ export class DefaultStylesFactory {
 
     // XML namespace attributes for styles root element (matching Word exactly)
     const initialAttributes: Record<string, string> = {
-      ...documentNamespaceRecord(["mc", "r", "w", "w14", "w15"]),
-      "mc:Ignorable": "w14 w15",
+      ...documentNamespaceRecord(STYLES_PREFIXES),
+      "mc:Ignorable": extensionIgnorablePrefixes(STYLES_PREFIXES),
     };
 
     importedStyles.push(stringifyDocDefaults(options.document ?? {}, true, options.language));

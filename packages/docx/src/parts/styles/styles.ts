@@ -12,6 +12,7 @@ import type { LongHexNumber } from "@office-open/core";
 import { attr, attrBool, attrNum, findChild } from "@office-open/xml";
 import type { Element } from "@office-open/xml";
 import { documentNamespaceRecord } from "@parts/document/document-attributes";
+import { STYLES_PREFIXES, extensionIgnorablePrefixes } from "@parts/document/extension-registry";
 import type {
   ParagraphPropertiesOptions,
   ParagraphStylePropertiesOptions,
@@ -167,8 +168,8 @@ export class Styles {
     // exist on parse round-trips) — bind the root namespaces like the default
     // template path does, else w:styles emits with an unbound prefix
     const merged: Record<string, string> = {
-      ...documentNamespaceRecord(["mc", "r", "w", "w14", "w15"]),
-      "mc:Ignorable": "w14 w15",
+      ...documentNamespaceRecord(STYLES_PREFIXES),
+      "mc:Ignorable": extensionIgnorablePrefixes(STYLES_PREFIXES),
       ...this.attributes,
     };
 

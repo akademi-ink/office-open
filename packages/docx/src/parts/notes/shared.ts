@@ -13,7 +13,7 @@
 import type { CustomDescriptor } from "@office-open/core/descriptor";
 import { attr, attrNum } from "@office-open/xml";
 import type { Element } from "@office-open/xml";
-import { documentNamespaceAttributes } from "@parts/document/document-attributes";
+import { rootNamespaceAttributes } from "@parts/document/extension-registry";
 import type { ParagraphOptions } from "@parts/paragraph/paragraph";
 import type { SectionChild } from "@shared/section";
 
@@ -42,7 +42,7 @@ export interface NotesData {
   continuationNotice?: NoteSeparator | null;
 }
 
-const NS = documentNamespaceAttributes([
+const NS = rootNamespaceAttributes([
   "m",
   "mc",
   "o",
@@ -88,41 +88,60 @@ export interface NotesDescConfig {
 
 /** Build the complete footnotes/endnotes descriptor from a format config. */
 export function createNotesDesc(cfg: NotesDescConfig): CustomDescriptor<NotesData, BodyContext> {
-  /** Render a system note from round-tripped id + content, or the spec default. */
+  /**
+   * Render a system note from round-tripped id + content, or the spec default.
+   * Ids are unique per part (ST_DecimalNumber is only unique by hand): a
+   * hand-authored or foreign source can give a system note the same id as a
+   * user note, and Open XML SDK rejects the duplicate
+   * (Sem_UniqueAttributeValue). The user note keeps its id — body
+   * `w:footnoteReference`/`w:endnoteReference` point at it — so the system
+   * note yields to the next free id below the used range.
+   */
   const systemNote = (
     type: "separator" | "continuationSeparator" | "continuationNotice",
     sep: NoteSeparator | null | undefined,
     fallback: string,
     ctx: BodyContext,
+    noteIds: Set<number>,
   ): string => {
     // null = the parsed source carried no such system note — emit nothing.
     if (sep === null) return "";
     if (!sep) return fallback;
+    let id = sep.id;
+    if (noteIds.has(id)) {
+      id = sep.id - 1;
+      while (noteIds.has(id)) id--;
+    }
+    noteIds.add(id);
     const inner = sep.children.map((child) => ctx.stringifyChild(child)).join("");
-    return `<${cfg.noteTag} w:type="${type}" w:id="${sep.id}">${inner}</${cfg.noteTag}>`;
+    return `<${cfg.noteTag} w:type="${type}" w:id="${id}">${inner}</${cfg.noteTag}>`;
   };
 
   return {
     kind: "custom",
 
     stringify(data, ctx) {
-      const parts: string[] = [`<${cfg.rootTag} ${NS} mc:Ignorable="w14 w15 wp14 w16se">`];
+      const parts: string[] = [`<${cfg.rootTag} ${NS}>`];
+      // Every w:footnote/w:endnote id must be unique per part: seed the
+      // allocator with the user notes so a system note cannot collide.
+      const noteIds = new Set<number>(data.notes.keys());
 
       // Separator / continuation separator: round-trip id + content verbatim so
       // they stay consistent with settings (which references these ids). Fall
       // back to spec defaults only for freshly generated documents. The
       // continuation notice has no spec default — it only ever round-trips.
-      parts.push(systemNote("separator", data.separator, cfg.separatorXml, ctx));
+      parts.push(systemNote("separator", data.separator, cfg.separatorXml, ctx, noteIds));
       parts.push(
         systemNote(
           "continuationSeparator",
           data.continuationSeparator,
           cfg.continuationSeparatorXml,
           ctx,
+          noteIds,
         ),
       );
       if (data.continuationNotice) {
-        parts.push(systemNote("continuationNotice", data.continuationNotice, "", ctx));
+        parts.push(systemNote("continuationNotice", data.continuationNotice, "", ctx, noteIds));
       }
 
       for (const [id, children] of data.notes) {

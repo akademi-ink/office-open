@@ -617,6 +617,14 @@ export class DocxWriteContext implements WriteContext {
     if (this._options.commentsExtended?.length) {
       this.registerDocumentRel(RELATIONSHIP_TYPES.commentsExtendedMs, "commentsExtended.xml");
     }
+    // Word 2016+/2018+ durable comment ids and extensible metadata — same
+    // populated-only rule (an orphan part without its rel is an OPC violation).
+    if (this._options.commentsIds?.length) {
+      this.registerDocumentRel(RELATIONSHIP_TYPES.commentsIdsMs, "commentsIds.xml");
+    }
+    if (this._options.commentsExtensible?.length) {
+      this.registerDocumentRel(RELATIONSHIP_TYPES.commentsExtensibleMs, "commentsExtensible.xml");
+    }
     if (this._options.bibliography) {
       this.registerDocumentRel(RELATIONSHIP_TYPES.customXml, "bibliography.xml");
     }

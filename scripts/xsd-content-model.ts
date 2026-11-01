@@ -15,6 +15,18 @@
  *   (choice under an unbounded reference)
  * - xsd:any wildcard slots keep their namespace list for pass-through domains
  *
+ * Attribute contract (PKG-11): every container also records `requiredAttrs`,
+ * the attribute names an instance of that element must carry (`use="required"`),
+ * flattened through the complexContent extension chain and attributeGroup refs.
+ * Names are emitted the way an instance document spells them: qualified with
+ * the *declaring* schema's prefix when that schema sets
+ * `attributeFormDefault="qualified"` (WordprocessingML does: `w:id`, `w:val`),
+ * otherwise unprefixed (`wp:docPr@id`, `wp:docPr@name`), and always prefixed
+ * for `attribute ref=` references (`r:embed`). Elements whose complex type has
+ * no required attributes omit the key entirely; elements that share a QName
+ * keep the intersection across CT variants (a gate must not fire on a variant
+ * that legitimately omits the attribute).
+ *
  * Usage:
  *   pnpm tsx scripts/xsd-content-model.ts            # write container-models.json
  *   pnpm tsx scripts/xsd-content-model.ts --check    # diff against the committed file
@@ -95,6 +107,9 @@ interface Container {
   // union of every CT variant's slot members (w:sdtContent block/run/cell/row
   // variants are context-dependent) — set-level gate input, ordered gates use slots
   variantElements?: string[];
+  // attribute names an instance must carry, as spelled in an instance document
+  // (PKG-11) — sorted, deduplicated, present only when non-empty
+  requiredAttrs?: string[];
 }
 
 // ── Minimal XML tokenizer ────────────────────────────────────────────────────
@@ -167,8 +182,12 @@ interface SchemaFile {
   file: string;
   targetNs: string;
   prefix: string; // conventional output prefix for local declarations
+  // xsd:schema/@attributeFormDefault — "qualified" prefixes declared attribute
+  // names in the instance (WordprocessingML), unqualified leaves them bare
+  attributeFormDefault: "qualified" | "unqualified";
   complexTypes: Map<string, XNode>; // CT name → complexType node
   groups: Map<string, XNode>; // group name (prefixed, as referenced) → group node
+  attributeGroups: Map<string, XNode>; // attributeGroup name (prefixed) → node
   // imports: referenced prefix → schema file basename
   importPrefixes: Map<string, string>;
 }
@@ -204,6 +223,7 @@ function loadSchema(file: string): SchemaFile {
 
   const complexTypes = new Map<string, XNode>();
   const groups = new Map<string, XNode>();
+  const attributeGroups = new Map<string, XNode>();
   // groups are keyed by prefixed name as they appear in refs, so cross-file
   // refs resolve through the referencing file's prefix map
   for (const c of schemaEl.children) {
@@ -212,9 +232,24 @@ function loadSchema(file: string): SchemaFile {
       const qname = prefix ? `${prefix}:${c.attrs.name}` : c.attrs.name;
       groups.set(qname, c);
     }
+    if (c.tag === "attributeGroup" && c.attrs.name) {
+      const qname = prefix ? `${prefix}:${c.attrs.name}` : c.attrs.name;
+      attributeGroups.set(qname, c);
+    }
   }
 
-  const entry: SchemaFile = { file, targetNs, prefix, complexTypes, groups, importPrefixes };
+  const attributeFormDefault =
+    schemaEl.attrs.attributeFormDefault === "qualified" ? "qualified" : "unqualified";
+  const entry: SchemaFile = {
+    file,
+    targetNs,
+    prefix,
+    attributeFormDefault,
+    complexTypes,
+    groups,
+    attributeGroups,
+    importPrefixes,
+  };
   schemas.set(file, entry);
 
   // recurse into imports that live inside transitional/
@@ -447,6 +482,124 @@ function complexTypeSlots(ctName: string, sf: SchemaFile, seen: Set<string>): Sl
   return flattenChildren(node, owner, 0);
 }
 
+// ── Attribute contract ───────────────────────────────────────────────────────
+// The same flattening rules as slots, for `use="required"` attributes: follow
+// the complexContent/simpleContent extension chain into the base type and
+// expand attributeGroup refs (local and cross-file). `restriction` re-declares
+// what it keeps, so it is read on its own — matching the slot behaviour.
+
+function resolveAttributeGroup(refNode: XNode, sf: SchemaFile): [XNode, SchemaFile] | null {
+  const ref = refNode.attrs.ref ?? refNode.attrs.name;
+  if (!ref) return null;
+  if (ref.includes(":")) {
+    const p = ref.slice(0, ref.indexOf(":"));
+    const targetFile = sf.importPrefixes.get(p);
+    if (targetFile && schemas.has(targetFile)) {
+      const owner = schemas.get(targetFile)!;
+      const g = owner.attributeGroups.get(ref);
+      if (g) return [g, owner];
+    }
+    for (const s of schemas.values()) {
+      const g = s.attributeGroups.get(ref);
+      if (g) return [g, s];
+    }
+    warnings.push(`${sf.file}: unresolved attributeGroup ref ${ref}`);
+    return null;
+  }
+  const local = sf.attributeGroups.get(qualify(ref, sf));
+  return local ? [local, sf] : null;
+}
+
+/**
+ * Attribute names an instance of `node`'s body requires, qualified the way an
+ * instance document spells them. `ref=` references keep the referenced
+ * namespace's conventional prefix (`r:id`); `name=` declarations take the
+ * declaring schema's prefix only when that schema qualifies attribute names.
+ */
+function declaredRequiredAttrs(
+  node: XNode,
+  sf: SchemaFile,
+  out: Set<string>,
+  seenGroups: Set<string>,
+): void {
+  for (const child of node.children) {
+    if (child.tag === "attribute") {
+      if (child.attrs.use !== "required") continue;
+      const ref = child.attrs.ref;
+      if (ref) {
+        out.add(qualifyAttributeRef(ref, sf));
+        continue;
+      }
+      const name = child.attrs.name;
+      if (!name) continue;
+      const qualified =
+        child.attrs.form === "qualified" ||
+        (child.attrs.form === undefined && sf.attributeFormDefault === "qualified");
+      out.add(qualified && sf.prefix ? `${sf.prefix}:${name}` : name);
+      continue;
+    }
+    if (child.tag === "attributeGroup") {
+      const resolved = resolveAttributeGroup(child, sf);
+      if (!resolved) continue;
+      const [target, owner] = resolved;
+      const key = `${owner.file}:${target.attrs.name ?? ""}`;
+      if (seenGroups.has(key)) continue;
+      seenGroups.add(key);
+      declaredRequiredAttrs(target, owner, out, seenGroups);
+    }
+  }
+}
+
+// `ref="r:id"` resolves through the referencing file's imports to the owning
+// schema, which supplies the conventional prefix; an unresolvable prefix keeps
+// the source spelling (it still round-trips as written).
+function qualifyAttributeRef(ref: string, sf: SchemaFile): string {
+  if (!ref.includes(":")) return ref;
+  const px = ref.slice(0, ref.indexOf(":"));
+  const local = ref.slice(ref.indexOf(":") + 1);
+  const file = sf.importPrefixes.get(px);
+  const owner = file ? schemas.get(file) : undefined;
+  return owner?.prefix ? `${owner.prefix}:${local}` : ref;
+}
+
+function complexTypeRequiredAttrs(ctName: string, sf: SchemaFile, seen: Set<string>): string[] {
+  if (seen.has(ctName)) return [];
+  seen.add(ctName);
+
+  let node: XNode | undefined = sf.complexTypes.get(ctName);
+  let owner: SchemaFile = sf;
+  if (!node) {
+    for (const s of schemas.values()) {
+      const found = s.complexTypes.get(ctName);
+      if (found) {
+        node = found;
+        owner = s;
+        break;
+      }
+    }
+  }
+  if (!node) return [];
+
+  const out = new Set<string>();
+  const seenGroups = new Set<string>();
+  const body = node.children.find((c) => c.tag === "complexContent" || c.tag === "simpleContent");
+  if (body) {
+    const impl = body.children.find((c) => c.tag === "extension" || c.tag === "restriction");
+    if (!impl) return [];
+    if (impl.tag === "extension") {
+      const base = impl.attrs.base ?? "";
+      // a simpleContent base is a simple type; only a complex-type base carries attrs
+      if (base && !base.includes(":") && owner.complexTypes.has(base)) {
+        for (const a of complexTypeRequiredAttrs(base, owner, seen)) out.add(a);
+      }
+    }
+    declaredRequiredAttrs(impl, owner, out, seenGroups);
+    return [...out].sort();
+  }
+  declaredRequiredAttrs(node, owner, out, seenGroups);
+  return [...out].sort();
+}
+
 // ── Element table assembly ───────────────────────────────────────────────────
 
 const containers = new Map<string, Container>();
@@ -458,7 +611,7 @@ const namespaces: Record<string, string> = {};
 const richness = (slots: Slot[]) =>
   slots.length * 1000 + slots.reduce((n, s) => n + (s.elements?.length ?? 0), 0);
 
-function addElement(elementQName: string, ctName: string, slots: Slot[]) {
+function addElement(elementQName: string, ctName: string, slots: Slot[], requiredAttrs: string[]) {
   const unionInto = (target: Container) => {
     for (const s of slots) {
       for (const e of s.elements ?? []) {
@@ -467,16 +620,26 @@ function addElement(elementQName: string, ctName: string, slots: Slot[]) {
       }
     }
   };
+  // Variants of one element QName may differ in what they require; the gate
+  // must not fire on a variant that legitimately omits the attribute, so the
+  // contract is the intersection across every CT seen for that QName.
+  const mergeAttrs = (target: Container) => {
+    if (!target.requiredAttrs) return;
+    target.requiredAttrs = target.requiredAttrs.filter((a) => requiredAttrs.includes(a));
+    if (target.requiredAttrs.length === 0) delete target.requiredAttrs;
+  };
   const existing = containers.get(elementQName);
   if (existing) {
     if (!existing.ct.includes(ctName)) existing.ct.push(ctName);
     // several elements share a base and a full complexType (CT_SectPrBase vs
     // CT_SectPr); keep the most complete slot list for gate purposes
     if (richness(slots) > richness(existing.slots)) existing.slots = slots;
+    mergeAttrs(existing);
     unionInto(existing);
     return;
   }
   const fresh: Container = { ct: [ctName], slots };
+  if (requiredAttrs.length > 0) fresh.requiredAttrs = [...requiredAttrs];
   containers.set(elementQName, fresh);
   unionInto(fresh);
 }
@@ -512,7 +675,12 @@ function collectFromSchema(sf: SchemaFile) {
             const [typeSf, typeName] = resolved;
             const slots = complexTypeSlots(typeName, typeSf, new Set());
             if (slots.length > 0 || typeSf.complexTypes.has(typeName)) {
-              addElement(qname, typeName, slots);
+              addElement(
+                qname,
+                typeName,
+                slots,
+                complexTypeRequiredAttrs(typeName, typeSf, new Set()),
+              );
             }
           }
         }
@@ -583,8 +751,14 @@ function main() {
 
   fs.writeFileSync(OUT_FILE, json);
   const slotCount = [...containers.values()].reduce((n, c) => n + c.slots.length, 0);
+  const attrContainers = [...containers.values()].filter((c) => c.requiredAttrs).length;
+  const attrCount = [...containers.values()].reduce(
+    (n, c) => n + (c.requiredAttrs?.length ?? 0),
+    0,
+  );
   console.log(
-    `container-models.json: ${containers.size} containers, ${slotCount} slots, ${schemas.size} schemas loaded`,
+    `container-models.json: ${containers.size} containers, ${slotCount} slots, ` +
+      `${attrCount} required attrs on ${attrContainers} containers, ${schemas.size} schemas loaded`,
   );
   if (warnings.length > 0) {
     console.log(`warnings (${warnings.length}):`);
@@ -608,8 +782,24 @@ function main() {
     sectPr.slots[0]?.pick === "one" &&
     sectPr.slots[0].elements?.[0] === "w:headerReference" &&
     sectPr.slots.at(-1)?.elements?.[0] === "w:sectPrChange";
-  console.log(`spot-checks: w:rPr ${okRpr ? "ok" : "FAIL"}, w:sectPr ${okSectPr ? "ok" : "FAIL"}`);
-  if (!okRpr || !okSectPr) process.exitCode = 1;
+  // attribute contract spot-checks: wml qualifies attribute names (w:id), the
+  // drawing schemas do not (wp:docPr@id), and r: refs keep their prefix
+  const okBookmark = hasRequired(containers.get("w:bookmarkStart"), ["w:id", "w:name"]);
+  const okDocPr = hasRequired(containers.get("wp:docPr"), ["id", "name"]);
+  const okBlip = hasRequired(containers.get("a:blip"), []);
+  console.log(
+    `spot-checks: w:rPr ${okRpr ? "ok" : "FAIL"}, w:sectPr ${okSectPr ? "ok" : "FAIL"}, ` +
+      `w:bookmarkStart attrs ${okBookmark ? "ok" : "FAIL"}, wp:docPr attrs ${okDocPr ? "ok" : "FAIL"}, ` +
+      `a:blip attrs ${okBlip ? "ok" : "FAIL"}`,
+  );
+  if (!okRpr || !okSectPr || !okBookmark || !okDocPr || !okBlip) process.exitCode = 1;
+}
+
+// Exact required-attribute set assertion (not a superset test): the contract
+// gates on this list verbatim.
+function hasRequired(container: Container | undefined, expected: string[]): boolean {
+  const actual = container?.requiredAttrs ?? [];
+  return actual.length === expected.length && expected.every((a) => actual.includes(a));
 }
 
 main();

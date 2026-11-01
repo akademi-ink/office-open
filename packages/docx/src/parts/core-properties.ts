@@ -11,6 +11,8 @@
 import type { ContentTypesInput, DataType, EncryptedContainerOptions } from "@office-open/core";
 import type { BibliographyOptions } from "@parts/bibliography";
 import type { CommentExtendedOptions } from "@parts/comments-extended";
+import type { CommentExtensibleOptions } from "@parts/comments-extensible";
+import type { CommentIdOptions } from "@parts/comments-ids";
 import type { EmbeddedFontOptions } from "@parts/fonts/font-table";
 import type { GlossaryDocumentOptions } from "@parts/glossary-document";
 import type { CommentOptions } from "@parts/paragraph/run/comment-run";
@@ -66,9 +68,10 @@ export interface DocumentOptions extends CorePropertiesOptions {
   numbering?: NumberingOptions;
   comments?: CommentOptions[];
   /**
-   * Comment authors (word/people.xml). Word pairs each w15:person with
-   * comments by exact author-string equality; omit for documents whose
-   * comments carry no author registry.
+   * Comment authors (word/people.xml) — Word's display-name directory. Unlike
+   * commentsExtended/commentsIds, a w15:person carries no paraId or durable
+   * id, so author string equality is the only pairing Word's schema offers;
+   * omit for documents whose comments carry no author registry.
    */
   people?: CommentPersonOptions[];
   /**
@@ -76,6 +79,18 @@ export interface DocumentOptions extends CorePropertiesOptions {
    * threading, keyed by the w14:paraId of each comment's first paragraph.
    */
   commentsExtended?: CommentExtendedOptions[];
+  /**
+   * Durable comment ids (word/commentsIds.xml, w16cid) — paraId → durableId.
+   * The durable id is the stable key for a comment across edits; Word 2016+
+   * writes it alongside comments.xml.
+   */
+  commentsIds?: CommentIdOptions[];
+  /**
+   * Extensible comment metadata (word/commentsExtensible.xml, w16cex) —
+   * per-comment UTC time and extension list, keyed by the durable id from
+   * `commentsIds`.
+   */
+  commentsExtensible?: CommentExtensibleOptions[];
   bibliography?: BibliographyOptions;
   /** User footnotes (word/footnotes.xml). `id` auto-assigns 1, 2, … when omitted. */
   footnotes?: FootnoteOptions[];

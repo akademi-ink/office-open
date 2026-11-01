@@ -25,7 +25,14 @@ import {
 
 import type { PartCtxFactory } from "../compiler";
 import type { DocxWriteContext } from "../context";
-import { XML_DECL, registerPartMedia, resolvePartCharts, resolvePartMedia } from "./shared";
+import {
+  XML_DECL,
+  claimPartPassthroughRelationships,
+  registerPartMedia,
+  reservePartSourceRids,
+  resolvePartCharts,
+  resolvePartMedia,
+} from "./shared";
 
 /** Stringify one header/footer part and wire its media/embedding/chart/
  * SmartArt relationships. Images get per-part relationship IDs starting at
@@ -39,9 +46,14 @@ function compileHeaderFooterPart(
   mkCtx: PartCtxFactory,
 ): { part: XmlifyedFile; rels?: XmlifyedFile } {
   const partName = entry.partName ?? `${kind}${index + 1}.xml`;
+  const source = `word/${partName}`;
+  // Claim the part's source ids before the model allocates media/chart ids, so
+  // a source relationship the model kept verbatim (`w:contentPart r:id`,
+  // passthrough rels in rawXml) is re-emitted at its source id below.
+  reservePartSourceRids(entry.relationships, ctx, source);
   const partCtx = mkCtx({
     relationships: entry.relationships,
-    partName: `word/${partName}`,
+    partName: source,
   });
   const xmlData =
     XML_DECL +
@@ -52,14 +64,18 @@ function compileHeaderFooterPart(
       partCtx,
     );
   const relCount = entry.relationships.nextRelationshipId;
-  const resolved = resolvePartMedia(xmlData, ctx, relCount);
-  registerPartMedia(entry.relationships, ctx, resolved);
+  const resolved = resolvePartMedia(xmlData, ctx, relCount, source);
+  registerPartMedia(entry.relationships, ctx, resolved, source);
   const resolvedXml = resolvePartCharts(
     resolved.xml,
     ctx,
     entry.relationships,
     resolved.embeddingOffset + resolved.embeddingRefs.length,
+    source,
   );
+  // Re-emit the source rels of this part that travel as passthrough parts —
+  // the model kept their rIds verbatim in the part's XML.
+  claimPartPassthroughRelationships(entry.relationships, ctx, source);
   return {
     part: {
       data: replaceNumberingPlaceholders(resolvedXml, ctx.numbering.concreteNumbering),

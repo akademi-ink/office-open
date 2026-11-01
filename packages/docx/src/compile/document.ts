@@ -23,59 +23,15 @@ import {
 } from "@office-open/core";
 
 import type { DocxWriteContext } from "../context";
-import { XML_DECL, embeddingRelationship } from "./shared";
+import { XML_DECL, embeddingRelationship, partSourceRidMap, sourceRidFor } from "./shared";
 
-/**
- * Look up the source rId for a document relationship by kind+target. Returns
- * the numeric id when the source carried the same rel, undefined otherwise.
- * The body XML's `r:id` references the source rId verbatim on round-trip, so
- * the structured compiler must emit the rel at that exact id — otherwise
- * `r:id="rId4"` would point at a different rel and Word refuses to open.
- */
-function sourceRidFor(
-  passthroughRelationships:
-    | readonly { source: string; relationshipType: string; target: string; rId: string }[]
-    | undefined,
-  ownerSource: string,
-  relationshipType: string,
-  target: string,
-): number | undefined {
-  if (!passthroughRelationships) return undefined;
-  for (const rel of passthroughRelationships) {
-    if (
-      rel.source === ownerSource &&
-      rel.relationshipType === relationshipType &&
-      rel.target === target
-    ) {
-      const m = /^rId(\d+)$/.exec(rel.rId);
-      if (m) return Number(m[1]);
-    }
-  }
-  return undefined;
-}
-
-/**
- * Build a {fileName → rId} map for source rels targeting `media/` or
- * `embeddings/`. findAndReplaceImagePlaceholders consults this map to
- * substitute the source rId in body XML (so `<a:blip r:embed="rId5"/>` points
- * at the rel registered at rId5 — not the rel registered at an
- * offset-derived id, which dangles against any source body that referenced
- * the source rId). Placeholder keys use the media-collection fileName; a
- * dedup-renamed file misses the map and falls through to the offset id on
- * BOTH the body and the .rels side, keeping them consistent.
- */
+/** The {fileName → source rId} map for the document body's media or
+ *  embedding rels — the shared per-part lookup bound to word/document.xml. */
 function documentSourceRids(
   ctx: DocxWriteContext,
   dir: "media" | "embeddings",
-): ReadonlyMap<string, string> {
-  const map = new Map<string, string>();
-  const prefix = `${dir}/`;
-  for (const rel of ctx._options.passthroughRelationships ?? []) {
-    if (rel.source !== "word/document.xml") continue;
-    if (!rel.target.startsWith(prefix)) continue;
-    map.set(rel.target.slice(prefix.length), rel.rId);
-  }
-  return map;
+): ReadonlyMap<string, string> | undefined {
+  return partSourceRidMap(ctx, "word/document.xml", dir);
 }
 
 /** Resolve the document body's media/embedding placeholders, then emit the
@@ -122,7 +78,7 @@ export function compileDocumentEntries(
           for (const [i, key] of chartKeys.entries()) {
             const chartTarget = `charts/chart${i + 1}.xml`;
             const sourceRid = sourceRidFor(
-              ctx._options.passthroughRelationships,
+              ctx,
               "word/document.xml",
               RELATIONSHIP_TYPES.chart,
               chartTarget,
@@ -159,7 +115,7 @@ export function compileDocumentEntries(
         for (const [i, ref] of documentMedia.referenced.entries()) {
           const target = `media/${ref.fileName}`;
           const sourceRid = sourceRidFor(
-            ctx._options.passthroughRelationships,
+            ctx,
             "word/document.xml",
             RELATIONSHIP_TYPES.image,
             target,
@@ -173,7 +129,7 @@ export function compileDocumentEntries(
         for (const [i, ref] of documentEmbeddings.referenced.entries()) {
           const target = `embeddings/${ref.fileName}`;
           const sourceRid = sourceRidFor(
-            ctx._options.passthroughRelationships,
+            ctx,
             "word/document.xml",
             embeddingRelationship(ctx.embeddings, ref.fileName),
             target,
@@ -192,7 +148,7 @@ export function compileDocumentEntries(
         for (let i = 0; i < ctx.charts.array.length; i++) {
           const target = `charts/chart${i + 1}.xml`;
           const sourceRid = sourceRidFor(
-            ctx._options.passthroughRelationships,
+            ctx,
             "word/document.xml",
             RELATIONSHIP_TYPES.chart,
             target,
@@ -225,12 +181,8 @@ export function compileDocumentEntries(
         );
 
         ctx.document.relationships.addRelationship(
-          sourceRidFor(
-            ctx._options.passthroughRelationships,
-            "word/document.xml",
-            RELATIONSHIP_TYPES.fontTable,
-            "fontTable.xml",
-          ) ?? ctx.document.relationships.nextRelationshipId,
+          sourceRidFor(ctx, "word/document.xml", RELATIONSHIP_TYPES.fontTable, "fontTable.xml") ??
+            ctx.document.relationships.nextRelationshipId,
           RELATIONSHIP_TYPES.fontTable,
           "fontTable.xml",
         );

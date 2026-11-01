@@ -19,6 +19,7 @@ const CT = {
   core: "application/vnd.openxmlformats-package.core-properties+xml",
   app: "application/vnd.openxmlformats-officedocument.extended-properties+xml",
   custom: "application/vnd.openxmlformats-officedocument.custom-properties+xml",
+  chartEx: "application/vnd.ms-office.chartex+xml",
 } as const;
 
 const REL = {
@@ -33,6 +34,7 @@ const REL = {
   endnotes: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/endnotes",
   settings: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings",
   fontTable: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable",
+  chartEx: "http://schemas.microsoft.com/office/2014/relationships/chartEx",
 } as const;
 
 const def = (ext: string, ct: string) => `<Default Extension="${ext}" ContentType="${ct}"/>`;
@@ -108,6 +110,22 @@ const codes = (issues: readonly OpcIssue[]): string[] => issues.map((i) => i.cod
 describe("validateOpcConsistency", () => {
   it("returns no issues for a consistent package", () => {
     expect(validateOpcConsistency(baseDocxEntries(), DOCX_PARTS)).toEqual([]);
+  });
+
+  it("declares chartEx parts so a modern chart is not an orphan (PKG-12)", () => {
+    const entries = baseDocxEntries();
+    entries.set(
+      "[Content_Types].xml",
+      contentTypesXml(ov("/word/charts/chartEx1.xml", CT.chartEx)),
+    );
+    entries.set(
+      "word/_rels/document.xml.rels",
+      documentRels({ rId7: rel("rId7", REL.chartEx, "charts/chartEx1.xml") }),
+    );
+    entries.set("word/charts/chartEx1.xml", '<cx:chartSpace xmlns:cx="cx"/>');
+
+    // preserved as an opaque part, not reported as undeclared
+    expect(codes(validateOpcConsistency(entries, DOCX_PARTS))).not.toContain("O1");
   });
 
   it("O2 — flags a missing always part", () => {

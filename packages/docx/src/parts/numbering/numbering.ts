@@ -13,7 +13,7 @@ import { decimalNumber } from "@office-open/core";
  */
 import { attr, attrBool, attrNum, findChild } from "@office-open/xml";
 import type { Element } from "@office-open/xml";
-import { documentNamespaceAttributes } from "@parts/document/document-attributes";
+import { rootNamespaceAttributes } from "@parts/document/extension-registry";
 import { AlignmentType } from "@parts/paragraph";
 import type { ParagraphPropertiesOptions } from "@parts/paragraph/properties";
 import { parseRunProperties } from "@parts/paragraph/run/run-parse";
@@ -80,27 +80,26 @@ export interface NumberingOptions {
 }
 
 /** Namespace attributes for w:numbering (pre-computed constant). */
-const NUMBERING_ATTRS =
-  documentNamespaceAttributes([
-    "wpc",
-    "mc",
-    "o",
-    "pvml",
-    "r",
-    "m",
-    "v",
-    "wp14",
-    "wp",
-    "w10",
-    "w",
-    "w14",
-    "w15",
-    "wpg",
-    "wpi",
-    "wne",
-    "wps",
-    "x",
-  ]) + ' mc:Ignorable="w14 w15 wp14"';
+const NUMBERING_ATTRS = rootNamespaceAttributes([
+  "wpc",
+  "mc",
+  "o",
+  "pvml",
+  "r",
+  "m",
+  "v",
+  "wp14",
+  "wp",
+  "w10",
+  "w",
+  "w14",
+  "w15",
+  "wpg",
+  "wpi",
+  "wne",
+  "wps",
+  "x",
+]);
 
 /** Default bullet levels (9 levels: 0-8). */
 const DEFAULT_BULLET_LEVELS: LevelsOptions[] = [

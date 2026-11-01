@@ -36,6 +36,8 @@ import { replaceRelsWithPlaceholders } from "../../../util/replace-media-placeho
 import { stringifyElement } from "../../../util/stringify-element";
 import type { LanguageOptions } from "./language";
 import type { RubyContentOptions, RubyOptions, RubyPropertiesOptions } from "./ruby";
+import type { TextEffectsOptions } from "./text-effects";
+import { isEmptyTextEffects, parseTextEffectChild } from "./text-effects";
 
 // On/off run properties: XML child tag → options key.
 const ON_OFF_RUN_PROPS: readonly (readonly [string, keyof RunPropertiesOptions & string])[] = [
@@ -68,6 +70,7 @@ const ON_OFF_RUN_PROPS_MAP: ReadonlyMap<string, string> = new Map(ON_OFF_RUN_PRO
 export function parseRunProperties(el: Element): RunPropertiesOptions {
   const opts: Record<string, unknown> = {};
   let w14Parts: string[] | undefined;
+  let textEffects: TextEffectsOptions | undefined;
 
   const children = el.elements;
   if (children !== undefined) {
@@ -263,17 +266,20 @@ export function parseRunProperties(el: Element): RunPropertiesOptions {
         }
         default: {
           // On/off properties (w:strike, w:caps, …) and w14:* text effects.
-          // w14 effects (glow/shadow/reflection/props3d) occupy the
-          // EG_RPrBase extension slot — low-frequency complex subtrees kept
-          // verbatim as raw XML for fidelity while the rPr backbone stays
-          // editable.
+          // Modeled w14 effects (ligatures/glow/shadow/textFill/props3d/…)
+          // parse into the typed `textEffects` slot; anything the model does
+          // not cover (`w14:textOutline`, future effects) stays verbatim in
+          // `w14RawXml` so nothing is dropped.
           const name = child.name;
           if (name === undefined) break;
           const optKey = ON_OFF_RUN_PROPS_MAP.get(name);
           if (optKey !== undefined) {
             opts[optKey] = attrBool(child, "w:val") ?? true;
           } else if (name.startsWith("w14:")) {
-            (w14Parts ??= []).push(stringifyElement(child));
+            textEffects ??= {};
+            if (!parseTextEffectChild(child, textEffects)) {
+              (w14Parts ??= []).push(stringifyElement(child));
+            }
           }
           break;
         }
@@ -281,6 +287,9 @@ export function parseRunProperties(el: Element): RunPropertiesOptions {
     }
   }
 
+  if (textEffects !== undefined && !isEmptyTextEffects(textEffects)) {
+    opts.textEffects = textEffects;
+  }
   if (w14Parts !== undefined && w14Parts.length > 0) opts.w14RawXml = w14Parts.join("");
 
   // A bare <w:rPr/> yields no fields — mark the presence so stringify
