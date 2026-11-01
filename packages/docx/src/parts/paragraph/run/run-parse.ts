@@ -397,7 +397,11 @@ export type ParsedRunChild =
   | { ruby: RubyOptions }
   | { break: number | BreakOptions }
   | { footnoteReference: number | FootnoteEndnoteReferenceOptions }
-  | { endnoteReference: number | FootnoteEndnoteReferenceOptions };
+  | { endnoteReference: number | FootnoteEndnoteReferenceOptions }
+  // Unknown run content is preserved verbatim rather than dropped. Known
+  // rel-carrying payloads (drawings, pictures, objects) have structured
+  // handlers above; extensions we do not model land here.
+  | { rawXml: string };
 
 function parseRubyContent(el: Element, ctx: DocxReadContext): RubyContentOptions {
   const children: (RunOptions | string)[] = [];
@@ -683,6 +687,10 @@ export function parseRun(
         children.push(PARSED_LAST_RENDERED_PAGE_BREAK);
         break;
       default:
+        // Preserve unknown EG_RunInnerContent members instead of dropping them.
+        // Text nodes outside the content model carry no element name; ignore
+        // them (previous behavior) rather than emitting an empty rawXml child.
+        if (child.name) children.push({ rawXml: stringifyElement(child) });
         break;
     }
   }

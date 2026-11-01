@@ -252,7 +252,14 @@ function parseDocPartRefs(doc: ParsedArchive): DocxPartRefs {
     } else if (type.includes("/subDocument")) {
       refs.subDocs.set(id, path);
     } else if (type.includes("/bibliography")) {
+      // Legacy Akademi part shape (pre-standards fix). Kept for read-back.
       refs.bibliography = path;
+    } else if (type.includes("/customXml")) {
+      // ECMA-376: the Bibliography part is a custom XML part. Identify it by
+      // its root element rather than by path, because Word names it
+      // customXml/itemN.xml and the standard does not fix the location.
+      const customXmlPart = doc.get(path);
+      if (customXmlPart?.name === "b:Sources") refs.bibliography = path;
     } else if (type.includes("/glossaryDocument")) {
       refs.glossary = path;
     } else if (type.includes("/hyperlink")) {

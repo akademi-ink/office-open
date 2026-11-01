@@ -618,7 +618,7 @@ export class DocxWriteContext implements WriteContext {
       this.registerDocumentRel(RELATIONSHIP_TYPES.commentsExtendedMs, "commentsExtended.xml");
     }
     if (this._options.bibliography) {
-      this.registerDocumentRel(RELATIONSHIP_TYPES.bibliography, "bibliography.xml");
+      this.registerDocumentRel(RELATIONSHIP_TYPES.customXml, "bibliography.xml");
     }
 
     // Theme — always present: fresh-compile generates a default theme, round-trip

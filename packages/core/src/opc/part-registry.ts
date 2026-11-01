@@ -208,9 +208,11 @@ export const DOCX_PARTS = {
       presence: { kind: "repeated", countFrom: "smartArtCount" },
     },
     {
+      // ECMA-376 Part 1: the Bibliography part is a custom XML part with
+      // content type application/xml and the .../customXml relationship type.
+      // The path itself is not fixed by the standard; Word uses customXml/itemN.xml.
       path: "word/bibliography.xml",
-      contentType:
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.bibliography+xml",
+      contentType: "application/xml",
       presence: { kind: "conditional", flag: "hasBibliography" },
     },
     {

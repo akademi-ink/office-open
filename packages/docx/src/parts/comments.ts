@@ -58,7 +58,7 @@ export const COMMENTS_NS =
     "wpg",
     "wpi",
     "wps",
-  ]) + ' mc:Ignorable="w14 w15 wp14"';
+  ]) + ' mc:Ignorable="w14 w15 wp14 w16 w16cex w16cid w16sdtdh w16se"';
 
 // ── Comment stringification ──
 

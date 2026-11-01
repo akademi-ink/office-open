@@ -52,6 +52,7 @@ const NS = documentNamespaceAttributes([
   "w10",
   "w14",
   "w15",
+  "w16se",
   "wne",
   "wp",
   "wp14",
@@ -105,7 +106,7 @@ export function createNotesDesc(cfg: NotesDescConfig): CustomDescriptor<NotesDat
     kind: "custom",
 
     stringify(data, ctx) {
-      const parts: string[] = [`<${cfg.rootTag} ${NS} mc:Ignorable="w14 w15 wp14">`];
+      const parts: string[] = [`<${cfg.rootTag} ${NS} mc:Ignorable="w14 w15 wp14 w16se">`];
 
       // Separator / continuation separator: round-trip id + content verbatim so
       // they stay consistent with settings (which references these ids). Fall

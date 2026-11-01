@@ -176,7 +176,12 @@ export interface SourceTypeOptions {
  */
 export interface BibliographyOptions {
   sources: SourceTypeOptions[];
+  /** Word's display name for the selected style (b:Sources/@StyleName). */
   styleName?: string;
+  /** Word's XSLT style path (b:Sources/@SelectedStyle), e.g. "\\APA.XSL". */
+  selectedStyle?: string;
+  /** Word's style URI (b:Sources/@URI), preserved when present. */
+  uri?: string;
 }
 
 // ── Descriptor ──
@@ -343,8 +348,14 @@ export const bibliographyDesc: CustomDescriptor<BibliographyOptions> = {
     const attrParts: string[] = [
       'xmlns:b="http://schemas.openxmlformats.org/officeDocument/2006/bibliography"',
     ];
+    if (opts.selectedStyle !== undefined) {
+      attrParts.push(`SelectedStyle="${escapeXml(opts.selectedStyle)}"`);
+    }
     if (opts.styleName !== undefined) {
       attrParts.push(`StyleName="${escapeXml(opts.styleName)}"`);
+    }
+    if (opts.uri !== undefined) {
+      attrParts.push(`URI="${escapeXml(opts.uri)}"`);
     }
 
     const parts: string[] = [`<b:Sources ${attrParts.join(" ")}>`];
@@ -373,9 +384,13 @@ export const bibliographyDesc: CustomDescriptor<BibliographyOptions> = {
   parse(el, _ctx) {
     const opts: Partial<BibliographyOptions> = {};
 
-    // StyleName attribute
+    // Style attributes (SelectedStyle is what Word actually uses to pick the XSLT)
+    const selectedStyle = el.attributes?.["SelectedStyle"];
+    if (selectedStyle) opts.selectedStyle = selectedStyle as string;
     const styleName = el.attributes?.["StyleName"];
     if (styleName) opts.styleName = styleName as string;
+    const uri = el.attributes?.["URI"];
+    if (uri) opts.uri = uri as string;
 
     // Parse b:Source children
     const sources: SourceTypeOptions[] = [];

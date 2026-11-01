@@ -343,3 +343,52 @@ describe("chart and smartart placeholders in header/footer/notes parts", () => {
     expect(files["word/diagrams/data1.xml"]).toBeDefined();
   });
 });
+
+describe("ECMA-376 conformance emission", () => {
+  const doc = {
+    sections: [{ children: [{ paragraph: { children: ["Conformance"] } }] }],
+  };
+
+  it("does not emit w:conformance over Transitional namespaces", () => {
+    const files = compileDocument({ ...doc, conformance: "strict" });
+    const xml = new TextDecoder().decode(files["word/document.xml"] as Uint8Array);
+    expect(xml).not.toContain("w:conformance=");
+    expect(xml).toContain('xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"');
+  });
+
+  it("declares w16se in mc:Ignorable because w:sym can emit it", () => {
+    const files = compileDocument(doc);
+    const xml = new TextDecoder().decode(files["word/document.xml"] as Uint8Array);
+    const ignorable = xml.match(/mc:Ignorable="([^"]+)"/)?.[1] ?? "";
+    expect(ignorable.split(/\s+/)).toContain("w16se");
+    // Every ignorable prefix must be declared on the same root element.
+    for (const prefix of ignorable.split(/\s+/)) {
+      expect(xml).toContain(`xmlns:${prefix}=`);
+    }
+  });
+
+  it("writes the bibliography as a customXml part with application/xml", () => {
+    const files = compileDocument({
+      ...doc,
+      bibliography: {
+        sources: [{ sourceType: "Book", title: "T", tag: "T1" }],
+        styleName: "APA",
+        selectedStyle: "\\APA.XSL",
+      },
+    });
+    const rels = new TextDecoder().decode(files["word/_rels/document.xml.rels"] as Uint8Array);
+    expect(rels).toContain(
+      'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml"',
+    );
+    expect(rels).toContain('Target="bibliography.xml"');
+    const contentTypes = new TextDecoder().decode(
+      files["[Content_Types].xml"] as Uint8Array,
+    );
+    expect(contentTypes).toContain(
+      '<Override PartName="/word/bibliography.xml" ContentType="application/xml"/>',
+    );
+    const bib = new TextDecoder().decode(files["word/bibliography.xml"] as Uint8Array);
+    expect(bib).toContain('SelectedStyle="\\APA.XSL"');
+    expect(bib).toContain('StyleName="APA"');
+  });
+});

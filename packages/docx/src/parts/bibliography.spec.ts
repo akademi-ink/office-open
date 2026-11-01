@@ -45,6 +45,27 @@ describe("bibliographyDesc round-trip", () => {
     expect(result.styleName).toBe("APA");
   });
 
+  it("round-trips Word's SelectedStyle and URI", () => {
+    const result = roundTrip({
+      sources: [],
+      styleName: "APA",
+      selectedStyle: "\\APA.XSL",
+      uri: "http://example.test/apa",
+    });
+    expect(result.styleName).toBe("APA");
+    expect(result.selectedStyle).toBe("\\APA.XSL");
+    expect(result.uri).toBe("http://example.test/apa");
+  });
+
+  it("emits SelectedStyle before StyleName, as Word does", () => {
+    const xml = bibliographyDesc.stringify(
+      { sources: [], styleName: "APA", selectedStyle: "\\APA.XSL" },
+      writeCtx,
+    )!;
+    expect(xml).toContain('SelectedStyle="\\APA.XSL"');
+    expect(xml.indexOf("SelectedStyle")).toBeLessThan(xml.indexOf("StyleName"));
+  });
+
   it("round-trips structured authors across roles", () => {
     const author = {
       authors: [{ corporate: "Microsoft" }, { last: "Smith", first: "J.", middle: "R." }],

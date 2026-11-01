@@ -127,7 +127,7 @@ export function stringifyHeaderFooter(
   // mc:Ignorable must declare the ignorable namespaces (w14/w15/wp14) that
   // header/footer content uses (e.g. w14:paraId). Without it, Word in
   // compatibility mode 14 rejects the part as unreadable content.
-  attrParts.push('mc:Ignorable="w14 w15 wp14"');
+  attrParts.push('mc:Ignorable="w14 w15 wp14 w16se w16cid"');
   const attrStr = attrParts.join(" ");
 
   const childParts: string[] = [];

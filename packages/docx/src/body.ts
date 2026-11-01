@@ -417,11 +417,19 @@ export function stringifyDocumentXml(ctx: DocxWriteContext, docCtx: BodyContext)
   const bodySections = ctx.sectionProperties;
   const parts: string[] = [];
 
-  // <w:document> open tag
-  const conformanceAttr = ctx._options.conformance
-    ? ` w:conformance="${ctx._options.conformance}"`
-    : "";
-  parts.push(`<w:document ${DOC_NS} mc:Ignorable="w14 w15 wp14"${conformanceAttr}>`);
+  // <w:document> open tag.
+  //
+  // `w:conformance` is parsed but deliberately NOT emitted: the writer always
+  // declares the Transitional namespace set, so re-emitting `strict` would
+  // produce a package that is invalid under either conformance class. Emit it
+  // again only when a real Strict serialiser (purl.oclc.org namespaces, no
+  // Transitional-only elements) exists.
+  //
+  // mc:Ignorable must list every extension prefix declared on this element
+  // that we emit or pass through; `w16se` is emitted by `w:sym` (parts/inline)
+  // and was previously missing.
+  const DOC_IGNORABLE = "w14 w15 wp14 w16cex w16cid w16 w16sdtdh w16se";
+  parts.push(`<w:document ${DOC_NS} mc:Ignorable="${DOC_IGNORABLE}">`);
 
   // Background (if any)
   if (ctx._options.background) {
@@ -961,7 +969,7 @@ export function parseParagraphProperties(
   }
 
   const liveSectPr = findChild(el, "w:sectPr");
-  if (liveSectPr && !ctx.ownedSectPrs.has(liveSectPr)) {
+  if (liveSectPr && !ctx.ownedSectPrs?.has(liveSectPr)) {
     opts.nestedSectionPropertiesXml = stringifyElement(liveSectPr);
   }
 
@@ -1656,7 +1664,14 @@ function parseContainerChildren(el: Element, ctx: DocxReadContext): ParagraphChi
         if (customXml) children.push({ customXml });
         break;
       }
+      // Property carriers are metadata, not inline content.
+      case "w:smartTagPr":
+      case "w:customXmlPr":
+      case "w:rPr":
+        break;
       default:
+        // Unknown inline container content is preserved verbatim.
+        if (sub.name) children.push({ rawXml: stringifyElement(sub) });
         break;
     }
   }
@@ -2258,6 +2273,9 @@ function parseRunLevelChildren(
         break;
       }
       default:
+        // Preserve unknown run-level content instead of dropping it. Block-level
+        // unknowns already carry rawXml; this closes the asymmetry.
+        childList.push({ rawXml: stringifyElement(child) });
         break;
     }
   }
