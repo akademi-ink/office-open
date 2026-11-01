@@ -24,6 +24,7 @@ import {
   findChild,
   textOf,
 } from "@office-open/xml";
+import { parse as parseXml } from "@office-open/xml";
 import type { Element } from "@office-open/xml";
 import { sectionPropertiesDesc } from "@parts/document/body/section-properties/descriptor";
 import { documentNamespaceAttributes } from "@parts/document/document-attributes";
@@ -1019,6 +1020,19 @@ function parseCnfStyle(el: Element): NonNullable<ParagraphPropertiesOptions["cnf
  * `<w:tab>`/`<w:br>` in results are ignored as rare for user-entered text.
  */
 /** Field-chain accumulator state, shared by the paragraph and track-change run loops. */
+interface NestedFieldFrame {
+  pendingInstruction: string;
+  pendingResult: string;
+  collectingResult: boolean;
+  sawSeparate: boolean;
+  controlRPr?: string;
+  resultRPr?: string;
+  beginRunEl?: Element;
+  instrRunEls: Element[];
+  resultRunEls: Element[];
+  resultChildren: ParagraphChild[];
+}
+
 interface FieldRunState {
   kind: "form" | "complex" | null;
   pendingFormField: FormFieldOptions | null;
@@ -1038,6 +1052,14 @@ interface FieldRunState {
   instrRunEls: Element[];
   /** Result-stage run elements (separate → end), buffered likewise. */
   resultRunEls: Element[];
+  /** Ordered typed result content (runs/tabs/hyperlinks) for the writer and
+   *  layout projection; keeps per-segment rPr and link boundaries. */
+  resultChildren: ParagraphChild[];
+  /** A nested field appeared inside the result: keep the verbatim channel so
+   *  the nested instruction chain is never dropped. */
+  nestedInResult: boolean;
+  /** Open nested field frames; the last frame receives runs until its end. */
+  frames?: NestedFieldFrame[];
   /** The paragraph is crossed by a field that opens or closes in another
    *  paragraph: marker runs pass through verbatim and nothing accumulates. */
   verbatimMarkers?: boolean;
@@ -1050,6 +1072,55 @@ function isFieldMarkerRun(run: Element): boolean {
   );
 }
 
+/** A tab-only result run parses as `{ children: [{ tab: true }], rPr }`;
+ *  lift the tab to the run shape the writer/projection dispatch understands. */
+function normalizeTypedResultChild(child: ParagraphChild): ParagraphChild {
+  if (!child || typeof child !== "object") return child;
+  const record = child as Record<string, unknown>;
+  const children = record.children;
+  if (
+    Array.isArray(children)
+    && children.length === 1
+    && children[0]
+    && typeof children[0] === "object"
+    && (children[0] as { tab?: unknown }).tab === true
+  ) {
+    const { children: _children, ...rest } = record;
+    return { ...rest, tab: true } as ParagraphChild;
+  }
+  return child;
+}
+
+/** TOC fields span hyperlinked entries; the legacy paragraph stream keeps
+ *  their tab run outside the field so the field's marker order stays intact.
+ *  Typed result capture is scoped away from this shape. */
+function isTocFieldState(state: FieldRunState): boolean {
+  return /^TOC\b/u.test(state.pendingInstruction.trim().toUpperCase());
+}
+
+/** Parse the verbatim run chain of a nested field into its typed child. The
+ *  chain is a complete begin→…→end sequence; feeding it to the same paragraph
+ *  parser keeps nesting recursive while the parent keeps its ordered typed
+ *  text/hyperlink siblings. */
+function parseNestedFieldChild(
+  runsXml: string,
+  ctx: DocxReadContext | undefined,
+): ComplexFieldOptions | undefined {
+  if (!ctx || !runsXml) return undefined;
+  try {
+    const doc = parseXml(`<w:p xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">${runsXml}</w:p>`);
+    const p = doc.elements?.[0];
+    if (!p) return undefined;
+    const parsed = parseParagraph(p, ctx) as { children?: ParagraphChild[] };
+    const field = (parsed.children ?? []).find(
+      (child) => child && typeof child === "object" && "complexField" in child,
+    ) as { complexField?: ComplexFieldOptions } | undefined;
+    return field?.complexField;
+  } catch {
+    return undefined;
+  }
+}
+
 const initialFieldRunState = (): FieldRunState => ({
   kind: null,
   depth: 0,
@@ -1060,6 +1131,9 @@ const initialFieldRunState = (): FieldRunState => ({
   sawSeparate: false,
   instrRunEls: [],
   resultRunEls: [],
+  resultChildren: [],
+  nestedInResult: false,
+  frames: [],
 });
 
 /**
@@ -1093,16 +1167,97 @@ function isPlainFieldRuns(
  * Control and in-field runs are consumed; the closing run returns the whole
  * field collapsed to a single child. Runs outside any field pass through.
  */
+function feedNestedFrame(
+  run: Element,
+  state: FieldRunState,
+  ctx?: DocxReadContext,
+): { consumed: boolean; child?: ParagraphChild } {
+  const frames = state.frames!;
+  const frame = frames[frames.length - 1]!;
+  const fldCharEl = findChild(run, "w:fldChar");
+  if (!fldCharEl) {
+    if (frame.collectingResult) {
+      frame.resultRunEls.push(run);
+      frame.pendingResult += textOf(run);
+      if (ctx) {
+        frame.resultChildren.push(
+          normalizeTypedResultChild(parsedRunToOptions(parseRun(run, ctx)) as ParagraphChild),
+        );
+      }
+    } else {
+      frame.instrRunEls.push(run);
+      for (const child of run.elements ?? []) {
+        if (child.name === "w:instrText" || child.name === "w:delInstrText") {
+          frame.pendingInstruction += textOf(child);
+        }
+      }
+    }
+    return { consumed: true };
+  }
+  const type = attr(fldCharEl, "w:fldCharType");
+  if (type === "begin") {
+    frames.push({
+      pendingInstruction: "",
+      pendingResult: "",
+      collectingResult: false,
+      sawSeparate: false,
+      controlRPr: runRPrXml(run),
+      beginRunEl: run,
+      instrRunEls: [],
+      resultRunEls: [],
+      resultChildren: [],
+    });
+    return { consumed: true };
+  }
+  if (type === "separate") {
+    frame.collectingResult = true;
+    frame.sawSeparate = true;
+    frame.resultRunEls = [];
+    return { consumed: true };
+  }
+  if (type === "end") {
+    const cf: ComplexFieldOptions = { instruction: frame.pendingInstruction };
+    if (findChild(frame.beginRunEl ?? run, "w:lastRenderedPageBreak")) cf.lastRenderedPageBreak = true;
+    if (frame.sawSeparate) cf.hasSeparate = true;
+    if (frame.resultRunEls.length > 0) cf.result = frame.pendingResult;
+    if (frame.controlRPr) cf.rPrXml = frame.controlRPr;
+    if (frame.resultRPr) cf.resultRPrXml = frame.resultRPr;
+    if (frame.resultChildren.length > 0) cf.resultChildren = frame.resultChildren;
+    frames.pop();
+    const parent = frames[frames.length - 1];
+    if (parent && parent.collectingResult) parent.resultChildren.push({ complexField: cf } as ParagraphChild);
+    else if (parent) parent.resultRunEls.push(run);
+    else state.resultChildren.push({ complexField: cf } as ParagraphChild);
+    state.depth = frames.length + 1;
+    return { consumed: true };
+  }
+  return { consumed: true };
+}
+
 function feedFieldRun(
   run: Element,
   state: FieldRunState,
+  ctx?: DocxReadContext,
 ): { consumed: boolean; child?: ParagraphChild } {
   if (state.verbatimMarkers) {
     return isFieldMarkerRun(run)
       ? { consumed: true, child: { rawXml: stringifyElement(run) } }
       : { consumed: false };
   }
+  if (state.frames && state.frames.length > 0) return feedNestedFrame(run, state, ctx);
   const fldCharEl = findChild(run, "w:fldChar");
+  if (
+    !fldCharEl
+    && ctx
+    && state.kind === "complex"
+    && state.collectingResult
+    && state.depth === 1
+    && !isTocFieldState(state)
+  ) {
+    state.resultChildren.push(
+      normalizeTypedResultChild(parsedRunToOptions(parseRun(run, ctx)) as ParagraphChild),
+    );
+  }
   if (fldCharEl) {
     const fctype = attr(fldCharEl, "w:fldCharType");
     if (fctype === "begin") {
@@ -1112,6 +1267,21 @@ function feedFieldRun(
       // resetting the accumulator — the plain state machine cannot represent
       // interleaved instructions, and the verbatim channel round-trips them.
       if (state.kind === "complex" && state.depth > 0) {
+        if (!isTocFieldState(state) && state.frames) {
+          state.frames.push({
+            pendingInstruction: "",
+            pendingResult: "",
+            collectingResult: false,
+            sawSeparate: false,
+            controlRPr: runRPrXml(run),
+            beginRunEl: run,
+            instrRunEls: [],
+            resultRunEls: [],
+            resultChildren: [],
+          });
+          state.depth++;
+          return { consumed: true };
+        }
         state.depth++;
         (state.collectingResult ? state.resultRunEls : state.instrRunEls).push(run);
         return { consumed: true };
@@ -1134,6 +1304,8 @@ function feedFieldRun(
       state.depth = 1;
       state.instrRunEls = [];
       state.resultRunEls = [];
+      state.resultChildren = [];
+      state.nestedInResult = false;
     } else if (fctype === "separate") {
       if (state.kind === "complex" && state.depth > 1) {
         (state.collectingResult ? state.resultRunEls : state.instrRunEls).push(run);
@@ -1145,7 +1317,15 @@ function feedFieldRun(
     } else if (fctype === "end" && state.kind) {
       if (state.kind === "complex" && state.depth > 1) {
         state.depth--;
-        (state.collectingResult ? state.resultRunEls : state.instrRunEls).push(run);
+        state.resultRunEls.push(run);
+        if (state.depth === 1 && state.nestedStart !== undefined) {
+          const start = state.nestedStart;
+          state.nestedStart = undefined;
+          state.nestedInResult = false;
+          const nestedXml = state.resultRunEls.splice(start).map((el) => stringifyElement(el)).join("");
+          const child = parseNestedFieldChild(nestedXml, ctx);
+          if (child) state.resultChildren.push({ complexField: child } as ParagraphChild);
+        }
         return { consumed: true };
       }
       let child: ParagraphChild | undefined;
@@ -1185,6 +1365,9 @@ function feedFieldRun(
         ) {
           cf.resultRunsXml = state.resultRunEls.map((el) => stringifyElement(el)).join("");
         }
+        if (state.resultChildren.length > 0) {
+          cf.resultChildren = state.resultChildren;
+        }
         child = { complexField: cf };
       }
       state.kind = null;
@@ -1193,6 +1376,8 @@ function feedFieldRun(
       state.collectingResult = false;
       state.instrRunEls = [];
       state.resultRunEls = [];
+      state.resultChildren = [];
+      state.nestedInResult = false;
       return { consumed: true, child };
     }
     // An end (or separate) marker with no open field is the tail of a
@@ -1372,7 +1557,7 @@ function parseTrackChangeRuns(
   fieldState.verbatimMarkers = verbatimFieldMarkers;
   for (const sub of el.elements ?? []) {
     if (sub.name === "w:r") {
-      const fed = feedFieldRun(sub, fieldState);
+      const fed = feedFieldRun(sub, fieldState, ctx);
       if (fed.consumed) {
         if (fed.child) out.push(fed.child as TrackChangeChild);
         continue;
@@ -1645,7 +1830,7 @@ function parseHyperlinkChild(child: Element, ctx: DocxReadContext): ParagraphChi
   const fieldState = initialFieldRunState();
   for (const sub of child.elements ?? []) {
     if (sub.name === "w:r") {
-      const fed = feedFieldRun(sub, fieldState);
+      const fed = feedFieldRun(sub, fieldState, ctx);
       if (fed.consumed) {
         if (fed.child) linkRuns.push(fed.child);
         continue;
@@ -1711,8 +1896,20 @@ function parseRunLevelChildren(
       case "w:pPr":
         break;
       case "w:r": {
+        // TOC entries: keep the tab run in the paragraph stream before the
+        // following hyperlink, exactly as the legacy marker-order contract
+        // expects. Other complex fields capture it as a typed result child.
+        if (
+          fieldState.kind === "complex"
+          && fieldState.collectingResult
+          && isTocFieldState(fieldState)
+          && elements?.[elements.indexOf(child) + 1]?.name === "w:hyperlink"
+        ) {
+          childList.push(parsedRunToOptions(parseRun(child, ctx)) as unknown as ParagraphChild);
+          break;
+        }
         // Field: fldChar markers + the instrText/result runs between them.
-        const fed = feedFieldRun(child, fieldState);
+        const fed = feedFieldRun(child, fieldState, ctx);
         if (fed.consumed) {
           if (fed.child) childList.push(fed.child);
           break;
@@ -1729,6 +1926,27 @@ function parseRunLevelChildren(
       }
       case "w:hyperlink": {
         const hlChild = parseHyperlinkChild(child, ctx);
+        const activeFrame = fieldState.frames?.[fieldState.frames.length - 1];
+        if (hlChild && activeFrame?.collectingResult) {
+          activeFrame.resultChildren.push(hlChild);
+          break;
+        }
+        if (
+          hlChild
+          && fieldState.kind === "complex"
+          && fieldState.collectingResult
+          && fieldState.depth === 1
+          && !isTocFieldState(fieldState)
+        ) {
+          // The rendered order is text · tab · hyperlink (or the reverse) and
+          // the field spans the hyperlink element: keep it in the typed result
+          // instead of splitting it out of the field. A nested frame owns its
+          // own result list so the link cannot escape to the outer paragraph.
+          const frame = fieldState.frames?.[fieldState.frames.length - 1];
+          if (frame && frame.collectingResult) frame.resultChildren.push(hlChild);
+          else fieldState.resultChildren.push(hlChild);
+          break;
+        }
         if (hlChild) childList.push(hlChild);
         break;
       }
@@ -2051,10 +2269,16 @@ function parseRunLevelChildren(
   // (a PAGEREF page number) re-parses through the sub accumulator. The head
   // runs stay unreleased: re-emitting them here would duplicate the chain the
   // emit path injects.
-  if (fieldState.kind === "complex" && fieldState.resultRunEls.length > 0) {
+  if (fieldState.kind === "complex" && fieldState.resultChildren.length > 0) {
+    // Typed result content preserves the interleaving (TOC entries are a
+    // hyperlink carrying the entry text/tab/nested PAGEREF). Release it as
+    // regular children; the cross-paragraph aggregator rebuilds the control
+    // chain around this paragraph.
+    childList.push(...fieldState.resultChildren);
+  } else if (fieldState.kind === "complex" && fieldState.resultRunEls.length > 0) {
     const sub = initialFieldRunState();
     for (const el of fieldState.resultRunEls) {
-      const fed = feedFieldRun(el, sub);
+      const fed = feedFieldRun(el, sub, ctx);
       if (fed.consumed) {
         if (fed.child) childList.push(fed.child);
         continue;

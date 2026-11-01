@@ -61,7 +61,11 @@ function stringifySymbolRunInner(opts: SymbolRunOptions): string {
 
 /** Serialize a complex field's run chain. Inside a w:del wrapper the
  *  instruction is spelled w:delInstrText and the cached result w:delText. */
-function stringifyComplexFieldRuns(cf: ComplexFieldOptions, isDelete = false): string {
+function stringifyComplexFieldRuns(
+  cf: ComplexFieldOptions,
+  isDelete = false,
+  ctx?: BodyContext,
+): string {
   const instrTag = isDelete ? "w:delInstrText" : "w:instrText";
   const textTag = isDelete ? "w:delText" : "w:t";
   // Run-properties: Word writes identical rPr across a field's runs. Apply
@@ -86,12 +90,21 @@ function stringifyComplexFieldRuns(cf: ComplexFieldOptions, isDelete = false): s
     cf.hasSeparate === true || cf.resultRunsXml !== undefined || cf.result !== undefined
       ? `<w:r>${ctrl}<w:fldChar w:fldCharType="separate"/></w:r>`
       : "";
+  // Typed result children outrank the flat cache and the verbatim XML: they
+  // preserve the rendered order (text · tab · hyperlink, nested segments) while
+  // keeping each segment's rPr/link. A deleted field still uses the verbatim
+  // delText chain because the typed runs carry w:t.
+  const typedResultXml = !isDelete && ctx && cf.resultChildren?.length
+    ? serializeDispatchChildren(cf.resultChildren, ctx)
+    : undefined;
   const resultXml =
-    cf.resultRunsXml !== undefined
-      ? cf.resultRunsXml
-      : cf.result !== undefined
-        ? `<w:r>${res}<${textTag} xml:space="preserve">${escapeXml(cf.result)}</${textTag}></w:r>`
-        : "";
+    typedResultXml !== undefined
+      ? typedResultXml
+      : cf.resultRunsXml !== undefined
+        ? cf.resultRunsXml
+        : cf.result !== undefined
+          ? `<w:r>${res}<${textTag} xml:space="preserve">${escapeXml(cf.result)}</${textTag}></w:r>`
+          : "";
   const lrpb = cf.lastRenderedPageBreak ? "<w:lastRenderedPageBreak/>" : "";
   return (
     `<w:r>${ctrl}${lrpb}<w:fldChar w:fldCharType="begin"/></w:r>` +
@@ -413,7 +426,7 @@ function stringifyTrackChangeChildren(
     } else if (typeof c !== "string" && "proofErr" in c) {
       parts.push(`<w:proofErr w:type="${c.proofErr}"/>`);
     } else if (typeof c !== "string" && "complexField" in c) {
-      parts.push(stringifyComplexFieldRuns(c.complexField, isDelete));
+      parts.push(stringifyComplexFieldRuns(c.complexField, isDelete, ctx));
     } else if (typeof c !== "string" && "formField" in c) {
       const xml = stringifyChildDispatch(c as ParagraphChild, ctx);
       if (typeof xml === "string") parts.push(xml);
@@ -896,7 +909,7 @@ export function stringifyChildDispatch(
 
   // ── Complex field (PAGE/DATE/TOC/... — fldChar field without w:ffData) ──
   if ("complexField" in child) {
-    return stringifyComplexFieldRuns(child.complexField);
+    return stringifyComplexFieldRuns(child.complexField, false, ctx);
   }
 
   // ── Sequential identifier (SEQ field) ──

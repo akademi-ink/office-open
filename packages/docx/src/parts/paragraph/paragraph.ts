@@ -78,6 +78,11 @@ export interface ComplexFieldOptions {
    *  the cached value across runs with per-run properties — e.g. Word's
    *  locale-mixed date results where every segment carries its own rFonts. */
   resultRunsXml?: string;
+  /** Ordered, typed result content (runs/tabs/hyperlinks/nested fields).
+   *  Unlike `result`/`resultRunsXml` this keeps the rendered sequence and each
+   *  segment's rPr/link boundary through parse → write → layout → refresh;
+   *  writers prefer it over the flat cache when present. */
+  resultChildren?: ParagraphChild[];
   /** The source carried a separate marker even when the cached result had no
    *  runs (a footer PAGE field with an empty result). Round-trips the marker
    *  instead of collapsing the field to begin/instrText/end. */
