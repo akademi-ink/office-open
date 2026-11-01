@@ -246,13 +246,12 @@ function mergeMax(a: number | "unbounded", b: number | "unbounded"): number | "u
 
 /**
  * Flatten a particle node (sequence/choice/all/group-ref/element/any) into
- * ordered slots. `refMin/refMax` carry the cardinality of the referencing
+ * ordered slots. `refMax` carries the cardinality of the referencing
  * group-ref so choice groups expand with the right repeat semantics.
  */
 function flatten(
   node: XNode,
   sf: SchemaFile,
-  refMin: number,
   refMax: number | "unbounded",
   groupDepth = 0,
 ): Slot[] {
@@ -307,7 +306,7 @@ function flatten(
     for (const child of node.children) {
       if (!isParticle(child)) continue;
       const armElements: string[] = [];
-      for (const s of flatten(child, sf, 1, 1, groupDepth + 1)) {
+      for (const s of flatten(child, sf, 1, groupDepth + 1)) {
         if (s.elements) armElements.push(...s.elements);
         else wildcards.push(s);
         slotMin = Math.min(slotMin, s.min);
@@ -373,7 +372,7 @@ function flattenChildren(container: XNode, sf: SchemaFile, groupDepth: number): 
   const out: Slot[] = [];
   for (const child of container.children) {
     if (!isParticle(child)) continue;
-    out.push(...flatten(child, sf, 1, 1, groupDepth));
+    out.push(...flatten(child, sf, 1, groupDepth));
   }
   return out;
 }

@@ -381,9 +381,7 @@ describe("ECMA-376 conformance emission", () => {
       'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml"',
     );
     expect(rels).toContain('Target="bibliography.xml"');
-    const contentTypes = new TextDecoder().decode(
-      files["[Content_Types].xml"] as Uint8Array,
-    );
+    const contentTypes = new TextDecoder().decode(files["[Content_Types].xml"] as Uint8Array);
     expect(contentTypes).toContain(
       '<Override PartName="/word/bibliography.xml" ContentType="application/xml"/>',
     );

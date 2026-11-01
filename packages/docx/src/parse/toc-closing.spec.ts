@@ -48,7 +48,9 @@ function decodeXml(value: string): string {
 }
 
 function instructions(xml: string): string[] {
-  return [...xml.matchAll(/<w:instrText[^>]*>([^<]*)</g)].map((match) => decodeXml(match[1]!.trim()));
+  return [...xml.matchAll(/<w:instrText[^>]*>([^<]*)</g)].map((match) =>
+    decodeXml(match[1]!.trim()),
+  );
 }
 
 async function roundTrip(bodyXml: string): Promise<Uint8Array> {
@@ -58,9 +60,7 @@ async function roundTrip(bodyXml: string): Promise<Uint8Array> {
 describe("TOC closing paragraph order", () => {
   it("keeps the outer end before a following empty TOC field and reaches a fixed point", async () => {
     const sourceBody =
-      tocOpen +
-      entry("B") +
-      `<w:p>${end}${begin}${instr(' TOC \\o "1-4" ')}${end}</w:p>`;
+      tocOpen + entry("B") + `<w:p>${end}${begin}${instr(' TOC \\o "1-4" ')}${end}</w:p>`;
     const source = documentXml(packageOf(sourceBody));
     const once = await roundTrip(sourceBody);
     const onceXml = documentXml(once);

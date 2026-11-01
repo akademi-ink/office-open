@@ -134,7 +134,7 @@ function resolveRelTarget(relsPath: string, target: string): string {
 function pathMatcher(template: string): RegExp {
   const marked = template.replace(/\$\{i\}/g, "\u0000");
   const escaped = marked.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const pattern = escaped.replace(/\u0000/g, "(\\d+)");
+  const pattern = escaped.replaceAll("\u0000", "(\\d+)");
   return new RegExp(`^${pattern}$`);
 }
 

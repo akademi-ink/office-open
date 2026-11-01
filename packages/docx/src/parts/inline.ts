@@ -96,9 +96,10 @@ function stringifyComplexFieldRuns(
   // preserve the rendered order (text · tab · hyperlink, nested segments) while
   // keeping each segment's rPr/link. A deleted field still uses the verbatim
   // delText chain because the typed runs carry w:t.
-  const typedResultXml = !isDelete && ctx && cf.resultChildren?.length
-    ? serializeDispatchChildren(cf.resultChildren, ctx)
-    : undefined;
+  const typedResultXml =
+    !isDelete && ctx && cf.resultChildren?.length
+      ? serializeDispatchChildren(cf.resultChildren, ctx)
+      : undefined;
   const resultXml =
     typedResultXml !== undefined
       ? typedResultXml
@@ -834,16 +835,18 @@ export function stringifyChildDispatch(
       // package and a regenerated one (gen2 grew more rels → hyperlink moved
       // rId20 → rId27). Keeping the source id makes parse→generate a fixed point.
       const sourceRid = hl.sourceRid;
-      const reusable = sourceRid !== undefined
-        && /^rId[1-9]\d*$/u.test(sourceRid)
-        && !relationships.hasId(sourceRid);
+      const reusable =
+        sourceRid !== undefined &&
+        /^rId[1-9]\d*$/u.test(sourceRid) &&
+        !relationships.hasId(sourceRid);
       const linkId = reusable
         ? (relationships.addRelationship(
             Number(sourceRid.slice("rId".length)),
             relType,
             hl.url,
             TargetModeType.EXTERNAL,
-          ), sourceRid)
+          ),
+          sourceRid)
         : `rId${relationships.add(relType, hl.url, TargetModeType.EXTERNAL)}`;
       const attrs = [`r:id="${linkId}"`];
       pushHlAttrs(attrs);

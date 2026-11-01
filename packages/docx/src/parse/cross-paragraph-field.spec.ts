@@ -55,7 +55,9 @@ describe("a result-less complex field", () => {
     expect(xml.match(/w:fldCharType="begin"/g)).toHaveLength(1);
     expect(xml.match(/w:fldCharType="separate"/g)).toHaveLength(1);
     expect(xml.match(/w:fldCharType="end"/g)).toHaveLength(1);
-    expect(parseDocumentSync(output).sections?.[0]?.children).toEqual(parsed.sections?.[0]?.children);
+    expect(parseDocumentSync(output).sections?.[0]?.children).toEqual(
+      parsed.sections?.[0]?.children,
+    );
   });
 });
 
@@ -68,7 +70,9 @@ describe("paragraphs crossed by a multi-paragraph complex field", () => {
       "paragraph",
     ]);
     const first = (children[0] as { paragraph: { children?: unknown[] } }).paragraph.children ?? [];
-    expect(first.slice(0, 3).every((run) => typeof (run as { rawXml?: unknown }).rawXml === "string")).toBe(true);
+    expect(
+      first.slice(0, 3).every((run) => typeof (run as { rawXml?: unknown }).rawXml === "string"),
+    ).toBe(true);
     expect(first[3]).toMatchObject({ text: "Ahmad, A. (2020). Judul pertama." });
     const last = (children[2] as { paragraph: { children?: unknown[] } }).paragraph.children ?? [];
     expect(last[0]).toMatchObject({ text: "Citra, C. (2022). Judul ketiga." });
@@ -83,6 +87,8 @@ describe("paragraphs crossed by a multi-paragraph complex field", () => {
     expect(xml.match(/w:fldCharType="separate"/g)).toHaveLength(1);
     expect(xml.match(/w:fldCharType="end"/g)).toHaveLength(1);
     expect(xml).toContain("ADDIN Mendeley Bibliography CSL_BIBLIOGRAPHY");
-    expect(parseDocumentSync(output).sections?.[0]?.children).toEqual(parsed.sections?.[0]?.children);
+    expect(parseDocumentSync(output).sections?.[0]?.children).toEqual(
+      parsed.sections?.[0]?.children,
+    );
   });
 });

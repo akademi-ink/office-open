@@ -7,11 +7,12 @@
  */
 import { attr, findChild, findDeep, findFirst, textOf } from "@office-open/xml";
 import type { Element } from "@office-open/xml";
+import { parse as parseXmlFragment } from "@office-open/xml";
 import { parseAltChunk } from "@parts/alt-chunk/alt-chunk-parse";
 import { parseCustomXmlBlock } from "@parts/custom-xml/custom-xml-parse";
 import { parseSectionPropertiesEl } from "@parts/document/body/section-properties/descriptor";
-import { parse as parseXmlFragment } from "@office-open/xml";
 import type { SectionPropertiesOptions } from "@parts/document/body/section-properties/section-properties";
+import type { ParagraphOptions } from "@parts/paragraph/paragraph";
 import { parseSdtBlock } from "@parts/sdt/sdt-parse";
 import type { TableOfContentsOptions } from "@parts/table-of-contents/table-of-contents-properties";
 import {
@@ -268,8 +269,13 @@ function attachNestedSectionProperties(children: SectionChild[], ctx: DocxReadCo
       const sectPr = parseNestedSectPrXml(xml);
       if (!sectPr) continue;
       const parsed = parseSectionProperties(sectPr, ctx);
-      const { parsedHeaders, parsedFooters, parsedHeaderPartNames, parsedFooterPartNames, ...properties } =
-        parsed;
+      const {
+        parsedHeaders,
+        parsedFooters,
+        parsedHeaderPartNames,
+        parsedFooterPartNames,
+        ...properties
+      } = parsed;
       const nested: Record<string, unknown> = { properties };
       if (parsedHeaders) {
         nested.headers = {

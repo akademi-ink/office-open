@@ -285,7 +285,8 @@ describe("parseNumberingDefinitions (round-trip)", () => {
   it("keeps source w:numId and w:abstractNumId values on round-trip", () => {
     // A template's styles.xml copied verbatim points at the source ids, so
     // re-indexing them would detach heading and caption numbering.
-    const lvl = '<w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="decimal"/><w:lvlText w:val="%1."/></w:lvl>';
+    const lvl =
+      '<w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="decimal"/><w:lvlText w:val="%1."/></w:lvl>';
     const xml =
       '<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
       `<w:abstractNum w:abstractNumId="6">${lvl}</w:abstractNum>` +
@@ -302,9 +303,9 @@ describe("parseNumberingDefinitions (round-trip)", () => {
     numbering.createConcreteNumberingInstance("list_2", 1);
     const out = numbering.serialize(writeCtx);
 
-    const pairs = [...out.matchAll(/<w:num w:numId="(\d+)"><w:abstractNumId w:val="(\d+)"\/>/g)].map(
-      (m) => `${m[1]}->${m[2]}`,
-    );
+    const pairs = [
+      ...out.matchAll(/<w:num w:numId="(\d+)"><w:abstractNumId w:val="(\d+)"\/>/g),
+    ].map((m) => `${m[1]}->${m[2]}`);
     expect(pairs.slice(0, 3).sort()).toEqual(["1->9", "2->6", "5->6"]);
     // A fresh instance takes an id no source num uses.
     expect(pairs).toHaveLength(4);

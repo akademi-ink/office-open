@@ -1066,6 +1066,9 @@ interface FieldRunState {
   /** A nested field appeared inside the result: keep the verbatim channel so
    *  the nested instruction chain is never dropped. */
   nestedInResult: boolean;
+  /** Start index in `resultRunEls` of a nested field buffered inside the
+   *  result; the nested end folds that slice into a typed complexField child. */
+  nestedStart?: number;
   /** Open nested field frames; the last frame receives runs until its end. */
   frames?: NestedFieldFrame[];
   /** The paragraph is crossed by a field that opens or closes in another
@@ -1087,11 +1090,11 @@ function normalizeTypedResultChild(child: ParagraphChild): ParagraphChild {
   const record = child as Record<string, unknown>;
   const children = record.children;
   if (
-    Array.isArray(children)
-    && children.length === 1
-    && children[0]
-    && typeof children[0] === "object"
-    && (children[0] as { tab?: unknown }).tab === true
+    Array.isArray(children) &&
+    children.length === 1 &&
+    children[0] &&
+    typeof children[0] === "object" &&
+    (children[0] as { tab?: unknown }).tab === true
   ) {
     const { children: _children, ...rest } = record;
     return { ...rest, tab: true } as ParagraphChild;
@@ -1116,7 +1119,9 @@ function parseNestedFieldChild(
 ): ComplexFieldOptions | undefined {
   if (!ctx || !runsXml) return undefined;
   try {
-    const doc = parseXml(`<w:p xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">${runsXml}</w:p>`);
+    const doc = parseXml(
+      `<w:p xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">${runsXml}</w:p>`,
+    );
     const p = doc.elements?.[0];
     if (!p) return undefined;
     const parsed = parseParagraph(p, ctx) as { children?: ParagraphChild[] };
@@ -1225,7 +1230,8 @@ function feedNestedFrame(
   }
   if (type === "end") {
     const cf: ComplexFieldOptions = { instruction: frame.pendingInstruction };
-    if (findChild(frame.beginRunEl ?? run, "w:lastRenderedPageBreak")) cf.lastRenderedPageBreak = true;
+    if (findChild(frame.beginRunEl ?? run, "w:lastRenderedPageBreak"))
+      cf.lastRenderedPageBreak = true;
     if (frame.sawSeparate) cf.hasSeparate = true;
     if (frame.resultRunEls.length > 0) cf.result = frame.pendingResult;
     if (frame.controlRPr) cf.rPrXml = frame.controlRPr;
@@ -1233,7 +1239,8 @@ function feedNestedFrame(
     if (frame.resultChildren.length > 0) cf.resultChildren = frame.resultChildren;
     frames.pop();
     const parent = frames[frames.length - 1];
-    if (parent && parent.collectingResult) parent.resultChildren.push({ complexField: cf } as ParagraphChild);
+    if (parent && parent.collectingResult)
+      parent.resultChildren.push({ complexField: cf } as ParagraphChild);
     else if (parent) parent.resultRunEls.push(run);
     else state.resultChildren.push({ complexField: cf } as ParagraphChild);
     state.depth = frames.length + 1;
@@ -1255,12 +1262,12 @@ function feedFieldRun(
   if (state.frames && state.frames.length > 0) return feedNestedFrame(run, state, ctx);
   const fldCharEl = findChild(run, "w:fldChar");
   if (
-    !fldCharEl
-    && ctx
-    && state.kind === "complex"
-    && state.collectingResult
-    && state.depth === 1
-    && !isTocFieldState(state)
+    !fldCharEl &&
+    ctx &&
+    state.kind === "complex" &&
+    state.collectingResult &&
+    state.depth === 1 &&
+    !isTocFieldState(state)
   ) {
     state.resultChildren.push(
       normalizeTypedResultChild(parsedRunToOptions(parseRun(run, ctx)) as ParagraphChild),
@@ -1330,7 +1337,10 @@ function feedFieldRun(
           const start = state.nestedStart;
           state.nestedStart = undefined;
           state.nestedInResult = false;
-          const nestedXml = state.resultRunEls.splice(start).map((el) => stringifyElement(el)).join("");
+          const nestedXml = state.resultRunEls
+            .splice(start)
+            .map((el) => stringifyElement(el))
+            .join("");
           const child = parseNestedFieldChild(nestedXml, ctx);
           if (child) state.resultChildren.push({ complexField: child } as ParagraphChild);
         }
@@ -1920,10 +1930,10 @@ function parseRunLevelChildren(
         // following hyperlink, exactly as the legacy marker-order contract
         // expects. Other complex fields capture it as a typed result child.
         if (
-          fieldState.kind === "complex"
-          && fieldState.collectingResult
-          && isTocFieldState(fieldState)
-          && elements?.[elements.indexOf(child) + 1]?.name === "w:hyperlink"
+          fieldState.kind === "complex" &&
+          fieldState.collectingResult &&
+          isTocFieldState(fieldState) &&
+          elements?.[elements.indexOf(child) + 1]?.name === "w:hyperlink"
         ) {
           childList.push(parsedRunToOptions(parseRun(child, ctx)) as unknown as ParagraphChild);
           break;
@@ -1952,11 +1962,11 @@ function parseRunLevelChildren(
           break;
         }
         if (
-          hlChild
-          && fieldState.kind === "complex"
-          && fieldState.collectingResult
-          && fieldState.depth === 1
-          && !isTocFieldState(fieldState)
+          hlChild &&
+          fieldState.kind === "complex" &&
+          fieldState.collectingResult &&
+          fieldState.depth === 1 &&
+          !isTocFieldState(fieldState)
         ) {
           // The rendered order is text · tab · hyperlink (or the reverse) and
           // the field spans the hyperlink element: keep it in the typed result

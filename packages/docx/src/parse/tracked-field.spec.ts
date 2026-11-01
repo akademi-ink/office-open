@@ -109,7 +109,9 @@ describe("fields split by tracked insertions", () => {
       '<w:r><w:delText>b</w:delText></w:r></w:del><w:bookmarkEnd w:id="7"/>' +
       text("c") +
       "</w:p>";
-    const once = await generateDocument(parseDocumentSync(packageOf(paragraph)), { type: "uint8array" });
+    const once = await generateDocument(parseDocumentSync(packageOf(paragraph)), {
+      type: "uint8array",
+    });
     expect(documentXml(once)).toMatch(
       /<w:del [^>]*>.*<w:delText[^>]*>a<\/w:delText><\/w:r><w:bookmarkStart w:id="7" w:name="_Toc1"\/><w:r>.*<w:delText[^>]*>b<\/w:delText>.*<\/w:del><w:bookmarkEnd w:id="7"\/>/,
     );

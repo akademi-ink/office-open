@@ -566,7 +566,14 @@ export function stringifyParagraphProperties(
     // serializing the pre-change properties. A source-born sectPr inside the
     // revision snapshot is not CT_PPrBase either, but it is preserved as raw
     // XML inside that snapshot (never as the paragraph's live section break).
-    const { author: _a, date: _d, id: _i, run: _r, sectionPropertiesXml: _s, ...originalProps } = rev;
+    const {
+      author: _a,
+      date: _d,
+      id: _i,
+      run: _r,
+      sectionPropertiesXml: _s,
+      ...originalProps
+    } = rev;
     const inner = stringifyParagraphProperties(
       { ...originalProps, includeIfEmpty: true },
       rev.sectionPropertiesXml,

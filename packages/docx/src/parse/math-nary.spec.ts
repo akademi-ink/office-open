@@ -26,8 +26,9 @@ const nary = (chr: string): string =>
 
 function mathOf(chr: string): Record<string, unknown> {
   const children = parseDocumentSync(packageOf(nary(chr))).sections?.[0]?.children ?? [];
-  const para = (children[0] as { paragraph: { children: { math: { children: Record<string, unknown>[] } }[] } })
-    .paragraph;
+  const para = (
+    children[0] as { paragraph: { children: { math: { children: Record<string, unknown>[] } }[] } }
+  ).paragraph;
   return para.children[0]!.math.children[0]!;
 }
 
@@ -46,7 +47,9 @@ describe("m:nary operator character", () => {
   });
 
   it("writes the override back as m:chr", async () => {
-    const out = await generateDocument(parseDocumentSync(packageOf(nary("∏"))), { type: "uint8array" });
+    const out = await generateDocument(parseDocumentSync(packageOf(nary("∏"))), {
+      type: "uint8array",
+    });
     const xml = new TextDecoder().decode(unzipSync(out)["word/document.xml"]);
     expect(xml).toContain('<m:chr m:val="∏"/>');
   });

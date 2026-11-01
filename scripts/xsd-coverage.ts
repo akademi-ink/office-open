@@ -263,7 +263,7 @@ const strippedCache = new Map<string, string>();
 
 /**
  * Strip JS/TS comments from source code while preserving string literals.
- * Handles: // line comments, /* block comments *​/, template literals.
+ * Handles: // line comments, block comments, template literals.
  */
 function stripComments(content: string): string {
   const len = content.length;
@@ -493,7 +493,7 @@ function extractUsedElements(config: XsdConfig): Set<string> {
       // Pattern 1: XML tags in template literals — `<prefix:name` or `<name`
       // Catches stringify: `<w:p>`, `<a:solidFill`, `</c:chart>`
       // Also matches `<name${...}` (bare element followed by interpolation)
-      const tagRe = /<\/?([a-z][a-z0-9]*:)?([a-zA-Z][a-zA-Z0-9]*)[\s>\/"$]/g;
+      const tagRe = /<\/?([a-z][a-z0-9]*:)?([a-zA-Z][a-zA-Z0-9]*)[\s>/"$]/g;
       while ((m = tagRe.exec(src)) !== null) {
         found.add(m[2]);
       }
@@ -816,10 +816,8 @@ function analyzeXsd(config: XsdConfig): CoverageResult {
   const attrNames = [...attributes].sort();
 
   let untrackableCount = 0;
-  let deprecatedCount = 0;
   const trackableAttrs = attrNames.filter((a) => {
     if (DEPRECATED_ATTRIBUTES.has(a)) {
-      deprecatedCount++;
       return false;
     }
     if (UNTRACKABLE_ATTRS.has(a)) {
