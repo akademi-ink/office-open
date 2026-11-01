@@ -25,6 +25,7 @@ import { normalizeObsoleteNamespaceAliases } from "./namespaces";
 import type { Zippable } from "./packer";
 import type { ParsedArchive } from "./parser";
 import { partPathToRelsPath, resolveRelationshipTarget } from "./relationships";
+import { isDigitalSignaturePartPath } from "./signatures";
 
 // ── Types ──
 
@@ -125,9 +126,11 @@ export function collectPassthroughParts(
     if (!sourceData) continue;
     // Modeled XML is parsed through the same obsolete→final namespace aliases;
     // normalize raw XML/rels bytes as well so one generated package never mixes
-    // both dialects. Non-XML binaries remain byte-identical.
+    // both dialects. Non-XML binaries remain byte-identical. Digital-signature
+    // parts are the exception: a signature covers exact part bytes/digests, so
+    // `_xmlsignatures/` is carried verbatim even when it is XML.
     const data =
-      path.endsWith(".xml") || path.endsWith(".rels")
+      !isDigitalSignaturePartPath(path) && (path.endsWith(".xml") || path.endsWith(".rels"))
         ? normalizeObsoleteNamespaceAliases(sourceData)
         : sourceData;
     kept.add(path.toLowerCase());

@@ -323,6 +323,45 @@ export function stringifySdtPr(opts: SdtPropertiesOptions): string {
     parts.push("<w:bibliography/>");
   } else if (opts.checkbox) {
     parts.push(sdtCheckboxXml(opts.checkbox));
+  } else if (opts.entityPicker) {
+    // w14:entityPicker is a Word 2010 type discriminator (same slot as the
+    // w12 types above). Emitted inline with its namespace so it is valid in
+    // every part that carries an sdtPr, like w14:checkbox.
+    parts.push(`<w14:entityPicker ${W14_NS}/>`);
+  }
+
+  // w15 repeating-section markers (Word 2013+) — a second extension slot
+  // after the type discriminator. The outer control carries
+  // w15:repeatingSection; its item-template control carries the empty
+  // w15:repeatingSectionItem marker instead.
+  if (opts.repeatingSection) {
+    const section: string[] = [];
+    if (opts.repeatingSection.sectionTitle !== undefined) {
+      section.push(`<w15:sectionTitle w:val="${escapeXml(opts.repeatingSection.sectionTitle)}"/>`);
+    }
+    if (opts.repeatingSection.doNotAllowInsertDeleteSection !== undefined) {
+      section.push(
+        onOff(
+          "w15:doNotAllowInsertDeleteSection",
+          opts.repeatingSection.doNotAllowInsertDeleteSection,
+        ),
+      );
+    }
+    parts.push(
+      section.length > 0
+        ? `<w15:repeatingSection>${section.join("")}</w15:repeatingSection>`
+        : "<w15:repeatingSection/>",
+    );
+  }
+  if (opts.repeatingSectionItem) parts.push("<w15:repeatingSectionItem/>");
+
+  // w15 web-extension binding markers (Word 2013+) — CT_SdtPr extension
+  // elements; presence-only booleans, so a false value re-emits w:val="0".
+  if (opts.webExtensionLinked !== undefined) {
+    parts.push(onOff("w15:webExtensionLinked", opts.webExtensionLinked));
+  }
+  if (opts.webExtensionCreated !== undefined) {
+    parts.push(onOff("w15:webExtensionCreated", opts.webExtensionCreated));
   }
 
   // w15:appearance (Word 2013+) trails the CT_SdtPr sequence.

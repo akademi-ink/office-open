@@ -25,9 +25,12 @@ import {
   DOCX_PARTS,
   finalizeContentTypes,
   findAndReplaceImagePlaceholders,
+  isMacroEnabledPackage,
   optionalRelsPart,
   Relationships,
   TargetModeType,
+  withoutMacroParts,
+  warnDigitalSignatureInvalidation,
   replaceNumberingPlaceholders,
   IMAGE_MEDIA_CONTENT_TYPES,
   resolverFromRegistry,
@@ -95,9 +98,25 @@ export function compileDocument(
   overrides: XmlifyedFile[] = [],
   mediaLevel: number = 0,
 ): Zippable {
+  // A signed source cannot stay validly signed: regeneration re-serializes the
+  // parts the signatures cover (and rebuilds [Content_Types].xml / _rels/.rels).
+  // The signature parts themselves still ride through rawParts byte-for-byte.
+  warnDigitalSignatureInvalidation(options.digitalSignatures);
+
   const ctx = new DocxWriteContext(options);
   const xmlifiedFileMapping = xmlifyContext(ctx);
   const files = compileMapping(xmlifiedFileMapping, overrides);
+
+  // A macro-enabled output keeps its VBA project; a macro-free one (fresh
+  // compile, or the docx/dotx variant of a .docm/.dotm source) must not carry
+  // one. The variant is expressed through the main-document content type, which
+  // is the only signal office-open has — the macro parts themselves are
+  // passthrough bytes.
+  const rawParts = options.rawParts
+    ? isMacroEnabledPackage(options.contentTypes)
+      ? options.rawParts
+      : withoutMacroParts(options.rawParts)
+    : undefined;
 
   // Media + OLE embedding binaries (word/media/*, word/embeddings/*)
   addModelBinaries(files, "word", ctx.media.array, ctx.embeddings.array, mediaLevel);
@@ -126,7 +145,7 @@ export function compileDocument(
         resolve: DOCX_CONTENT_TYPE_RESOLVER,
         mediaContentTypes: DOCX_MEDIA_CONTENT_TYPES,
         source: ctx._options.contentTypes,
-        rawParts: ctx._options.rawParts,
+        rawParts,
         overrides: [
           ...ctx.altChunks.array.map((ac) => ({
             path: `word/${ac.path}`,

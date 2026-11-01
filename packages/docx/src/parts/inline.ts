@@ -422,6 +422,20 @@ function stringifyTrackChangeChildren(
           stringifyTrackChangeChildren(nested, ctx, true) +
           "</w:del>",
       );
+    } else if (typeof c !== "string" && "conflictInsertion" in c) {
+      const { id, author, date, children: nested } = c.conflictInsertion;
+      parts.push(
+        `<w14:conflictIns w:id="${id ?? autoRevisionId()}" w:author="${escapeXml(String(author))}" w:date="${date}">` +
+          stringifyTrackChangeChildren(nested, ctx, false) +
+          "</w14:conflictIns>",
+      );
+    } else if (typeof c !== "string" && "conflictDeletion" in c) {
+      const { id, author, date, children: nested } = c.conflictDeletion;
+      parts.push(
+        `<w14:conflictDel w:id="${id ?? autoRevisionId()}" w:author="${escapeXml(String(author))}" w:date="${date}">` +
+          stringifyTrackChangeChildren(nested, ctx, true) +
+          "</w14:conflictDel>",
+      );
     } else if (typeof c !== "string" && "pageBreak" in c) {
       parts.push(stringifyTrackChangeBreak(c as RunOptions, "page"));
     } else if (typeof c !== "string" && "columnBreak" in c) {
@@ -759,6 +773,19 @@ export function stringifyChildDispatch(
     return `<w:del w:id="${id ?? autoRevisionId()}" w:author="${escapeXml(String(author))}" w:date="${date}">${body}</w:del>`;
   }
 
+  // Co-authoring conflict wrappers (Word 2010+, w14) — CT_RunTrackChange, the
+  // same payload shape as w:ins/w:del, emitted under the w14 names.
+  if ("conflictInsertion" in child) {
+    const { id, author, date, children } = child.conflictInsertion;
+    const body = stringifyTrackChangeChildren(children, ctx, false);
+    return `<w14:conflictIns w:id="${id ?? autoRevisionId()}" w:author="${escapeXml(String(author))}" w:date="${date}">${body}</w14:conflictIns>`;
+  }
+  if ("conflictDeletion" in child) {
+    const { id, author, date, children } = child.conflictDeletion;
+    const body = stringifyTrackChangeChildren(children, ctx, true);
+    return `<w14:conflictDel w:id="${id ?? autoRevisionId()}" w:author="${escapeXml(String(author))}" w:date="${date}">${body}</w14:conflictDel>`;
+  }
+
   // Hyperlink — side effect: relationship registration
   if ("hyperlink" in child) {
     const hl = child.hyperlink;
@@ -913,6 +940,20 @@ export function stringifyChildDispatch(
   }
   if ("customXmlMoveToRangeEnd" in child)
     return `<w:customXmlMoveToRangeEnd w:id="${child.customXmlMoveToRangeEnd}"/>`;
+
+  // ── Co-authoring conflict range markers (Word 2010+, w14) ──
+  if ("customXmlConflictInsRangeStart" in child) {
+    const o = child.customXmlConflictInsRangeStart;
+    return `<w14:customXmlConflictInsRangeStart w:id="${o.id}"${o.author ? ` w:author="${escapeXml(o.author)}"` : ""}${o.date ? ` w:date="${o.date}"` : ""}/>`;
+  }
+  if ("customXmlConflictInsRangeEnd" in child)
+    return `<w14:customXmlConflictInsRangeEnd w:id="${child.customXmlConflictInsRangeEnd}"/>`;
+  if ("customXmlConflictDelRangeStart" in child) {
+    const o = child.customXmlConflictDelRangeStart;
+    return `<w14:customXmlConflictDelRangeStart w:id="${o.id}"${o.author ? ` w:author="${escapeXml(o.author)}"` : ""}${o.date ? ` w:date="${o.date}"` : ""}/>`;
+  }
+  if ("customXmlConflictDelRangeEnd" in child)
+    return `<w14:customXmlConflictDelRangeEnd w:id="${child.customXmlConflictDelRangeEnd}"/>`;
 
   // ── Simple field ──
   if ("simpleField" in child) {

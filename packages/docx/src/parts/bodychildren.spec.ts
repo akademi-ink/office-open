@@ -257,6 +257,71 @@ describe("sdtBlockDesc round-trip", () => {
     expect(result.properties.checkbox?.uncheckedState?.val).toBe("2715");
   });
 
+  it("round-trips the repeating-section properties (w15:repeatingSection)", () => {
+    const result = roundTripSdt({
+      properties: {
+        alias: "Repeating",
+        repeatingSection: {
+          sectionTitle: "Line item",
+          doNotAllowInsertDeleteSection: true,
+        },
+      },
+    });
+    expect(result.properties.repeatingSection).toEqual({
+      sectionTitle: "Line item",
+      doNotAllowInsertDeleteSection: true,
+    });
+    // The title is emitted as a w:val attribute and the lock as CT_OnOff.
+    const xml = sdtBlockDesc.stringify(
+      {
+        properties: {
+          repeatingSection: {
+            sectionTitle: "Line item",
+            doNotAllowInsertDeleteSection: false,
+          },
+        },
+      },
+      writeCtx,
+    )!;
+    expect(xml).toContain("<w15:repeatingSection>");
+    expect(xml).toContain('<w15:sectionTitle w:val="Line item"/>');
+    expect(xml).toContain('<w15:doNotAllowInsertDeleteSection w:val="off"/>');
+  });
+
+  it("round-trips the repeating-section item marker (w15:repeatingSectionItem)", () => {
+    const xml = sdtBlockDesc.stringify({ properties: { repeatingSectionItem: true } }, writeCtx)!;
+    expect(xml).toContain("<w15:repeatingSectionItem/>");
+    const result = roundTripSdt({ properties: { repeatingSectionItem: true } });
+    expect(result.properties.repeatingSectionItem).toBe(true);
+    expect(result.properties.repeatingSection).toBeUndefined();
+  });
+
+  it("round-trips the web-extension binding markers (w15:webExtension*)", () => {
+    const xml = sdtBlockDesc.stringify(
+      { properties: { webExtensionLinked: true, webExtensionCreated: true } },
+      writeCtx,
+    )!;
+    expect(xml).toContain("<w15:webExtensionLinked/>");
+    expect(xml).toContain("<w15:webExtensionCreated/>");
+    const result = roundTripSdt({
+      properties: { webExtensionLinked: true, webExtensionCreated: true },
+    });
+    expect(result.properties.webExtensionLinked).toBe(true);
+    expect(result.properties.webExtensionCreated).toBe(true);
+    // Explicit false is meaningful and re-emits the off value.
+    const off = roundTripSdt({ properties: { webExtensionCreated: false } });
+    expect(off.properties.webExtensionCreated).toBe(false);
+  });
+
+  it("round-trips the entity-picker type discriminator (w14:entityPicker)", () => {
+    const xml = sdtBlockDesc.stringify({ properties: { entityPicker: true } }, writeCtx)!;
+    expect(xml).toContain("<w14:entityPicker");
+    const result = roundTripSdt({ properties: { entityPicker: true } });
+    expect(result.properties.entityPicker).toBe(true);
+    // Still a type discriminator, not an extension property.
+    expect(result.properties.checkbox).toBeUndefined();
+  });
+
   it("round-trips SDT sdtEndPr run properties", () => {
     const result = roundTripSdt({
       properties: { alias: "EndPr" },

@@ -49,13 +49,13 @@ describe("extractInterfaceFields", () => {
       // ParagraphPropertiesOptions = {...} & ParagraphStylePropertiesOptions
       // & LevelParagraphStylePropertiesOptions. getInterface().getProperties()
       // would return only the direct members; the Type-level read must return
-      // the union: 4 (Base) + 3 (Style) + 33 (Level) + 2 (Options) = 42, before
+      // the union: 5 (Base) + 3 (Style) + 33 (Level) + 2 (Options) = 43, before
       // sugar exclusion.
       const fields = extractInterfaceFields(
         "ParagraphPropertiesOptions",
         `${DOCX}/paragraph/properties.ts`,
       );
-      expect(fields).toHaveLength(42);
+      expect(fields).toHaveLength(43);
       // Sugar that the exclude list removes later:
       expect(fields).toContain("thematicBreak");
       expect(fields).toContain("rightTabStop");

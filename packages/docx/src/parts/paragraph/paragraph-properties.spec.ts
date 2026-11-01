@@ -61,4 +61,14 @@ describe("stringifyParagraphProperties single-writer channels", () => {
     expect(xml).toContain('w:color="FF0000"');
     expect(xml).toContain('w:val="double"');
   });
+
+  it("emits the Word 2013 collapsed-heading flag (w15:collapsed)", () => {
+    const { xml } = stringifyParagraphProperties({ collapsed: true });
+    expect(xml).toContain("<w15:collapsed/>");
+    // The extension element sits inside pPr, after the base sequence.
+    expect(xml).toBe("<w:pPr><w15:collapsed/></w:pPr>");
+
+    const off = stringifyParagraphProperties({ collapsed: false });
+    expect(off.xml).toBe('<w:pPr><w15:collapsed w:val="off"/></w:pPr>');
+  });
 });

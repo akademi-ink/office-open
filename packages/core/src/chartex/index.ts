@@ -21,6 +21,9 @@
  * @module
  */
 
+import { attrNum, findFirst, parse } from "@office-open/xml";
+import type { Element } from "@office-open/xml";
+
 /** The chartEx namespace Word writes for the chart payload (`cx:` prefix). */
 export const CHART_EX_NAMESPACE = "http://schemas.microsoft.com/office/drawing/2014/chartex";
 
@@ -95,4 +98,119 @@ export function chartExParts(paths: Iterable<string>): ChartExPart[] {
     if (isChartExPartPath(path)) found.push({ path, contentType: CHART_EX_CONTENT_TYPE });
   }
   return found;
+}
+
+// ── Renderer placeholder ──
+
+/**
+ * Text a renderer paints inside the frame of a preserved chartEx drawing. The
+ * wording is part of the contract: it tells the reader the chart exists and is
+ * deliberately not rendered, instead of showing a blank box.
+ */
+export const CHART_EX_PLACEHOLDER_LABEL = "modern chart (not rendered)";
+
+/** Width/height pair in the drawing's own unit (EMU for `wp:extent`). */
+export interface ChartExExtent {
+  /** Drawing width in EMU (`wp:extent/@cx`). */
+  width: number;
+  /** Drawing height in EMU (`wp:extent/@cy`). */
+  height: number;
+}
+
+/** Paintable placeholder geometry for a preserved chartEx drawing. */
+export interface ChartExPlaceholderGeometry {
+  /** Frame box in the same unit as the source extent. */
+  frame: { x: number; y: number; width: number; height: number };
+  /** Label anchor: horizontal center of the frame. */
+  labelX: number;
+  /** Label anchor: vertical center of the frame. */
+  labelY: number;
+  /** Text to paint at the label anchor. */
+  label: string;
+}
+
+/** Placeholder options. */
+export interface ChartExPlaceholderOptions {
+  /** Inset from the drawing extent to the painted frame, same unit as the extent. */
+  inset?: number;
+  /**
+   * Smallest frame dimension. A degenerate extent (0×0, or absent) still
+   * yields a visible box instead of a zero-area blank.
+   */
+  minSize?: number;
+}
+
+/** True when a preserved drawing's XML references a chartEx payload. */
+export function isChartExDrawingXml(xml: string): boolean {
+  return /<cx:chart\b/.test(xml) || /graphicData[^>]*\buri="[^"]*\/chartex"/i.test(xml);
+}
+
+/**
+ * Read the `wp:extent` of a preserved chartEx drawing. Returns undefined when
+ * `xml` is not a chartEx drawing or carries no usable extent.
+ *
+ * @param xml verbatim `w:drawing` XML, as preserved on the drawing run
+ */
+export function chartExExtentFromDrawingXml(xml: string): ChartExExtent | undefined {
+  if (!isChartExDrawingXml(xml)) return undefined;
+  let extent: Element | undefined;
+  try {
+    extent = findFirst(parse(xml).elements?.[0], "wp:extent");
+  } catch {
+    return undefined;
+  }
+  const width = extent ? attrNum(extent, "cx") : undefined;
+  const height = extent ? attrNum(extent, "cy") : undefined;
+  if (width === undefined || height === undefined || width <= 0 || height <= 0) return undefined;
+  return { width, height };
+}
+
+/**
+ * Placeholder geometry for a preserved chartEx drawing.
+ *
+ * The frame is the drawing extent inset by `inset` (default 0) and never
+ * smaller than `minSize` (default 1) on either axis, so every call produces a
+ * non-blank box — including a degenerate or missing extent. The label anchors
+ * at the frame center; the caller owns font, stroke, and clipping.
+ *
+ * @param extent source drawing extent (EMU); undefined for a malformed source
+ * @param options inset/minimum size in the extent's unit
+ */
+export function chartExPlaceholderGeometry(
+  extent: ChartExExtent | undefined,
+  options: ChartExPlaceholderOptions = {},
+): ChartExPlaceholderGeometry {
+  const requestedInset = options.inset;
+  const inset =
+    requestedInset !== undefined && Number.isFinite(requestedInset) && requestedInset > 0
+      ? requestedInset
+      : 0;
+  const requestedMin = options.minSize;
+  const minSize =
+    requestedMin !== undefined && Number.isFinite(requestedMin) && requestedMin > 0
+      ? requestedMin
+      : 1;
+  const sourceWidth = extent && Number.isFinite(extent.width) ? Math.max(0, extent.width) : 0;
+  const sourceHeight = extent && Number.isFinite(extent.height) ? Math.max(0, extent.height) : 0;
+  const width = Math.max(minSize, sourceWidth - inset * 2);
+  const height = Math.max(minSize, sourceHeight - inset * 2);
+  return {
+    frame: { x: inset, y: inset, width, height },
+    labelX: inset + width / 2,
+    labelY: inset + height / 2,
+    label: CHART_EX_PLACEHOLDER_LABEL,
+  };
+}
+
+/**
+ * Convenience for a renderer holding a preserved drawing's verbatim XML:
+ * detect chartEx, read its extent, and build the placeholder. Undefined when
+ * the XML is not a chartEx drawing.
+ */
+export function chartExPlaceholderOfDrawingXml(
+  xml: string,
+  options?: ChartExPlaceholderOptions,
+): ChartExPlaceholderGeometry | undefined {
+  if (!isChartExDrawingXml(xml)) return undefined;
+  return chartExPlaceholderGeometry(chartExExtentFromDrawingXml(xml), options);
 }

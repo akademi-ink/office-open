@@ -281,3 +281,18 @@ describe("settings compat/style-pane fidelity", () => {
     expect(xml).toContain("<w14:enableOpenTypeKerning/>");
   });
 });
+
+describe("settingsDesc Word 2010 conflict mode", () => {
+  it("round-trips w14:conflictMode", () => {
+    const xml = settingsDesc.stringify({ w14ConflictMode: true }, writeCtx)!;
+    expect(xml).toContain('<w14:conflictMode w14:val="1"/>');
+    const result = roundTrip({ w14ConflictMode: true });
+    expect(result.w14ConflictMode).toBe(true);
+  });
+
+  it("omits w14:conflictMode unless the source carried it", () => {
+    const xml = settingsDesc.stringify({}, writeCtx)!;
+    expect(xml).not.toContain("w14:conflictMode");
+    expect(roundTrip({}).w14ConflictMode).toBeUndefined();
+  });
+});

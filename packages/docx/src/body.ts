@@ -933,6 +933,11 @@ export function parseParagraphProperties(
     if (Object.keys(frame).length > 0) opts.frame = frame as FrameOptions;
   }
 
+  // w15:collapsed (Word 2013+) — heading paragraph whose subordinate levels
+  // are collapsed. Presence-only on/off, like the other extension flags.
+  const collapsedEl = findChild(el, "w15:collapsed");
+  if (collapsedEl) opts.collapsed = attrBool(collapsedEl, "w:val") ?? true;
+
   // Revision (w:pPrChange) — symmetric with stringifyParagraphProperties
   const pPrChange = findChild(el, "w:pPrChange");
   if (pPrChange) {
@@ -2055,6 +2060,37 @@ function parseRunLevelChildren(
         }
         break;
       }
+      case "w14:conflictIns": {
+        // Word 2010+ co-authoring conflict insertion — CT_RunTrackChange with
+        // the same payload as w:ins, kept in its own branch so the conflict is
+        // not silently promoted to a normal tracked insertion.
+        const children = parseTrackChangeRuns(child, ctx, fieldState.verbatimMarkers);
+        if (children.length > 0) {
+          childList.push({
+            conflictInsertion: {
+              id: attrNum(child, "w:id") ?? 0,
+              author: attr(child, "w:author") ?? "",
+              date: attr(child, "w:date") ?? "",
+              children,
+            },
+          });
+        }
+        break;
+      }
+      case "w14:conflictDel": {
+        const children = parseTrackChangeRuns(child, ctx, fieldState.verbatimMarkers);
+        if (children.length > 0) {
+          childList.push({
+            conflictDeletion: {
+              id: attrNum(child, "w:id") ?? 0,
+              author: attr(child, "w:author") ?? "",
+              date: attr(child, "w:date") ?? "",
+              children,
+            },
+          });
+        }
+        break;
+      }
       case "w:moveFrom": {
         const children = parseTrackChangeRuns(child, ctx, fieldState.verbatimMarkers);
         if (children.length > 0) {
@@ -2266,6 +2302,26 @@ function parseRunLevelChildren(
         if (id !== undefined) childList.push({ customXmlMoveToRangeEnd: id });
         break;
       }
+      case "w14:customXmlConflictInsRangeStart": {
+        const m = parseCustomXmlRangeStart(child);
+        if (m) childList.push({ customXmlConflictInsRangeStart: m });
+        break;
+      }
+      case "w14:customXmlConflictInsRangeEnd": {
+        const id = attrNum(child, "w:id");
+        if (id !== undefined) childList.push({ customXmlConflictInsRangeEnd: id });
+        break;
+      }
+      case "w14:customXmlConflictDelRangeStart": {
+        const m = parseCustomXmlRangeStart(child);
+        if (m) childList.push({ customXmlConflictDelRangeStart: m });
+        break;
+      }
+      case "w14:customXmlConflictDelRangeEnd": {
+        const id = attrNum(child, "w:id");
+        if (id !== undefined) childList.push({ customXmlConflictDelRangeEnd: id });
+        break;
+      }
       case "w:sdt": {
         const sdtPr = findChild(child, "w:sdtPr");
         const properties = sdtPr ? parseSdtProperties(sdtPr) : {};
@@ -2352,6 +2408,8 @@ export function parseParagraph(
   if (paraId) opts.paraId = paraId;
   const textId = attr(el, "w14:textId");
   if (textId) opts.textId = textId;
+  const noSpellError = attrBool(el, "w14:noSpellErr");
+  if (noSpellError !== undefined) opts.noSpellError = noSpellError;
   const rsid = attr(el, "w:rsidR");
   if (rsid) opts.additionRsid = rsid;
   const defaultRunRsid = attr(el, "w:rsidRDefault");

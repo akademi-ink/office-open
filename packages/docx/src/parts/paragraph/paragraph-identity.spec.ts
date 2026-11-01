@@ -3,6 +3,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 import { parseParagraph } from "../../body";
 import type { DocxReadContext } from "../../context";
+import { paragraphIdentityAttrs } from "./stringify";
 
 // Paragraph identity attributes (rsid family + w14:paraId/textId) never touch
 // the read context, so an empty mock suffices.
@@ -41,5 +42,19 @@ describe("paragraph identity attributes parse", () => {
     expect(opts.additionRsid).toBe("00FF");
     // Single text run is promoted to opts.text by the simple-text optimization.
     expect(opts.text).toBe("hi");
+  });
+
+  it("reads and re-emits w14:noSpellErr (Word 2010 spelling exemption)", () => {
+    const xml = `<w:p ${NS} w14:paraId="0A1B2C3D" w14:noSpellErr="1"/>`;
+    const el = parseXml(xml).elements?.[0];
+    if (!el) throw new Error("parsed document has no root element");
+    const opts = parseParagraph(el, readCtx);
+    expect(opts.noSpellError).toBe(true);
+
+    // The writer re-emits the attribute on the w:p opening tag.
+    expect(paragraphIdentityAttrs(opts)).toContain(' w14:noSpellErr="1"');
+    expect(paragraphIdentityAttrs({ noSpellError: false })).toContain(' w14:noSpellErr="0"');
+    // Absent stays absent (default = spell-checked).
+    expect(paragraphIdentityAttrs({})).not.toContain("noSpellErr");
   });
 });

@@ -356,6 +356,13 @@ function stringifySectionPropertiesInner(
     parts.push(`<w:printerSettings r:id="${opts.printerSettingsId}"/>`);
   }
 
+  // w15:footnoteColumns — Word 2013+ footnote-area column count. The
+  // extension element sits after w:printerSettings and before w:sectPrChange
+  // in Word's output.
+  if (opts.footnoteColumns !== undefined) {
+    parts.push(`<w15:footnoteColumns w:val="${opts.footnoteColumns}"/>`);
+  }
+
   // Revision (sectPrChange)
   if (opts.revision) {
     parts.push(stringifySectionPropertiesChange(opts.revision));
@@ -644,6 +651,13 @@ export function parseSectionPropertiesEl(el: Element): SectionPropertiesOptions 
   // Printer settings (w:printerSettings) is not round-tripped: the binary
   // part behind the r:id is not carried over, so keeping the reference would
   // emit a dangling id.
+
+  // w15:footnoteColumns (Word 2013+) — footnote-area column count.
+  const footnoteColumns = findChild(el, "w15:footnoteColumns");
+  if (footnoteColumns) {
+    const val = attrNum(footnoteColumns, "w:val");
+    if (val !== undefined) opts.footnoteColumns = val;
+  }
 
   // Header/footer references are not emitted: users author headers/footers
   // on the section (SectionOptions.headers/footers), and the round-trip path

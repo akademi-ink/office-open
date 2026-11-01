@@ -25,7 +25,10 @@ import {
   emitPercent,
   parseAngle,
   parsePercentAttr,
+  xsdCompoundLine,
   xsdLightRigDirection,
+  xsdLineCap,
+  xsdPenAlignment,
   xsdRectAlignment,
 } from "@office-open/core";
 import type { UniversalMeasure } from "@office-open/core";
@@ -33,8 +36,12 @@ import type {
   BevelOptions,
   CameraPreset,
   ColorTransformOptions,
+  CompoundLine,
   LightRigDirection,
   LightRigType,
+  LineCap,
+  PenAlignment,
+  PresetDash,
   PresetMaterial,
   RectAlignment,
   SphereCoords,
@@ -44,7 +51,7 @@ import {
   BOOLEAN_TRANSFORMS,
   PERCENT_TRANSFORMS,
 } from "@office-open/core/drawing";
-import { attr, attrNum, escapeXml } from "@office-open/xml";
+import { attr, attrBool, attrNum, escapeXml } from "@office-open/xml";
 import type { Element } from "@office-open/xml";
 
 import { stringifyElement } from "../../../util/stringify-element";
@@ -87,17 +94,78 @@ export interface TextEffectColorOptions {
   transforms?: ColorTransformOptions;
 }
 
+/** One gradient stop for a w14 gradient fill (w14:gs). */
+export interface TextGradientStopOptions {
+  /** Stop position as integer percent (0 = start, 100 = end). */
+  position: number;
+  /** Stop color. */
+  color: TextEffectColorOptions;
+}
+
+/** Linear shade of a w14 gradient (w14:lin, CT_LinearShadeProperties). */
+export interface TextLinearShadeOptions {
+  /** Gradient direction in degrees. */
+  angle?: number;
+  /** Scale the angle to the shape's bounding box (w14:scaled). */
+  scaled?: boolean;
+}
+
+/** Path shade of a w14 gradient (w14:path, CT_PathShadeProperties). */
+export interface TextPathShadeOptions {
+  /** Shade path: circle, rectangle or shape outline. */
+  path?: "circle" | "rect" | "shape";
+  /** Rectangle the gradient fills toward, integer percent offsets. */
+  fillToRect?: { left?: number; top?: number; right?: number; bottom?: number };
+}
+
+/**
+ * Typed `w14:gradFill` (CT_GradientFillProperties) — the subset the w14
+ * text-effect schema allows: 2-10 stops plus a linear or path shade.
+ */
+export interface TextGradientOptions {
+  /** Gradient color stops (w14:gsLst/w14:gs, 2-10). */
+  stops?: TextGradientStopOptions[];
+  /** Linear shade (w14:lin) — mutually exclusive with `path`. */
+  linear?: TextLinearShadeOptions;
+  /** Path shade (w14:path) — mutually exclusive with `linear`. */
+  path?: TextPathShadeOptions;
+}
+
 /** Text fill for `w14:textFill` (CT_FillTextEffect). */
 export interface TextFillOptions {
   /** No fill (w14:noFill). */
   none?: true;
   /** Solid fill (w14:solidFill wrapping one color). */
   solid?: TextEffectColorOptions;
+  /** Gradient fill (w14:gradFill) — typed stops and shade. */
+  gradient?: TextGradientOptions;
   /**
-   * Verbatim `w14:gradFill` XML — gradient text fills are not modeled; the
-   * subtree round-trips byte-faithfully. Round-trip only — do not hand-author.
+   * Verbatim `w14:gradFill` XML for a source the typed model cannot express
+   * (a degenerate stop list or an unknown child). Round-trip only — do not
+   * hand-author.
    */
   gradientXml?: string;
+}
+
+/**
+ * Text outline effect for `w14:textOutline` (CT_TextOutlineEffect) — outline
+ * width/style plus the fill painted inside the stroke.
+ */
+export interface TextOutlineOptions {
+  /** Outline width in EMUs (number) or UniversalMeasure. */
+  width?: number | UniversalMeasure;
+  /** Line cap style (a:ST_LineCap). */
+  cap?: LineCap;
+  /** Compound line style (a:ST_CompoundLine). */
+  compound?: CompoundLine;
+  /** Stroke alignment relative to the outline path (a:ST_PenAlignment). */
+  alignment?: PenAlignment;
+  /** Stroke fill (none/solid/gradient), same shape as the text fill. */
+  fill?: TextFillOptions;
+  /** Preset dash style (w14:prstDash). */
+  dash?: PresetDash;
+  /** Join style: round/bevel, or a miter limit as integer percent. */
+  join?: "round" | "bevel" | { miterLimit: number };
 }
 
 /** Glow effect for `w14:glow` (CT_Glow). */
@@ -213,6 +281,8 @@ export interface TextEffectsOptions {
   reflection?: TextReflectionOptions;
   /** Text fill (w14:textFill). */
   textFill?: TextFillOptions;
+  /** Text outline (w14:textOutline) — stroke width/style and its fill. */
+  textOutline?: TextOutlineOptions;
   /** 3-D shape properties (w14:props3d). */
   props3d?: TextProps3DOptions;
   /** 3-D scene — camera and lighting (w14:scene3d). */
@@ -367,6 +437,86 @@ function stringifyScene3D(opts: TextScene3DOptions): string {
   return `<w14:scene3d><w14:camera w14:prst="${opts.camera}"/>${lightRig}</w14:scene3d>`;
 }
 
+/** `w14:gsLst` — the gradient stop list (2-10 `w14:gs` children). */
+function stringifyGradientStops(stops: readonly TextGradientStopOptions[]): string {
+  const inner = stops
+    .map(
+      (stop) =>
+        `<w14:gs w14:pos="${emitPercent(stop.position)}">${stringifyColor(stop.color)}</w14:gs>`,
+    )
+    .join("");
+  return `<w14:gsLst>${inner}</w14:gsLst>`;
+}
+
+/** `w14:gradFill` — CT_GradientFillProperties (stops + lin/path shade). */
+function stringifyGradientFill(gradient: TextGradientOptions): string {
+  let inner = "";
+  if (gradient.stops && gradient.stops.length > 0) {
+    inner += stringifyGradientStops(gradient.stops);
+  }
+  if (gradient.linear) {
+    const attrs: string[] = [];
+    if (gradient.linear.angle !== undefined) {
+      attrs.push(`w14:ang="${emitAngle(gradient.linear.angle)}"`);
+    }
+    if (gradient.linear.scaled !== undefined) {
+      attrs.push(`w14:scaled="${gradient.linear.scaled ? 1 : 0}"`);
+    }
+    inner += attrs.length > 0 ? `<w14:lin ${attrs.join(" ")}/>` : "<w14:lin/>";
+  } else if (gradient.path) {
+    const path = gradient.path;
+    const pathAttr = path.path !== undefined ? ` w14:path="${path.path}"` : "";
+    let rect = "";
+    if (path.fillToRect) {
+      const r = path.fillToRect;
+      const attrs: string[] = [];
+      if (r.left !== undefined) attrs.push(`w14:l="${emitPercent(r.left)}"`);
+      if (r.top !== undefined) attrs.push(`w14:t="${emitPercent(r.top)}"`);
+      if (r.right !== undefined) attrs.push(`w14:r="${emitPercent(r.right)}"`);
+      if (r.bottom !== undefined) attrs.push(`w14:b="${emitPercent(r.bottom)}"`);
+      rect = attrs.length > 0 ? `<w14:fillToRect ${attrs.join(" ")}/>` : "<w14:fillToRect/>";
+    }
+    inner += rect ? `<w14:path${pathAttr}>${rect}</w14:path>` : `<w14:path${pathAttr}/>`;
+  }
+  return `<w14:gradFill>${inner}</w14:gradFill>`;
+}
+
+/**
+ * The fill payload shared by `w14:textFill` and `w14:textOutline`
+ * (EG_FillProperties): noFill, solidFill, or gradFill.
+ */
+function stringifyTextFillInner(fill: TextFillOptions): string {
+  if (fill.gradientXml) return fill.gradientXml;
+  if (fill.gradient) return stringifyGradientFill(fill.gradient);
+  if (fill.solid) return `<w14:solidFill>${stringifyColor(fill.solid)}</w14:solidFill>`;
+  if (fill.none) return "<w14:noFill/>";
+  return "";
+}
+
+/** `w14:textOutline` — CT_TextOutlineEffect. */
+function stringifyTextOutline(outline: TextOutlineOptions): string {
+  let inner = outline.fill ? stringifyTextFillInner(outline.fill) : "";
+  if (outline.dash !== undefined) {
+    inner += `<w14:prstDash w14:val="${outline.dash}"/>`;
+  }
+  if (outline.join === "round") inner += "<w14:round/>";
+  else if (outline.join === "bevel") inner += "<w14:bevel/>";
+  else if (outline.join) inner += `<w14:miter w14:lim="${emitPercent(outline.join.miterLimit)}"/>`;
+  const attrs: string[] = [];
+  if (outline.width !== undefined) attrs.push(`w14:w="${convertToEmu(outline.width)}"`);
+  if (outline.cap !== undefined) attrs.push(`w14:cap="${xsdLineCap.to(outline.cap)}"`);
+  if (outline.compound !== undefined) {
+    attrs.push(`w14:cmpd="${xsdCompoundLine.to(outline.compound)}"`);
+  }
+  if (outline.alignment !== undefined) {
+    attrs.push(`w14:algn="${xsdPenAlignment.to(outline.alignment)}"`);
+  }
+  const attrStr = attrs.length > 0 ? ` ${attrs.join(" ")}` : "";
+  return inner
+    ? `<w14:textOutline${attrStr}>${inner}</w14:textOutline>`
+    : `<w14:textOutline${attrStr}/>`;
+}
+
 /** Emit the typed w14 text-effect children in schema order. */
 export function stringifyTextEffects(opts: TextEffectsOptions): string {
   let out = "";
@@ -416,12 +566,10 @@ export function stringifyTextEffects(opts: TextEffectsOptions): string {
     if (r.alignment !== undefined) attrs.push(`w14:algn="${xsdRectAlignment.to(r.alignment)}"`);
     out += attrs.length > 0 ? `<w14:reflection ${attrs.join(" ")}/>` : "<w14:reflection/>";
   }
+  if (opts.textOutline) out += stringifyTextOutline(opts.textOutline);
   if (opts.textFill) {
-    const fill = opts.textFill;
-    if (fill.gradientXml) out += fill.gradientXml;
-    else if (fill.solid)
-      out += `<w14:textFill><w14:solidFill>${stringifyColor(fill.solid)}</w14:solidFill></w14:textFill>`;
-    else if (fill.none) out += "<w14:textFill><w14:noFill/></w14:textFill>";
+    const inner = stringifyTextFillInner(opts.textFill);
+    if (inner) out += `<w14:textFill>${inner}</w14:textFill>`;
   }
   if (opts.scene3d) out += stringifyScene3D(opts.scene3d);
   if (opts.props3d) out += stringifyProps3D(opts.props3d);
@@ -455,6 +603,82 @@ function parseBevel(el: Element | undefined): BevelOptions | undefined {
   if (h !== undefined) bevel.h = h;
   if (prst !== undefined) bevel.prst = prst as BevelOptions["prst"];
   return bevel;
+}
+
+/** Read one percentage attribute off a w14 element as integer percent. */
+function gradientPercent(el: Element, name: string): number | undefined {
+  const raw = attr(el, `w14:${name}`);
+  return raw === undefined ? undefined : parsePercentAttr(raw);
+}
+
+/** `w14:gradFill` → typed stops + lin/path shade; undefined when empty. */
+function parseGradientFill(el: Element): TextGradientOptions | undefined {
+  const gradient: TextGradientOptions = {};
+  const gsLst = childOf(el, "w14:gsLst");
+  if (gsLst) {
+    const stops: TextGradientStopOptions[] = [];
+    for (const child of gsLst.elements ?? []) {
+      if (child.name !== "w14:gs") continue;
+      const position = gradientPercent(child, "pos");
+      const color = parseColor(childOf(child, ...COLOR_TAGS));
+      if (position === undefined || !color) continue;
+      stops.push({ position, color });
+    }
+    if (stops.length > 0) gradient.stops = stops;
+  }
+  const lin = childOf(el, "w14:lin");
+  if (lin) {
+    const linear: TextLinearShadeOptions = {};
+    const angle = angleAttr(lin, "ang");
+    if (angle !== undefined) linear.angle = angle;
+    const scaled = attrBool(lin, "w14:scaled");
+    if (scaled !== undefined) linear.scaled = scaled;
+    gradient.linear = linear;
+  } else {
+    const path = childOf(el, "w14:path");
+    if (path) {
+      const shade: TextPathShadeOptions = {};
+      const pathType = attr(path, "w14:path");
+      if (pathType === "circle" || pathType === "rect" || pathType === "shape") {
+        shade.path = pathType;
+      }
+      const rect = childOf(path, "w14:fillToRect");
+      if (rect) {
+        const fillToRect: NonNullable<TextPathShadeOptions["fillToRect"]> = {};
+        const left = gradientPercent(rect, "l");
+        const top = gradientPercent(rect, "t");
+        const right = gradientPercent(rect, "r");
+        const bottom = gradientPercent(rect, "b");
+        if (left !== undefined) fillToRect.left = left;
+        if (top !== undefined) fillToRect.top = top;
+        if (right !== undefined) fillToRect.right = right;
+        if (bottom !== undefined) fillToRect.bottom = bottom;
+        shade.fillToRect = fillToRect;
+      }
+      gradient.path = shade;
+    }
+  }
+  return gradient.stops || gradient.linear || gradient.path ? gradient : undefined;
+}
+
+/**
+ * Parse an EG_FillProperties payload (`w14:noFill` / `w14:solidFill` /
+ * `w14:gradFill`) — shared by textFill and textOutline. A gradient the typed
+ * model cannot express degrades to verbatim `gradientXml`.
+ */
+function parseTextFill(el: Element): TextFillOptions | undefined {
+  if (childOf(el, "w14:noFill")) return { none: true };
+  const solidFill = childOf(el, "w14:solidFill");
+  if (solidFill) {
+    const color = parseColor(childOf(solidFill, ...COLOR_TAGS));
+    return color ? { solid: color } : undefined;
+  }
+  const gradient = childOf(el, "w14:gradFill");
+  if (gradient) {
+    const typed = parseGradientFill(gradient);
+    return typed ? { gradient: typed } : { gradientXml: stringifyElement(gradient) };
+  }
+  return undefined;
 }
 
 /**
@@ -562,23 +786,38 @@ export function parseTextEffectChild(el: Element, effects: TextEffectsOptions): 
       return true;
     }
     case "w14:textFill": {
-      const solidFill = childOf(el, "w14:solidFill");
-      if (solidFill) {
-        const color = parseColor(childOf(solidFill, ...COLOR_TAGS));
-        if (!color) return false;
-        effects.textFill = { solid: color };
-        return true;
+      const fill = parseTextFill(el);
+      if (!fill) return false;
+      effects.textFill = fill;
+      return true;
+    }
+    case "w14:textOutline": {
+      const outline: TextOutlineOptions = {};
+      const width = emuAttr(el, "w");
+      if (width !== undefined) outline.width = width;
+      const cap = attr(el, "w14:cap");
+      if (cap !== undefined) outline.cap = xsdLineCap.from(cap) as LineCap;
+      const compound = attr(el, "w14:cmpd");
+      if (compound !== undefined) outline.compound = xsdCompoundLine.from(compound) as CompoundLine;
+      const alignment = attr(el, "w14:algn");
+      if (alignment !== undefined) {
+        outline.alignment = xsdPenAlignment.from(alignment) as PenAlignment;
       }
-      if (childOf(el, "w14:noFill")) {
-        effects.textFill = { none: true };
-        return true;
+      const fill = parseTextFill(el);
+      if (fill) outline.fill = fill;
+      const dash = childOf(el, "w14:prstDash");
+      if (dash) {
+        const val = attr(dash, "w14:val");
+        if (val !== undefined) outline.dash = val as PresetDash;
       }
-      const gradient = childOf(el, "w14:gradFill");
-      if (gradient) {
-        effects.textFill = { gradientXml: stringifyElement(gradient) };
-        return true;
+      if (childOf(el, "w14:round")) outline.join = "round";
+      else if (childOf(el, "w14:bevel")) outline.join = "bevel";
+      else {
+        const miter = childOf(el, "w14:miter");
+        if (miter) outline.join = { miterLimit: percentAttr(miter, "lim") ?? 800 };
       }
-      return false;
+      effects.textOutline = outline;
+      return true;
     }
     case "w14:scene3d": {
       const camera = childOf(el, "w14:camera");

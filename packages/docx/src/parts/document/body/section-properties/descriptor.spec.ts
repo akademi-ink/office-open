@@ -242,6 +242,21 @@ describe("sectionPropertiesDesc round-trip", () => {
     expect(result.paperSrc!.other).toBe(2);
   });
 
+  it("round-trips the Word 2013 footnote column count (w15:footnoteColumns)", () => {
+    const xml = sectionPropertiesDesc.stringify({ footnoteColumns: 2 }, writeCtx)!;
+    expect(xml).toContain('<w15:footnoteColumns w:val="2"/>');
+    // Placement: after the base section properties, before sectPrChange.
+    expect(xml.indexOf("w15:footnoteColumns")).toBeGreaterThan(xml.indexOf("<w:docGrid"));
+    const result = roundTrip({ footnoteColumns: 2 });
+    expect(result.footnoteColumns).toBe(2);
+  });
+
+  it("omits w15:footnoteColumns when the source carried none", () => {
+    const xml = sectionPropertiesDesc.stringify({}, writeCtx)!;
+    expect(xml).not.toContain("w15:footnoteColumns");
+    expect(roundTrip({}).footnoteColumns).toBeUndefined();
+  });
+
   it("round-trips rsid attributes", () => {
     const result = roundTrip({
       additionRsid: "00112233",

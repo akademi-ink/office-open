@@ -3,6 +3,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 import { parseParagraph } from "../../body";
 import type { DocxReadContext } from "../../context";
+import { stringifyChildDispatch } from "../inline";
 
 // Range markers never touch the read context, so an empty mock suffices.
 const readCtx = {} as unknown as DocxReadContext;
@@ -169,5 +170,106 @@ describe("move revision runs parse", () => {
       date: "2021",
       children: [{ text: "target" }],
     });
+  });
+});
+
+// ── w14 co-authoring conflict markup (Word 2010+) ──
+
+const W14_NS =
+  'xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" ' +
+  'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
+
+function parseW14ParagraphXml(inner: string): { children?: unknown[] } {
+  const doc = parseXml(`<w:p ${W14_NS}>${inner}</w:p>`);
+  const el = doc.elements?.[0];
+  if (!el) throw new Error("parsed document has no root element");
+  return parseParagraph(el, readCtx) as { children?: unknown[] };
+}
+
+describe("w14 conflict markup", () => {
+  it("parses the customXml conflict range marker pairs", () => {
+    const cs = childrenOf(
+      parseW14ParagraphXml(
+        `<w14:customXmlConflictInsRangeStart w:id="1" w:author="A" w:date="2020"/><w14:customXmlConflictInsRangeEnd w:id="1"/>` +
+          `<w14:customXmlConflictDelRangeStart w:id="2" w:author="B"/><w14:customXmlConflictDelRangeEnd w:id="2"/>`,
+      ),
+    );
+    expect(cs[0]?.customXmlConflictInsRangeStart).toEqual({ id: 1, author: "A", date: "2020" });
+    expect(cs[1]?.customXmlConflictInsRangeEnd).toBe(1);
+    expect(cs[2]?.customXmlConflictDelRangeStart).toEqual({ id: 2, author: "B" });
+    expect(cs[3]?.customXmlConflictDelRangeEnd).toBe(2);
+  });
+
+  it("parses conflictIns/conflictDel as their own wrappers (not w:ins/w:del)", () => {
+    const cs = childrenOf(
+      parseW14ParagraphXml(
+        `<w14:conflictIns w:id="1" w:author="A" w:date="2020"><w:r><w:t>mine</w:t></w:r></w14:conflictIns>` +
+          `<w14:conflictDel w:id="2" w:author="B" w:date="2021"><w:r><w:delText>theirs</w:delText></w:r></w14:conflictDel>`,
+      ),
+    );
+    expect(cs[0]?.conflictInsertion).toMatchObject({
+      id: 1,
+      author: "A",
+      date: "2020",
+      children: [{ text: "mine" }],
+    });
+    expect(cs[1]?.conflictDeletion).toMatchObject({
+      id: 2,
+      author: "B",
+      date: "2021",
+      children: [{ text: "theirs" }],
+    });
+    expect(cs[0]?.insertion).toBeUndefined();
+    expect(cs[1]?.deletion).toBeUndefined();
+  });
+
+  it("re-emits the conflict wrappers and range markers under their w14 names", () => {
+    const ctx = {} as never;
+    expect(
+      stringifyChildDispatch(
+        {
+          conflictInsertion: {
+            id: 1,
+            author: "A",
+            date: "2020",
+            children: [{ text: "mine" }],
+          },
+        },
+        ctx,
+      ),
+    ).toContain('<w14:conflictIns w:id="1" w:author="A" w:date="2020">');
+    expect(
+      stringifyChildDispatch(
+        {
+          conflictInsertion: { id: 1, author: "A", date: "2020", children: [{ text: "mine" }] },
+        },
+        ctx,
+      ),
+    ).toContain("mine");
+    expect(
+      stringifyChildDispatch(
+        {
+          conflictDeletion: {
+            id: 2,
+            author: "B",
+            date: "2021",
+            children: [{ text: "theirs" }],
+          },
+        },
+        ctx,
+      ),
+    ).toContain("<w14:conflictDel");
+    expect(
+      stringifyChildDispatch({ customXmlConflictInsRangeStart: { id: 3, author: "C" } }, ctx),
+    ).toBe('<w14:customXmlConflictInsRangeStart w:id="3" w:author="C"/>');
+    expect(stringifyChildDispatch({ customXmlConflictInsRangeEnd: 3 }, ctx)).toBe(
+      '<w14:customXmlConflictInsRangeEnd w:id="3"/>',
+    );
+    expect(stringifyChildDispatch({ customXmlConflictDelRangeStart: { id: 4 } }, ctx)).toBe(
+      '<w14:customXmlConflictDelRangeStart w:id="4"/>',
+    );
+    expect(stringifyChildDispatch({ customXmlConflictDelRangeEnd: 4 }, ctx)).toBe(
+      '<w14:customXmlConflictDelRangeEnd w:id="4"/>',
+    );
   });
 });

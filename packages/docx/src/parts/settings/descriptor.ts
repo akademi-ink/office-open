@@ -1086,6 +1086,7 @@ export const settingsDesc: CustomDescriptor<SettingsOptions> = {
     // (decimalSymbol → listSeparator → w14:docId → w15:chartTrackingRefBased → w15:docId).
     // Preserved verbatim for round-trip fidelity; val attribute is namespace-scoped.
     p.push(strVal("w14:docId", opts.w14DocId));
+    p.push(onOff("w14:conflictMode", opts.w14ConflictMode));
     p.push(onOff("w14:discardImageEditingData", opts.w14DiscardImageEditingData));
     if (opts.w14DefaultImageDpi !== undefined)
       p.push(strVal("w14:defaultImageDpi", String(opts.w14DefaultImageDpi)));
@@ -1547,6 +1548,10 @@ export const settingsDesc: CustomDescriptor<SettingsOptions> = {
     // Word 2010/2013 document identifiers — preserve for round-trip fidelity
     const w14DocId = readStr(findChild(el, "w14:docId"), "w14:val");
     if (w14DocId) opts.w14DocId = w14DocId;
+    const w14ConflictMode = findChild(el, "w14:conflictMode");
+    if (w14ConflictMode) {
+      opts.w14ConflictMode = parseOnOff(attr(w14ConflictMode, "w14:val")) ?? true;
+    }
     const w14Discard = findChild(el, "w14:discardImageEditingData");
     if (w14Discard)
       opts.w14DiscardImageEditingData = parseOnOff(attr(w14Discard, "w14:val")) ?? true;

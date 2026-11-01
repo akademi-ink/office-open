@@ -19,17 +19,37 @@
  *
  * ## Coverage note (w14)
  *
- * Word 2010's 59 element names are split three ways:
+ * Word 2010's 59 element names are covered three ways, measured by
+ * `scripts/xsd-coverage.ts w14` (59/59 elements, 34/34 tracked attributes):
  *   - **structured** — `w14:ligatures`, `w14:numForm`, `w14:numSpacing`,
- *     `w14:stylisticSets`, `w14:glow`, `w14:shadow`, `w14:reflection`,
- *     `w14:textFill`, `w14:textOutline`, `w14:props3d`, `w14:scene3d`,
- *     `w14:cntxtAlts` round-trip through the typed
- *     `RunStylePropertiesOptions.textEffects` model;
- *   - **preserved verbatim** — the remaining `w14:*` run-property children
- *     survive in `w14RawXml` (byte-faithful, not editable);
- *   - **modeled elsewhere** — `w14:checkbox` in `w:sdtPr`, `w14:paraId` /
- *     `w14:textId` on paragraphs, `w14:docId` in settings, and the conflict
- *     range markers have their own structured fields.
+ *     `w14:stylisticSets`, `w14:cntxtAlts`, `w14:glow`, `w14:shadow`,
+ *     `w14:reflection`, `w14:textFill`, `w14:textOutline` (width/cap/cmd/
+ *     alignment plus its fill, `w14:prstDash`, `w14:round`/`w14:bevel`/
+ *     `w14:miter`), `w14:props3d`, `w14:scene3d` round-trip through the typed
+ *     `RunStylePropertiesOptions.textEffects` model; `w14:gradFill` is typed
+ *     too (`gsLst`/`gs` stops, `lin` angle+scaled, `path`+`fillToRect`);
+ *   - **modeled elsewhere** — `w14:checkbox` and `w14:entityPicker` in
+ *     `w:sdtPr`, `w14:paraId`/`w14:textId`/`w14:noSpellErr` on paragraphs,
+ *     `w14:docId`/`w14:conflictMode` in settings, `w14:conflictIns`/
+ *     `w14:conflictDel` as their own paragraph-child wrappers, and
+ *     `w14:customXmlConflict*RangeStart`/`End` as typed range markers;
+ *   - **preserved verbatim** — a degenerate `w14:gradFill` (an unknown child
+ *     or fewer than two usable stops) and any `w14:*` run-property child a
+ *     future Word adds survive in `w14RawXml` (byte-faithful, not editable).
+ *
+ * ## Coverage note (w15)
+ *
+ * Word 2013's 18 element names are all covered (18/18 elements, 7/7 tracked
+ * attributes): `w15:commentsEx`/`w15:commentEx` (including `commentExNG`) in
+ * `commentsExtended.xml`; `w15:people`/`w15:person`/`w15:presenceInfo` in
+ * `people.xml`; `w15:appearance` and the repeating-section group
+ * (`w15:repeatingSection`, `w15:sectionTitle`,
+ * `w15:doNotAllowInsertDeleteSection`, `w15:repeatingSectionItem`) plus the
+ * web-extension binding markers (`w15:webExtensionLinked`,
+ * `w15:webExtensionCreated`) in `w:sdtPr`; `w15:collapsed` on `w:pPr`;
+ * `w15:footnoteColumns` on `w:sectPr`; `w15:chartTrackingRefBased`,
+ * `w15:docId` and `w15:restartNumberingAfterBreak`/`w15:tentative` in
+ * settings and numbering.
  *
  * Unknown Word namespaces (a future `word/2026/wordml`) are recognized by
  * {@link isWordExtensionNamespace} so a source that declares one keeps its

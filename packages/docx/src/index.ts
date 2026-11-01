@@ -42,4 +42,16 @@ export type {
   OutputByType,
   PackerOptions,
 } from "@office-open/core";
+// Preservation status/helpers for signed, encrypted, and macro-enabled
+// packages — detection lives in core/opc; re-exported here so docx consumers
+// do not need a second dependency for the public parse status.
+export {
+  detectDigitalSignatures,
+  detectEncryptedContainer,
+  digitalSignatureInvalidationWarning,
+  DIGITAL_SIGNATURE_DIRECTORY,
+  EncryptedPackageError,
+  type DigitalSignatureInfo,
+  type EncryptedContainerStatus,
+} from "@office-open/core";
 export { framesetXml, frameXml } from "./parts/web-settings";

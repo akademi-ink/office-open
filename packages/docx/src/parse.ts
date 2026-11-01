@@ -2,6 +2,8 @@ import { parseArchive, ParsedArchive } from "@office-open/core";
 import type { DataType } from "@office-open/core";
 import {
   collectPassthroughParts,
+  detectDigitalSignatures,
+  detectEncryptedContainer,
   isEncryptedContainer,
   resolveRelationshipTarget,
   toUint8Array,
@@ -403,7 +405,11 @@ export async function parseDocument(data: DataType): Promise<DocumentOptions> {
     const head = new Uint8Array(await data.slice(0, 8).arrayBuffer());
     if (isEncryptedContainer(head)) {
       // The encrypted container re-emits verbatim — it needs all bytes.
-      return { sections: [], encrypted: { data: await toUint8ArrayAsync(data) } };
+      const bytes = await toUint8ArrayAsync(data);
+      return {
+        sections: [],
+        encrypted: { data: bytes, status: detectEncryptedContainer(bytes) },
+      };
     }
     return parseDocumentFromDocx(parseDocxArchive(await ParsedArchive.open(data)));
   }
@@ -421,9 +427,14 @@ export function parseDocumentSync(data: DataType): DocumentOptions {
 
 function parseDocumentFromBytes(uint8: Uint8Array): DocumentOptions {
   // Encrypted package (OLE2/CFB container): the plaintext needs the password,
-  // so carry the source bytes verbatim for generate() to re-emit.
+  // so carry the source bytes verbatim for generate() to re-emit. The status
+  // distinguishes agile from standard/CryptoAPI (and a legacy .doc CFB) so a
+  // caller reports a precise reason instead of a generic archive error.
   if (isEncryptedContainer(uint8)) {
-    return { sections: [], encrypted: { data: uint8 } };
+    return {
+      sections: [],
+      encrypted: { data: uint8, status: detectEncryptedContainer(uint8) },
+    };
   }
 
   return parseDocumentFromDocx(parseDocx(uint8));
@@ -734,6 +745,12 @@ function parseDocumentFromDocx(docx: DocxDocument): DocumentOptions {
   );
   if (passthroughParts.length > 0) opts.rawParts = passthroughParts;
   if (passthroughRels.length > 0) opts.passthroughRelationships = passthroughRels;
+
+  // `_xmlsignatures/` parts already rode through as rawParts; the metadata
+  // (origin/signatures/relationships) lets callers surface the signed state and
+  // lets the compiler warn that regeneration invalidates the signatures.
+  const digitalSignatures = detectDigitalSignatures(docx.doc);
+  if (digitalSignatures) opts.digitalSignatures = digitalSignatures;
 
   return opts as DocumentOptions;
 }

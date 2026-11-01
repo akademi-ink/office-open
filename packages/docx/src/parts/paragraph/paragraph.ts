@@ -118,7 +118,11 @@ export type TrackChangeChild =
   | { wpsShape: ShapeOptions }
   | { wpgGroup: GroupOptions }
   | { insertion: ChangedProperties & { children: TrackChangeChild[] } }
-  | { deletion: ChangedProperties & { children: TrackChangeChild[] } };
+  | { deletion: ChangedProperties & { children: TrackChangeChild[] } }
+  // Word 2010+ co-authoring conflict wrappers (w14:conflictIns/conflictDel,
+  // CT_RunTrackChange) — same payload as w:ins/w:del, different element.
+  | { conflictInsertion: ChangedProperties & { children: TrackChangeChild[] } }
+  | { conflictDeletion: ChangedProperties & { children: TrackChangeChild[] } };
 
 /** Discriminated union of all paragraph child types (inline elements, runs, etc.). */
 export type ParagraphChild =
@@ -159,6 +163,8 @@ export type ParagraphChild =
   | { comment: CommentChildOptions }
   | { insertion: ChangedProperties & { children: TrackChangeChild[] } }
   | { deletion: ChangedProperties & { children: TrackChangeChild[] } }
+  | { conflictInsertion: ChangedProperties & { children: TrackChangeChild[] } }
+  | { conflictDeletion: ChangedProperties & { children: TrackChangeChild[] } }
   | {
       hyperlink: {
         url?: string;
@@ -221,6 +227,13 @@ export type ParagraphChild =
   | { customXmlMoveFromRangeEnd: number }
   | { customXmlMoveToRangeStart: { id: number; author?: string; date?: string } }
   | { customXmlMoveToRangeEnd: number }
+  // Word 2010+ co-authoring conflict range markers (w14 names) — same shape as
+  // the customXml range markers, tracked separately so a conflict range is not
+  // folded into an edit range.
+  | { customXmlConflictInsRangeStart: { id: number; author?: string; date?: string } }
+  | { customXmlConflictInsRangeEnd: number }
+  | { customXmlConflictDelRangeStart: { id: number; author?: string; date?: string } }
+  | { customXmlConflictDelRangeEnd: number }
   // Simple field
   | { simpleField: SimpleFieldOptions }
   // Form field (checkbox, dropdown list, text input)
@@ -289,4 +302,9 @@ export type ParagraphOptions = {
   paraId?: LongHexNumber;
   /** Paragraph text identifier (w14:textId, 8-digit hex string). */
   textId?: LongHexNumber;
+  /**
+   * The paragraph is exempt from the spelling checker (Word 2010+
+   * w14:noSpellErr attribute). Omitted keeps the default (checked).
+   */
+  noSpellError?: boolean;
 } & ParagraphPropertiesOptions;

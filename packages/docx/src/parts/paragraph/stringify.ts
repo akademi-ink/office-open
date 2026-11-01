@@ -65,6 +65,7 @@ export function paragraphIdentityAttrs(opts: ParagraphOptions): string {
   let attr = "";
   if (opts.paraId) attr += ` w14:paraId="${opts.paraId}"`;
   if (opts.textId) attr += ` w14:textId="${opts.textId}"`;
+  if (opts.noSpellError !== undefined) attr += ` w14:noSpellErr="${opts.noSpellError ? 1 : 0}"`;
   if (opts.additionRsid) attr += ` w:rsidR="${opts.additionRsid}"`;
   if (opts.defaultRunRsid) attr += ` w:rsidRDefault="${opts.defaultRunRsid}"`;
   if (opts.propertiesRsid) attr += ` w:rsidP="${opts.propertiesRsid}"`;
@@ -528,6 +529,10 @@ export function stringifyParagraphProperties(
   if (options.outlineLevel !== undefined) s += `<w:outlineLvl w:val="${options.outlineLevel}"/>`;
   if (options.divId !== undefined) s += `<w:divId w:val="${options.divId}"/>`;
   if (options.cnfStyle) s += cnfStyleStr(options.cnfStyle);
+
+  // w15:collapsed (Word 2013+) — extension element on CT_PPrBase, emitted at
+  // the end of the base sequence (before the rPr/sectPr/pPrChange tail).
+  if (options.collapsed !== undefined) s += onOff("w15:collapsed", options.collapsed);
 
   // Embedded run properties (w:rPr inside w:pPr) — emitted even when the rPr
   // holds only a paragraph-mark track-change marker (w:ins/w:del) or is a

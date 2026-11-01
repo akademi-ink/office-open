@@ -12,6 +12,7 @@ import {
 
 import { toUint8ArrayAsync } from "../util/data-type";
 import { blobSource, type ByteSource } from "./byte-source";
+import { assertNotEncryptedContainer } from "./encryption";
 import { stripOversizedGfxdata } from "./gfxdata";
 import { OOXML_CANONICAL_PREFIXES } from "./namespaces";
 import { levelForMediaName, ZIP_MEDIA_LEVEL } from "./packer";
@@ -235,8 +236,14 @@ export class ParsedArchive {
   }
 }
 
-/** Parse an OOXML archive (.docx, .pptx, .xlsx) into a ParsedArchive. */
+/**
+ * Parse an OOXML archive (.docx, .pptx, .xlsx) into a ParsedArchive.
+ * A CFB container (an encrypted OOXML file) is rejected with
+ * {@link EncryptedPackageError} and its precise status instead of the generic
+ * archive error a non-ZIP input would otherwise produce.
+ */
 export function parseArchive(data: Uint8Array): ParsedArchive {
+  assertNotEncryptedContainer(data);
   return new ParsedArchive(data);
 }
 

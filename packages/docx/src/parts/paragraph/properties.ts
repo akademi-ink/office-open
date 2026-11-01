@@ -263,6 +263,11 @@ export type ParagraphPropertiesOptionsBase = {
     level: number;
   };
   /**
+   * Heading paragraph whose subordinate heading levels are collapsed in Word
+   * 2013+ (w15:collapsed). Round-trip only — the fold state is Word UI state.
+   */
+  collapsed?: boolean;
+  /**
    * Run properties to apply to all runs in the paragraph.
    */
   run?: ParagraphRunOptions;

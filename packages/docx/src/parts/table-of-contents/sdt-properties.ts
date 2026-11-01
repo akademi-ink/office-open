@@ -123,6 +123,21 @@ export interface SdtCheckboxOptions {
 }
 
 /**
+ * Repeating-section properties (CT_SdtRepeatedSection, `w15:repeatingSection`).
+ *
+ * Word 2013+ content control that repeats its item template. The element is
+ * the type discriminator on the repeating-section control; the control that
+ * carries the template content marks itself with
+ * `SdtPropertiesOptions.repeatingSectionItem` instead.
+ */
+export interface SdtRepeatingSectionOptions {
+  /** Title shown above each repeated section (w15:sectionTitle `@w:val`). */
+  sectionTitle?: string;
+  /** Hide the UI affordances that insert/delete a section (w15:doNotAllowInsertDeleteSection). */
+  doNotAllowInsertDeleteSection?: boolean;
+}
+
+/**
  * Data binding options (CT_DataBinding).
  */
 export interface SdtDataBindingOptions {
@@ -200,6 +215,31 @@ export interface SdtPropertiesOptions {
   bibliography?: boolean;
   /** Checkbox content control SDT (Word 2010+, w14:checkbox) */
   checkbox?: SdtCheckboxOptions;
+  /** Entity picker SDT (Word 2010+, w14:entityPicker) — a type discriminator. */
+  entityPicker?: boolean;
+
+  /**
+   * Repeating-section control (Word 2013+, w15:repeatingSection) — the outer
+   * control that repeats its item template and carries the section title.
+   */
+  repeatingSection?: SdtRepeatingSectionOptions;
+  /**
+   * Marks this content control as the repeating section's item template
+   * (Word 2013+, w15:repeatingSectionItem). Round-trip only — do not
+   * hand-author alongside `repeatingSection`.
+   */
+  repeatingSectionItem?: boolean;
+
+  /**
+   * The control was created by an Office Web Extension (Word 2013+,
+   * w15:webExtensionCreated). Emitted only when the source carried it.
+   */
+  webExtensionCreated?: boolean;
+  /**
+   * The control is linked to an Office Web Extension (Word 2013+,
+   * w15:webExtensionLinked). `webExtensionCreated` takes precedence in Word.
+   */
+  webExtensionLinked?: boolean;
 
   /**
    * Visual chrome of the content control in Word 2013+ (w15:appearance):

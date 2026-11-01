@@ -8,7 +8,12 @@
  *
  * @module
  */
-import type { ContentTypesInput, DataType, EncryptedContainerOptions } from "@office-open/core";
+import type {
+  ContentTypesInput,
+  DataType,
+  DigitalSignatureInfo,
+  EncryptedContainerOptions,
+} from "@office-open/core";
 import type { BibliographyOptions } from "@parts/bibliography";
 import type { CommentExtendedOptions } from "@parts/comments-extended";
 import type { CommentExtensibleOptions } from "@parts/comments-extensible";
@@ -148,6 +153,13 @@ export interface DocumentOptions extends CorePropertiesOptions {
     rId: string;
     targetMode?: "External";
   }[];
+  /**
+   * Digital-signature parts detected at parse time. Round-trip only — do not
+   * hand-author. The `_xmlsignatures/` bytes ride through `rawParts`
+   * verbatim; regeneration changes signed content, so the saved package is no
+   * longer validly signed (office-open never signs or verifies).
+   */
+  digitalSignatures?: DigitalSignatureInfo;
   /** Extended properties (docProps/app.xml) */
   appProperties?: AppPropertiesOptions;
 }

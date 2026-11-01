@@ -43,14 +43,41 @@ export {
 // Output types
 export { convertOutput, OoxmlMimeType, type OutputByType, type OutputType } from "./output";
 
-// Encrypted OOXML container passthrough
+// Encrypted OOXML container detection and passthrough
 export {
   assertEncryptedExclusive,
+  assertNotEncryptedContainer,
+  detectEncryptedContainer,
   encryptedContainerOutput,
   encryptedContainerStream,
+  EncryptedPackageError,
   isEncryptedContainer,
   type EncryptedContainerOptions,
+  type EncryptedContainerStatus,
+  type EncryptionFlavor,
 } from "./encryption";
+
+// Digital-signature parts (detected and preserved; never signed or verified)
+export {
+  detectDigitalSignatures,
+  digitalSignatureInvalidationWarning,
+  DIGITAL_SIGNATURE_DIRECTORY,
+  DIGITAL_SIGNATURE_ORIGIN_REL,
+  DIGITAL_SIGNATURE_SIGNATURE_REL,
+  isDigitalSignaturePartPath,
+  warnDigitalSignatureInvalidation,
+  type DigitalSignatureInfo,
+  type DigitalSignatureRelationship,
+} from "./signatures";
+
+// Macro-enabled package classification (VBA parts are never executed)
+export {
+  isMacroEnabledContentType,
+  isMacroEnabledPackage,
+  isMacroPartPath,
+  mainDocumentContentType,
+  withoutMacroParts,
+} from "./macros";
 
 // ZIP packer
 export {

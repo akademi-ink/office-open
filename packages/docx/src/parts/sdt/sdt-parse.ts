@@ -180,6 +180,37 @@ export function parseSdtProperties(el: Element): SdtPropertiesOptions {
         font: attr(uncheckedState, "w14:font"),
       };
     opts.checkbox = cbObj;
+  } else if (findChild(el, "w14:entityPicker")) {
+    opts.entityPicker = true;
+  }
+
+  // w15 repeating-section markers (Word 2013+): the outer control carries
+  // w15:repeatingSection with an optional title / insert-delete lock; the
+  // item-template control carries the empty w15:repeatingSectionItem.
+  const repeatingSection = findChild(el, "w15:repeatingSection");
+  if (repeatingSection) {
+    const section: NonNullable<SdtPropertiesOptions["repeatingSection"]> = {};
+    const title = findChild(repeatingSection, "w15:sectionTitle");
+    if (title) {
+      const val = attr(title, "w:val");
+      if (val !== undefined) section.sectionTitle = val;
+    }
+    const doNotAllow = findChild(repeatingSection, "w15:doNotAllowInsertDeleteSection");
+    if (doNotAllow) {
+      section.doNotAllowInsertDeleteSection = attrBool(doNotAllow, "w:val") ?? true;
+    }
+    opts.repeatingSection = section;
+  }
+  if (findChild(el, "w15:repeatingSectionItem")) opts.repeatingSectionItem = true;
+
+  // w15 web-extension binding markers (Word 2013+) — presence-only on/off.
+  const webExtensionLinked = findChild(el, "w15:webExtensionLinked");
+  if (webExtensionLinked) {
+    opts.webExtensionLinked = attrBool(webExtensionLinked, "w:val") ?? true;
+  }
+  const webExtensionCreated = findChild(el, "w15:webExtensionCreated");
+  if (webExtensionCreated) {
+    opts.webExtensionCreated = attrBool(webExtensionCreated, "w:val") ?? true;
   }
 
   // w15:appearance (Word 2013+) — ST_SdtAppearance: boundingBox/tags/hidden

@@ -187,6 +187,11 @@ export interface SettingsOptions {
   listSeparator?: string;
   /** Word 2010 document identifier (w14:docId/`@w14:val`, e.g. "1A190769") */
   w14DocId?: string;
+  /**
+   * The document was saved while the user was resolving conflicting edits
+   * (Word 2010+ w14:conflictMode). Round-trip only — Word clears it on save.
+   */
+  w14ConflictMode?: boolean;
   /** Discard cropped-out image data when saving (w14:discardImageEditingData) */
   w14DiscardImageEditingData?: boolean;
   /** Default image DPI for pictures inserted in this document (w14:defaultImageDpi) */

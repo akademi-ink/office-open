@@ -82,6 +82,12 @@ export interface SectionPropertiesOptionsBase {
   };
   footnoteProperties?: FootnotePropertiesOptions;
   endnoteProperties?: EndnotePropertiesOptions;
+  /**
+   * Number of columns the footnotes area is laid out in (Word 2013+
+   * w15:footnoteColumns). Zero/omitted = Word derives the count from the
+   * page's column layout.
+   */
+  footnoteColumns?: number;
 }
 
 export type SectionPropertiesChangeOptions = ChangedProperties & SectionPropertiesOptionsBase;
