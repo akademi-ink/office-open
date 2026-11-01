@@ -180,6 +180,11 @@ export interface BibliographyOptions {
   styleName?: string;
   /** Word's XSLT style path (b:Sources/@SelectedStyle), e.g. "\\APA.XSL". */
   selectedStyle?: string;
+  /**
+   * Sources schema version (b:Sources/@Version), e.g. "6". Word writes it on
+   * save; preserved only when the source part carries it.
+   */
+  version?: string;
   /** Word's style URI (b:Sources/@URI), preserved when present. */
   uri?: string;
 }
@@ -188,7 +193,101 @@ export interface BibliographyOptions {
 
 import type { CustomDescriptor } from "@office-open/core/descriptor";
 import type { Element as XmlElement } from "@office-open/xml";
-import { escapeXml, findChild, textOf } from "@office-open/xml";
+import { escapeXml, textOf } from "@office-open/xml";
+
+/**
+ * Namespaces a bibliography `<Sources>` part may bind. 2006 is the ECMA-376
+ * namespace Word writes today; 2004 is the pre-ECMA dialect (Word 2003/2004
+ * source lists) still present in converted documents.
+ */
+const BIBLIOGRAPHY_NAMESPACES: ReadonlySet<string> = new Set([
+  "http://schemas.openxmlformats.org/officeDocument/2006/bibliography",
+  "http://schemas.microsoft.com/office/word/2004/10/bibliography",
+]);
+
+interface QualifiedName {
+  prefix: string;
+  local: string;
+}
+
+/** Split `prefix:local`; the parser keeps names as written (canonicalized). */
+function qualify(name: string | undefined): QualifiedName | undefined {
+  if (name === undefined || name === "") return undefined;
+  const colon = name.indexOf(":");
+  return colon < 0
+    ? { prefix: "", local: name }
+    : { prefix: name.slice(0, colon), local: name.slice(colon + 1) };
+}
+
+/**
+ * URI the element binds to its own prefix when it declares one, else
+ * `undefined` (the binding is inherited from an ancestor — Word declares the
+ * bibliography namespace once, on the part root).
+ */
+function declaredNamespace(el: XmlElement, name: QualifiedName): string | undefined {
+  const value = el.attributes?.[name.prefix === "" ? "xmlns" : `xmlns:${name.prefix}`];
+  return value === undefined ? undefined : String(value);
+}
+
+/**
+ * Every prefix the part root binds to a bibliography namespace ("" is the
+ * default namespace). Children inherit these bindings; a `b:` literal would
+ * miss sources bound to a default or alternate prefix.
+ */
+function bibliographyPrefixes(root: XmlElement): ReadonlySet<string> {
+  const prefixes = new Set<string>();
+  for (const [key, value] of Object.entries(root.attributes ?? {})) {
+    if (key !== "xmlns" && !key.startsWith("xmlns:")) continue;
+    if (typeof value !== "string" || !BIBLIOGRAPHY_NAMESPACES.has(value)) continue;
+    prefixes.add(key === "xmlns" ? "" : key.slice(6));
+  }
+  // Canonical `b:` root with no declaration to inspect (legacy/hand-built).
+  if (prefixes.size === 0 && qualify(root.name)?.prefix === "b") prefixes.add("b");
+  return prefixes;
+}
+
+/**
+ * Match a direct child by local name in the part root's namespace scope. A
+ * declaration on the child itself wins; otherwise it must use a prefix the
+ * root bound to a bibliography namespace.
+ */
+function matchesBibliographyChild(
+  el: XmlElement,
+  local: string,
+  scope: ReadonlySet<string>,
+): boolean {
+  const name = qualify(el.name);
+  if (name?.local !== local) return false;
+  const declared = declaredNamespace(el, name);
+  if (declared !== undefined) return BIBLIOGRAPHY_NAMESPACES.has(declared);
+  return scope.has(name.prefix);
+}
+
+function findBibliographyChild(
+  parent: XmlElement | undefined,
+  local: string,
+  scope: ReadonlySet<string>,
+): XmlElement | undefined {
+  for (const child of parent?.elements ?? []) {
+    if (matchesBibliographyChild(child, local, scope)) return child;
+  }
+  return undefined;
+}
+
+/**
+ * True when `el` is the root of a bibliography part: local name `Sources` in
+ * one of the bibliography namespaces. Prefix-agnostic, so a default-namespace
+ * `<Sources xmlns="…bibliography">` is recognized alongside `b:Sources`.
+ */
+export function isBibliographySources(el: XmlElement): boolean {
+  const name = qualify(el.name);
+  if (name?.local !== "Sources") return false;
+  const declared = declaredNamespace(el, name);
+  if (declared !== undefined) return BIBLIOGRAPHY_NAMESPACES.has(declared);
+  // Canonical/legacy shape with no declaration to inspect: the XML parser
+  // normalizes 2006-namespace roots to `b:`.
+  return name.prefix === "b";
+}
 
 const SOURCE_FIELDS: readonly (readonly [string, keyof SourceTypeOptions])[] = [
   ["SourceType", "sourceType"],
@@ -267,12 +366,10 @@ const AUTHOR_ROLES: readonly (readonly [string, keyof AuthorOptions])[] = [
   ["Writer", "writers"],
 ] as const;
 
-const ROLE_TAG_TO_KEY = new Map<string, keyof AuthorOptions>(
-  AUTHOR_ROLES.map(([tag, key]) => [`b:${tag}`, key]),
-);
+const ROLE_LOCAL_TO_KEY = new Map<string, keyof AuthorOptions>(AUTHOR_ROLES);
 
 /** Roles whose XSD type is CT_NameOrCorporateType (accept b:Corporate). */
-const CORPORATE_ROLES = new Set(["b:Author", "b:Performer"]);
+const CORPORATE_ROLES = new Set(["Author", "Performer"]);
 
 function stringifyAuthorEntry(entry: AuthorEntry): string {
   if ("corporate" in entry) {
@@ -297,19 +394,19 @@ function stringifyAuthorElement(author: AuthorOptions): string {
   return roleParts.length > 0 ? `<b:Author>${roleParts.join("")}</b:Author>` : "";
 }
 
-function readPerson(el: XmlElement): PersonOptions {
+function readPerson(el: XmlElement, scope: ReadonlySet<string>): PersonOptions {
   const person: PersonOptions = {};
-  const last = findChild(el, "b:Last");
+  const last = findBibliographyChild(el, "Last", scope);
   if (last) {
     const val = textOf(last);
     if (val) person.last = val;
   }
-  const first = findChild(el, "b:First");
+  const first = findBibliographyChild(el, "First", scope);
   if (first) {
     const val = textOf(first);
     if (val) person.first = val;
   }
-  const middle = findChild(el, "b:Middle");
+  const middle = findBibliographyChild(el, "Middle", scope);
   if (middle) {
     const val = textOf(middle);
     if (val) person.middle = val;
@@ -317,21 +414,23 @@ function readPerson(el: XmlElement): PersonOptions {
   return person;
 }
 
-function parseAuthorElement(el: XmlElement): AuthorOptions | undefined {
+function parseAuthorElement(el: XmlElement, scope: ReadonlySet<string>): AuthorOptions | undefined {
   const author: { [K in keyof AuthorOptions]?: AuthorEntry[] } = {};
   for (const roleEl of el.elements ?? []) {
-    const key = roleEl.name !== undefined ? ROLE_TAG_TO_KEY.get(roleEl.name) : undefined;
+    const roleName = qualify(roleEl.name);
+    if (!roleName || !matchesBibliographyChild(roleEl, roleName.local, scope)) continue;
+    const key = ROLE_LOCAL_TO_KEY.get(roleName.local);
     if (!key) continue;
 
     const entries: AuthorEntry[] = [];
-    const nameList = findChild(roleEl, "b:NameList");
+    const nameList = findBibliographyChild(roleEl, "NameList", scope);
     if (nameList) {
       for (const personEl of nameList.elements ?? []) {
-        if (personEl.name !== "b:Person") continue;
-        entries.push(readPerson(personEl));
+        if (!matchesBibliographyChild(personEl, "Person", scope)) continue;
+        entries.push(readPerson(personEl, scope));
       }
-    } else if (roleEl.name !== undefined && CORPORATE_ROLES.has(roleEl.name)) {
-      const corporate = findChild(roleEl, "b:Corporate");
+    } else if (CORPORATE_ROLES.has(roleName.local)) {
+      const corporate = findBibliographyChild(roleEl, "Corporate", scope);
       const name = corporate ? textOf(corporate) : undefined;
       if (name) entries.push({ corporate: name });
     }
@@ -353,6 +452,9 @@ export const bibliographyDesc: CustomDescriptor<BibliographyOptions> = {
     }
     if (opts.styleName !== undefined) {
       attrParts.push(`StyleName="${escapeXml(opts.styleName)}"`);
+    }
+    if (opts.version !== undefined) {
+      attrParts.push(`Version="${escapeXml(opts.version)}"`);
     }
     if (opts.uri !== undefined) {
       attrParts.push(`URI="${escapeXml(opts.uri)}"`);
@@ -383,25 +485,31 @@ export const bibliographyDesc: CustomDescriptor<BibliographyOptions> = {
 
   parse(el, _ctx) {
     const opts: Partial<BibliographyOptions> = {};
+    const scope = bibliographyPrefixes(el);
 
     // Style attributes (SelectedStyle is what Word actually uses to pick the XSLT)
     const selectedStyle = el.attributes?.["SelectedStyle"];
     if (selectedStyle) opts.selectedStyle = selectedStyle as string;
     const styleName = el.attributes?.["StyleName"];
     if (styleName) opts.styleName = styleName as string;
+    // nativeTypeAttributes coerces a numeric version ("6") to a number; the
+    // Options field is a string so the value round-trips verbatim.
+    const version = el.attributes?.["Version"];
+    if (version !== undefined && version !== "") opts.version = String(version);
     const uri = el.attributes?.["URI"];
     if (uri) opts.uri = uri as string;
 
-    // Parse b:Source children
+    // Parse Source children by local name in the bibliography namespace —
+    // the source may bind it to a default prefix or none of Word's `b:`.
     const sources: SourceTypeOptions[] = [];
     for (const child of el.elements ?? []) {
-      if (child.name !== "b:Source") continue;
+      if (!matchesBibliographyChild(child, "Source", scope)) continue;
       const source: SourceTypeOptions = {};
       for (const [tagName, key] of SOURCE_FIELDS) {
-        const xmlChild = findChild(child, `b:${tagName}`);
+        const xmlChild = findBibliographyChild(child, tagName, scope);
         if (!xmlChild) continue;
         if (key === "author") {
-          const parsed = parseAuthorElement(xmlChild);
+          const parsed = parseAuthorElement(xmlChild, scope);
           if (parsed) source.author = parsed;
           continue;
         }

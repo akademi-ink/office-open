@@ -10,10 +10,11 @@
  * @module
  */
 
-import { RELATIONSHIP_TYPES, hpsMeasureValue } from "@office-open/core";
+import { RELATIONSHIP_TYPES, hpsMeasureValue, toUint8Array } from "@office-open/core";
 import { TargetModeType } from "@office-open/core";
 import { escapeXml } from "@office-open/xml";
 import { subDocDesc } from "@parts/bodychildren";
+import type { BackgroundRawMediaOptions } from "@parts/document/document-background/document-background";
 import { objectDesc, type ObjectElementOptions } from "@parts/object";
 import type {
   BookmarkOptions,
@@ -38,6 +39,7 @@ import {
 } from "@parts/paragraph/run/run";
 import type { SymbolRunOptions } from "@parts/paragraph/run/symbol-run";
 import { stringifyPict, type PictOptions } from "@parts/pict";
+import type { MediaData } from "@shared/media/data";
 import { autoRevisionId } from "@shared/track-revision/track-revision";
 
 import type { BodyContext } from "../context";
@@ -561,6 +563,43 @@ function isPlainTextRun(child: ParagraphChild): boolean {
   );
 }
 
+/**
+ * Emit a verbatim `rawXml` child, registering the media its `{fileName}`
+ * placeholders reference so the compiler's placeholder pass resolves them into
+ * fresh relationship ids. Without this the raw XML would keep source rIds the
+ * regenerated package rels do not define (OPC-invalid output).
+ *
+ * Works on a local copy of the XML: dedup may reuse an earlier file name, and
+ * writing that rename back would leak this generate run's numbering into the
+ * caller's serializable options.
+ */
+function stringifyRawXmlChild(
+  child: { rawXml: string; rawMedia?: BackgroundRawMediaOptions[] },
+  ctx: BodyContext,
+): string {
+  let xml = child.rawXml;
+  if (!child.rawMedia) return xml;
+  for (const m of child.rawMedia) {
+    const data = toUint8Array(m.data);
+    const entry = ctx.file.media.addMedia(
+      data,
+      m.type,
+      (fileName) =>
+        ({
+          type: m.type,
+          data,
+          fileName,
+          transformation: { emus: { x: 0, y: 0 }, pixels: { x: 0, y: 0 } },
+        }) as MediaData,
+      m.fileName,
+    );
+    if (entry.fileName !== m.fileName) {
+      xml = xml.split(`{${m.fileName}}`).join(`{${entry.fileName}}`);
+    }
+  }
+  return xml;
+}
+
 export function stringifyChildDispatch(
   child: ParagraphChild,
   ctx: BodyContext,
@@ -568,7 +607,7 @@ export function stringifyChildDispatch(
   // Verbatim passthrough (unrecognized drawings and other shapes the parse
   // path keeps byte-faithful) — comes first so no run-like branch claims it.
   if ("rawXml" in child) {
-    return child.rawXml;
+    return stringifyRawXmlChild(child, ctx);
   }
   // Fast path: a plain run with text set is by far the most common child.
   // The chain below otherwise runs ~40 discriminant checks before the caller

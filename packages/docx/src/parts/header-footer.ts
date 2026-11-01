@@ -124,10 +124,14 @@ export function stringifyHeaderFooter(
   for (const ns of namespaces) {
     attrParts.push(`xmlns:${ns}="${escapeXml(DocumentAttributeNamespaces[ns])}"`);
   }
-  // mc:Ignorable must declare the ignorable namespaces (w14/w15/wp14) that
-  // header/footer content uses (e.g. w14:paraId). Without it, Word in
-  // compatibility mode 14 rejects the part as unreadable content.
-  attrParts.push('mc:Ignorable="w14 w15 wp14 w16se w16cid"');
+  // mc:Ignorable must list only prefixes declared on THIS root: headers and
+  // footers carry different namespace sets (w16se/w16cid exist on headers but
+  // not on footers). Deriving the list from `namespaces` keeps the part
+  // MCE-valid for both kinds.
+  const ignorable = ["w14", "w15", "wp14", "w16se", "w16cid"].filter((prefix) =>
+    (namespaces as string[]).includes(prefix),
+  );
+  attrParts.push(`mc:Ignorable="${ignorable.join(" ")}"`);
   const attrStr = attrParts.join(" ");
 
   const childParts: string[] = [];

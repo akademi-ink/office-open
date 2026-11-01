@@ -2,7 +2,7 @@ import type { ReadContext, WriteContext } from "@office-open/core/descriptor";
 import { parse as parseXml } from "@office-open/xml";
 import { describe, expect, it } from "vite-plus/test";
 
-import { bibliographyDesc } from "./bibliography";
+import { bibliographyDesc, isBibliographySources } from "./bibliography";
 import type { BibliographyOptions } from "./bibliography";
 
 const writeCtx = {
@@ -18,6 +18,16 @@ function roundTrip(opts: BibliographyOptions) {
   const el = doc.elements?.[0];
   if (!el) throw new Error("parsed document has no root element");
   return bibliographyDesc.parse(el, readCtx);
+}
+
+function rootOf(xml: string) {
+  const el = parseXml(xml).elements?.[0];
+  if (!el) throw new Error("parsed document has no root element");
+  return el;
+}
+
+function parseRoot(xml: string) {
+  return bibliographyDesc.parse(rootOf(xml), readCtx);
 }
 
 describe("bibliographyDesc round-trip", () => {
@@ -170,5 +180,99 @@ describe("bibliographyDesc round-trip", () => {
       sources: [{ title: 'Tom & Jerry "The Movie"' }],
     });
     expect(result.sources[0]?.title).toBe('Tom & Jerry "The Movie"');
+  });
+});
+
+describe("bibliography namespace handling", () => {
+  it("parses a default-namespace Sources root", () => {
+    const result = parseRoot(
+      '<Sources xmlns="http://schemas.openxmlformats.org/officeDocument/2006/bibliography">' +
+        "<Source><SourceType>Book</SourceType><Title>Default Namespace</Title>" +
+        "<Year>2024</Year></Source></Sources>",
+    );
+    expect(result.sources).toHaveLength(1);
+    expect(result.sources[0]?.sourceType).toBe("Book");
+    expect(result.sources[0]?.title).toBe("Default Namespace");
+    expect(result.sources[0]?.year).toBe("2024");
+  });
+
+  it("parses a non-canonical source prefix", () => {
+    const result = parseRoot(
+      '<bib:Sources xmlns:bib="http://schemas.openxmlformats.org/officeDocument/2006/bibliography">' +
+        "<bib:Source><bib:Title>Alternate Prefix</bib:Title></bib:Source></bib:Sources>",
+    );
+    expect(result.sources).toHaveLength(1);
+    expect(result.sources[0]?.title).toBe("Alternate Prefix");
+  });
+
+  it("parses the Word 2004 bibliography namespace", () => {
+    const result = parseRoot(
+      '<b:Sources xmlns:b="http://schemas.microsoft.com/office/word/2004/10/bibliography">' +
+        "<b:Source><b:Title>Word 2004</b:Title></b:Source></b:Sources>",
+    );
+    expect(result.sources).toHaveLength(1);
+    expect(result.sources[0]?.title).toBe("Word 2004");
+  });
+
+  it("parses children bound through either declared prefix", () => {
+    const result = parseRoot(
+      '<Sources xmlns="http://schemas.openxmlformats.org/officeDocument/2006/bibliography" ' +
+        'xmlns:b="http://schemas.openxmlformats.org/officeDocument/2006/bibliography">' +
+        "<Source><b:Title>Mixed Bindings</b:Title></Source></Sources>",
+    );
+    expect(result.sources[0]?.title).toBe("Mixed Bindings");
+  });
+
+  it("parses author roles under a default-namespace root", () => {
+    const result = parseRoot(
+      '<Sources xmlns="http://schemas.openxmlformats.org/officeDocument/2006/bibliography">' +
+        "<Source><Author><Author><NameList><Person><Last>Doe</Last><First>Jane</First>" +
+        "</Person></NameList></Author></Author></Source></Sources>",
+    );
+    expect(result.sources[0]?.author).toEqual({ authors: [{ last: "Doe", first: "Jane" }] });
+  });
+});
+
+describe("b:Sources/@Version", () => {
+  it("round-trips Version when present", () => {
+    const result = roundTrip({ sources: [{ title: "Versioned" }], version: "6" });
+    expect(result.version).toBe("6");
+  });
+
+  it("parses Version from a raw b:Sources root", () => {
+    const result = parseRoot(
+      '<b:Sources xmlns:b="http://schemas.openxmlformats.org/officeDocument/2006/bibliography" Version="6">' +
+        "<b:Source><b:Title>Raw</b:Title></b:Source></b:Sources>",
+    );
+    expect(result.version).toBe("6");
+    expect(result.sources[0]?.title).toBe("Raw");
+  });
+
+  it("does not invent a Version when the source omits one", () => {
+    const xml = bibliographyDesc.stringify({ sources: [] }, writeCtx)!;
+    expect(xml).not.toContain("Version=");
+    expect(roundTrip({ sources: [] }).version).toBeUndefined();
+  });
+});
+
+describe("isBibliographySources", () => {
+  it("recognizes default-namespace, alternate-prefix and canonical roots", () => {
+    for (const xml of [
+      '<Sources xmlns="http://schemas.openxmlformats.org/officeDocument/2006/bibliography"/>',
+      '<x:Sources xmlns:x="http://schemas.microsoft.com/office/word/2004/10/bibliography"/>',
+      '<b:Sources xmlns:b="http://schemas.openxmlformats.org/officeDocument/2006/bibliography"/>',
+      "<b:Sources/>",
+    ]) {
+      expect(isBibliographySources(rootOf(xml))).toBe(true);
+    }
+  });
+
+  it("rejects a Sources root bound to another namespace", () => {
+    for (const xml of [
+      '<Sources xmlns="http://example.test/not-bibliography"/>',
+      '<b:Sources xmlns:b="http://example.test/not-bibliography"/>',
+    ]) {
+      expect(isBibliographySources(rootOf(xml))).toBe(false);
+    }
   });
 });

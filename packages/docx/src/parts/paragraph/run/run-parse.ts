@@ -17,6 +17,7 @@ import {
   textOf,
 } from "@office-open/xml";
 import type { Element } from "@office-open/xml";
+import type { BackgroundRawMediaOptions } from "@parts/document/document-background/document-background";
 import { objectDesc } from "@parts/object";
 import type { ObjectElementOptions } from "@parts/object";
 import type { FootnoteEndnoteReferenceOptions } from "@parts/paragraph/paragraph";
@@ -401,7 +402,7 @@ export type ParsedRunChild =
   // Unknown run content is preserved verbatim rather than dropped. Known
   // rel-carrying payloads (drawings, pictures, objects) have structured
   // handlers above; extensions we do not model land here.
-  | { rawXml: string };
+  | { rawXml: string; rawMedia?: BackgroundRawMediaOptions[] };
 
 function parseRubyContent(el: Element, ctx: DocxReadContext): RubyContentOptions {
   const children: (RunOptions | string)[] = [];
@@ -690,7 +691,13 @@ export function parseRun(
         // Preserve unknown EG_RunInnerContent members instead of dropping them.
         // Text nodes outside the content model carry no element name; ignore
         // them (previous behavior) rather than emitting an empty rawXml child.
-        if (child.name) children.push({ rawXml: stringifyElement(child) });
+        // Relationship refs become `{fileName}` placeholders + `rawMedia` so
+        // the compiler re-registers the binaries rather than emitting source
+        // rIds that its regenerated rels do not define.
+        if (child.name) {
+          const { rawXml, rawMedia } = replaceRelsWithPlaceholders(stringifyElement(child), _ctx);
+          children.push(rawMedia.length > 0 ? { rawXml, rawMedia } : { rawXml });
+        }
         break;
     }
   }

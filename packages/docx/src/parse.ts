@@ -12,7 +12,7 @@ import { contentTypesDesc } from "@office-open/core";
 import { attr } from "@office-open/xml";
 import type { Element } from "@office-open/xml";
 import { appPropertiesDesc } from "@parts/app-properties";
-import { bibliographyDesc } from "@parts/bibliography";
+import { bibliographyDesc, isBibliographySources } from "@parts/bibliography";
 import { setBodyParseChild } from "@parts/bodychildren";
 import { commentsDesc } from "@parts/comments";
 import { commentsExtendedDesc } from "@parts/comments-extended";
@@ -256,10 +256,11 @@ function parseDocPartRefs(doc: ParsedArchive): DocxPartRefs {
       refs.bibliography = path;
     } else if (type.includes("/customXml")) {
       // ECMA-376: the Bibliography part is a custom XML part. Identify it by
-      // its root element rather than by path, because Word names it
+      // its root element (local name + bibliography namespace, so a default
+      // or alternate prefix matches too), not by path — Word names it
       // customXml/itemN.xml and the standard does not fix the location.
       const customXmlPart = doc.get(path);
-      if (customXmlPart?.name === "b:Sources") refs.bibliography = path;
+      if (customXmlPart && isBibliographySources(customXmlPart)) refs.bibliography = path;
     } else if (type.includes("/glossaryDocument")) {
       refs.glossary = path;
     } else if (type.includes("/hyperlink")) {

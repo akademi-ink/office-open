@@ -1670,8 +1670,13 @@ function parseContainerChildren(el: Element, ctx: DocxReadContext): ParagraphChi
       case "w:rPr":
         break;
       default:
-        // Unknown inline container content is preserved verbatim.
-        if (sub.name) children.push({ rawXml: stringifyElement(sub) });
+        // Unknown inline container content is preserved verbatim. Relationship
+        // refs become `{fileName}` placeholders + `rawMedia` so the compiler
+        // re-registers the binaries instead of emitting dangling source rIds.
+        if (sub.name) {
+          const { rawXml, rawMedia } = replaceRelsWithPlaceholders(stringifyElement(sub), ctx);
+          children.push(rawMedia.length > 0 ? { rawXml, rawMedia } : { rawXml });
+        }
         break;
     }
   }
@@ -2274,8 +2279,13 @@ function parseRunLevelChildren(
       }
       default:
         // Preserve unknown run-level content instead of dropping it. Block-level
-        // unknowns already carry rawXml; this closes the asymmetry.
-        childList.push({ rawXml: stringifyElement(child) });
+        // unknowns already carry rawXml; this closes the asymmetry. Relationship
+        // refs become `{fileName}` placeholders + `rawMedia` so the compiler
+        // re-registers the binaries instead of emitting dangling source rIds.
+        {
+          const { rawXml, rawMedia } = replaceRelsWithPlaceholders(stringifyElement(child), ctx);
+          childList.push(rawMedia.length > 0 ? { rawXml, rawMedia } : { rawXml });
+        }
         break;
     }
   }

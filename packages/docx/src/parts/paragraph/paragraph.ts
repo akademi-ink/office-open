@@ -8,6 +8,7 @@
 
 import type { LongHexNumber } from "@office-open/core";
 import type { CustomXmlRunOptions } from "@parts/custom-xml";
+import type { BackgroundRawMediaOptions } from "@parts/document/document-background/document-background";
 import type { ObjectElementOptions } from "@parts/object";
 import type { PermStartOptions } from "@parts/perm-start";
 import type { PictOptions } from "@parts/pict";
@@ -254,7 +255,12 @@ export type ParagraphChild =
   | { subDoc: SubDocOptions }
   // Verbatim run-level XML captured on parse for shapes without a structured
   // form (unrecognized drawings, future graphicData payloads)
-  | { rawXml: string }
+  | {
+      /** Verbatim XML; `r:id`/`r:embed`/`r:link` refs are `{fileName}` placeholders. */
+      rawXml: string;
+      /** Media referenced by `rawXml` placeholders, registered on generate. */
+      rawMedia?: BackgroundRawMediaOptions[];
+    }
   // Text run
   | RunOptions;
 
