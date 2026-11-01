@@ -1,5 +1,5 @@
 /**
- * chartex — Office 2014+ "modern chart" package surface (PKG-12).
+ * chartEx — Office 2014+ "modern chart" package surface (PKG-12).
  *
  * Word's modern charts live in a part type of their own: a `cx:chartSpace`
  * document under `word/charts/chartEx{N}.xml` with content type
@@ -9,20 +9,30 @@
  * (`…/office/drawing/2014/chartex` plus the dated 2015/2016 revisions) — so the
  * classic `c:chartSpace` model cannot represent it.
  *
- * Decision (recorded in `scripts/standards/README.md`): **preserve, do not
- * model**. A chartEx part round-trips byte-exact as an opaque part and the
- * referencing drawing as inline passthrough XML; we do not parse `cx:chartSpace`
- * into an editable chart model, and no visual chart is reconstructed from it.
- * This module owns the vocabulary that decision needs — the part path, content
- * type, relationship type, and namespace detection — so the package validator
- * recognizes chartEx parts and the docx layer can detect the drawing without
- * re-deriving the URIs.
+ * The part still round-trips byte-exact as an opaque part and the referencing
+ * drawing as inline passthrough XML. Two paths sit on top of that preserved
+ * payload:
+ *
+ * - {@link parseChartExChartSpace} models the common families a canvas can
+ *   draw (bar/column, line, area, pie/doughnut, scatter) into a typed chart;
+ *   {@link chartExToChartSpace} projects that onto the classic chart model the
+ *   existing chart painter consumes.
+ * - Anything outside those families (waterfall, treemap, funnel, box & whisker,
+ *   …), a dashboard part, or a payload with no cached values returns
+ *   `undefined` from the parser and stays on the placeholder path below.
+ *
+ * This module also owns the vocabulary that decision needs — the part path,
+ * content type, relationship type, and namespace detection — so the package
+ * validator recognizes chartEx parts and the docx layer can detect the drawing
+ * without re-deriving the URIs.
  *
  * @module
  */
 
 import { attrNum, findFirst, parse } from "@office-open/xml";
 import type { Element } from "@office-open/xml";
+
+export * from "./parse";
 
 /** The chartEx namespace Word writes for the chart payload (`cx:` prefix). */
 export const CHART_EX_NAMESPACE = "http://schemas.microsoft.com/office/drawing/2014/chartex";
@@ -98,6 +108,42 @@ export function chartExParts(paths: Iterable<string>): ChartExPart[] {
     if (isChartExPartPath(path)) found.push({ path, contentType: CHART_EX_CONTENT_TYPE });
   }
   return found;
+}
+
+/** One `{ rawXml: … }` passthrough child's `rawMedia` entry. */
+export interface ChartExRawMediaEntry {
+  fileName?: unknown;
+  data?: unknown;
+}
+
+/**
+ * Find the chartEx part a preserved drawing run carries in its `rawMedia`.
+ *
+ * The docx parser resolves a drawing's relationship refs (`cx:chart/@r:id`)
+ * into `{fileName}` placeholders and attaches the referenced parts as
+ * `rawMedia`; a chartEx payload therefore arrives with the drawing without
+ * re-reading the package. The first entry whose name is a chartEx part wins.
+ *
+ * @param rawMedia the passthrough child's `rawMedia` array (untyped input)
+ */
+export function chartExPartOfRawMedia(
+  rawMedia: unknown,
+): { fileName: string; data: Uint8Array | string } | undefined {
+  if (!Array.isArray(rawMedia)) return undefined;
+  for (const entry of rawMedia) {
+    if (typeof entry !== "object" || entry === null) continue;
+    const record = entry as Record<string, unknown>;
+    const fileName = typeof record.fileName === "string" ? record.fileName : undefined;
+    // rawMedia names are basenames (`chartEx1.xml`); accept a full part path
+    // too, for callers that keep the package-relative name.
+    if (!fileName || !(isChartExPartPath(fileName) || /^chartex\d+\.xml$/i.test(fileName)))
+      continue;
+    const data = record.data;
+    if (typeof data === "string" && data.length > 0) return { fileName, data };
+    if (data instanceof Uint8Array) return { fileName, data };
+    if (data instanceof ArrayBuffer) return { fileName, data: new Uint8Array(data) };
+  }
+  return undefined;
 }
 
 // ── Renderer placeholder ──
