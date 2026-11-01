@@ -127,6 +127,7 @@ export function createNotesDesc(cfg: NotesDescConfig): CustomDescriptor<NotesDat
 
       for (const [id, children] of data.notes) {
         parts.push(`<${cfg.noteTag} w:id="${id}">`);
+        let lastBlockXml = "";
         for (const [i, child] of children.entries()) {
           const isSectionChild =
             typeof child === "object" &&
@@ -151,11 +152,17 @@ export function createNotesDesc(cfg: NotesDescConfig): CustomDescriptor<NotesDat
           // receive an invalid run outside w:p.
           const hasRefMark =
             childXml.includes("<w:footnoteRef/>") || childXml.includes("<w:endnoteRef/>");
-          if (i === 0 && isParagraphInput && !hasRefMark && !isEmptyParagraph(childXml)) {
-            parts.push(injectRefRun(childXml, cfg));
-          } else {
-            parts.push(childXml);
-          }
+          const blockXml =
+            i === 0 && isParagraphInput && !hasRefMark && !isEmptyParagraph(childXml)
+              ? injectRefRun(childXml, cfg)
+              : childXml;
+          parts.push(blockXml);
+          lastBlockXml = blockXml;
+        }
+        // A note must end with a paragraph: Word repairs a table-final note by
+        // appending one, so emit the trailing paragraph ourselves.
+        if (lastBlockXml !== "" && !isParagraphElement(lastBlockXml)) {
+          parts.push("<w:p/>");
         }
         parts.push(`</${cfg.noteTag}>`);
       }
@@ -219,4 +226,9 @@ function injectRefRun(pXml: string, cfg: NotesDescConfig): string {
 /** A paragraph element with no children at all — self-closed or open+close. */
 function isEmptyParagraph(pXml: string): boolean {
   return /^<[^/>]+\/>$/.test(pXml) || /^<[^>]+><\/[^>]+>$/.test(pXml);
+}
+
+/** True when a rendered block is a `w:p` element (open, self-closed, or with attrs). */
+function isParagraphElement(xml: string): boolean {
+  return /^<w:p[\s/>]/.test(xml);
 }

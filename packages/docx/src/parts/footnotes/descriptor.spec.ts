@@ -91,4 +91,17 @@ describe("footnotesDesc round-trip", () => {
     expect(xml).toContain('<w:t xml:space="preserve">cell</w:t>');
     expect(xml).not.toContain("<w:footnoteRef/>");
   });
+
+  it("terminates a table-final footnote with a paragraph", () => {
+    const source =
+      '<w:footnotes xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+      '<w:footnote w:id="1"><w:p><w:r><w:t>before</w:t></w:r></w:p>' +
+      '<w:tbl><w:tblPr/><w:tblGrid><w:gridCol w:w="1000"/></w:tblGrid>' +
+      "<w:tr><w:tc><w:tcPr/><w:p><w:r><w:t>cell</w:t></w:r></w:p></w:tc></w:tr></w:tbl>" +
+      "</w:footnote></w:footnotes>";
+    const root = parseXml(source).elements?.[0];
+    if (!root) throw new Error("parsed document has no root element");
+    const xml = footnotesDesc.stringify(footnotesDesc.parse(root, readCtx), writeCtx as any)!;
+    expect(xml).toContain("</w:tbl><w:p/></w:footnote>");
+  });
 });
