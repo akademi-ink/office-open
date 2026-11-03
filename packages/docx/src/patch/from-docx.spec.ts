@@ -303,7 +303,7 @@ describe("from-docx", () => {
             },
           },
         });
-        expect(output).to.not.be.undefined;
+        expect(output).toBeDefined();
       });
 
       it("should patch the document", async () => {
@@ -312,7 +312,7 @@ describe("from-docx", () => {
           outputType: "uint8array",
           placeholders: {},
         });
-        expect(output).to.not.be.undefined;
+        expect(output).toBeDefined();
       });
 
       it("should skip UTF-16 types", async () => {
@@ -327,7 +327,7 @@ describe("from-docx", () => {
           outputType: "uint8array",
           placeholders: {},
         });
-        expect(output).to.not.be.undefined;
+        expect(output).toBeDefined();
       });
 
       it("should patch the document with custom delimiters", async () => {
@@ -391,7 +391,7 @@ describe("from-docx", () => {
           },
           placeholderDelimiters: { end: "}}", start: "{{" },
         });
-        expect(output).to.not.be.undefined;
+        expect(output).toBeDefined();
       });
 
       it("should patch the document with no patches", async () => {
@@ -400,7 +400,7 @@ describe("from-docx", () => {
           outputType: "uint8array",
           placeholders: {},
         });
-        expect(output).to.not.be.undefined;
+        expect(output).toBeDefined();
       });
 
       it("throws error with empty delimiters", async () => {
@@ -469,7 +469,7 @@ describe("from-docx", () => {
             },
           },
         });
-        expect(output).to.not.be.undefined;
+        expect(output).toBeDefined();
       });
     });
 
@@ -505,7 +505,7 @@ describe("from-docx", () => {
             },
           },
         });
-        expect(output).to.not.be.undefined;
+        expect(output).toBeDefined();
       });
     });
 
@@ -545,7 +545,7 @@ describe("from-docx", () => {
             },
           },
         });
-        expect(output).to.not.be.undefined;
+        expect(output).toBeDefined();
       });
     });
 

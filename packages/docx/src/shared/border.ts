@@ -49,7 +49,7 @@ export interface BorderOptions {
    * const lists the common line styles; Word also defines ~165 artistic and
    * pattern tokens (apples, weavingBraid, …) that round-trip as-is.
    */
-  style: (typeof BorderStyle)[keyof typeof BorderStyle] | string;
+  style: string;
   /** Border color, "auto" or hex (eg 'FF00AA') */
   color?: HexColorOrAuto;
   /** Theme color slot: "dark1"/"light1" text/background, "accent1"–"accent6" theme accents, "hyperlink"/"followedHyperlink". */

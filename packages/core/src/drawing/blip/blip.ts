@@ -36,7 +36,7 @@ export interface BlipOptions {
   /** Compression state (a:blip @cstate); absent = attribute omitted (schema default "none"). */
   compression?: BlipCompression;
   /** Image type for SVG detection */
-  type?: "svg" | string;
+  type?: string;
   /** For SVG images, the fallback image file name */
   fallbackFileName?: string;
 }

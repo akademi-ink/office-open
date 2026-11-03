@@ -19,7 +19,7 @@ import type {
 
 // ── Common locking attribute keys ──
 
-const BASE_LOCKING_KEYS: readonly (keyof BaseLockingOptions & string)[] = [
+const BASE_LOCKING_KEYS: readonly Extract<keyof BaseLockingOptions, string>[] = [
   "noGrp",
   "noSelect",
   "noRot",
@@ -32,10 +32,12 @@ const BASE_LOCKING_KEYS: readonly (keyof BaseLockingOptions & string)[] = [
   "noChangeShapeType",
 ];
 
-const SHAPE_EXTRA_KEYS: readonly (keyof ShapeLockingOptions & string)[] = ["noTextEdit"];
-const PICTURE_EXTRA_KEYS: readonly (keyof PictureLockingOptions & string)[] = ["noCrop"];
-const GROUP_EXTRA_KEYS: readonly (keyof GroupLockingOptions & string)[] = ["noUngrp"];
-const FRAME_EXTRA_KEYS: readonly (keyof GraphicFrameLockingOptions & string)[] = ["noDrilldown"];
+const SHAPE_EXTRA_KEYS: readonly Extract<keyof ShapeLockingOptions, string>[] = ["noTextEdit"];
+const PICTURE_EXTRA_KEYS: readonly Extract<keyof PictureLockingOptions, string>[] = ["noCrop"];
+const GROUP_EXTRA_KEYS: readonly Extract<keyof GroupLockingOptions, string>[] = ["noUngrp"];
+const FRAME_EXTRA_KEYS: readonly Extract<keyof GraphicFrameLockingOptions, string>[] = [
+  "noDrilldown",
+];
 
 // ── Helper: stringify boolean attributes ──
 

@@ -28,7 +28,7 @@ export interface NonVisualContentPartPropertiesOptions {
 }
 
 /** Locking attribute keys shared by stringify/parse. */
-const LOCKING_KEYS: readonly (keyof ContentPartLockingOptions & string)[] = [
+const LOCKING_KEYS: readonly Extract<keyof ContentPartLockingOptions, string>[] = [
   "noGrp",
   "noSelect",
   "noRot",

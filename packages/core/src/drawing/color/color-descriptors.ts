@@ -37,7 +37,7 @@ import { SystemColor } from "./system-color";
 
 // The parse whitelist is the union of the three unit classes — the Sets in
 // color-transform.ts are the single source of truth for the full key space.
-const TRANSFORM_KEYS: ReadonlySet<keyof ColorTransformOptions & string> = new Set([
+const TRANSFORM_KEYS: ReadonlySet<Extract<keyof ColorTransformOptions, string>> = new Set([
   ...PERCENT_TRANSFORMS,
   ...ANGLE_TRANSFORMS,
   ...BOOLEAN_TRANSFORMS,
@@ -64,7 +64,7 @@ function readTransforms(el: XmlElement): ColorTransformOptions | undefined {
   const result: ColorTransformOptions = {};
   for (const child of el.elements) {
     if (!child.name || !child.name.startsWith("a:")) continue;
-    const key = child.name.slice(2) as keyof ColorTransformOptions & string;
+    const key = child.name.slice(2) as Extract<keyof ColorTransformOptions, string>;
     if (!TRANSFORM_KEYS.has(key)) continue;
     const val = child.attributes?.["val"];
     if (val !== undefined) {

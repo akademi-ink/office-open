@@ -35,7 +35,7 @@ describe("parsePresentation", () => {
     const buffer = await generatePresentation(options);
     const result = parsePresentationSync(buffer);
 
-    expect(result.slides).to.exist;
+    expect(result.slides).toBeDefined();
     expect(result.slides!.length).to.equal(1);
     // Single masters survive round-trip too — the compiler only synthesizes
     // a default master when none is given.
@@ -120,7 +120,7 @@ describe("parsePresentation", () => {
     const result = parsePresentationSync(buffer);
 
     expect(result.slides!.length).to.equal(2);
-    expect(result.masters).to.exist;
+    expect(result.masters).toBeDefined();
     expect(result.masters!.length).to.equal(2);
     // Master name is derived from theme name
     const [slide0, slide1] = result.slides!;
@@ -142,7 +142,7 @@ describe("parsePresentation", () => {
     const buffer = await generatePresentation(options);
     const result = parsePresentationSync(buffer);
 
-    expect(result.tableStyles).to.exist;
+    expect(result.tableStyles).toBeDefined();
     expect(result.tableStyles!.defaultStyleId).toBe("{5C22544A-7EE6-4342-B048-85BDC9FD1C3A}");
   });
 
@@ -168,7 +168,7 @@ describe("parsePresentation", () => {
     const buffer = await generatePresentation(options);
     const parsed = parsePresentationSync(buffer);
 
-    expect(parsed.tableStyles).to.exist;
+    expect(parsed.tableStyles).toBeDefined();
     expect(parsed.tableStyles!.defaultStyleId).toBe(defaultStyleId);
     expect(parsed.tableStyles!.styles).toHaveLength(1);
     expect(parsed.tableStyles!.styles?.[0]?.styleId).toBe(defaultStyleId);
@@ -310,7 +310,7 @@ describe("raw fidelity fallbacks", () => {
     );
     const parsed = parsePresentationSync(mutated);
     const child = parsed.slides![0]?.children?.find((c) => "rawXml" in c);
-    expect(child).to.exist;
+    expect(child).toBeDefined();
     expect((child as { rawXml: string }).rawXml).toContain("mc:AlternateContent");
 
     // Re-compilation emits the verbatim payload back into the slide.

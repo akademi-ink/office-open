@@ -40,7 +40,10 @@ import type { TextEffectsOptions } from "./text-effects";
 import { isEmptyTextEffects, parseTextEffectChild } from "./text-effects";
 
 // On/off run properties: XML child tag → options key.
-const ON_OFF_RUN_PROPS: readonly (readonly [string, keyof RunPropertiesOptions & string])[] = [
+const ON_OFF_RUN_PROPS: readonly (readonly [
+  string,
+  Extract<keyof RunPropertiesOptions, string>,
+])[] = [
   ["w:strike", "strike"],
   ["w:dstrike", "doubleStrike"],
   ["w:outline", "outline"],

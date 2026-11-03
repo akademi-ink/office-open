@@ -75,7 +75,7 @@ export interface ColorTransformOptions {
   invGamma?: boolean;
 }
 
-type TransformKey = keyof ColorTransformOptions & string;
+type TransformKey = Extract<keyof ColorTransformOptions, string>;
 
 /**
  * Transform keys classified by XSD unit — the single source of truth shared by

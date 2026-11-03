@@ -73,7 +73,6 @@ interface RunOptionsBase {
    * charts, hyperlinks, …) dispatch through the same JSON pipeline.
    */
   children?: (
-    | (typeof PageNumber)[keyof typeof PageNumber]
     | string
     | { tab: true }
     | { noBreakHyphen: true }

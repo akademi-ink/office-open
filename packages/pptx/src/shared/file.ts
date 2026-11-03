@@ -26,7 +26,6 @@ import type {
   PrintPropertiesOptions,
   HtmlPublishPropertiesOptions,
 } from "@parts/presentation-properties";
-import type { SlideLayoutType } from "@parts/slide-layout";
 import type { SlideMasterOptions } from "@parts/slide-master";
 import type { ControlOptions } from "@parts/slide/slide";
 import type { SlideChild } from "@parts/slide/slide-child";
@@ -53,7 +52,7 @@ export type LayoutPlaceholderOptions = PlaceholderMapOptions;
 
 export interface LayoutDefinition {
   // Layout identity (p:sldLayout attributes)
-  type?: SlideLayoutType | string;
+  type?: string;
   name?: string;
   matchingName?: string;
   preserve?: boolean;
@@ -130,7 +129,7 @@ export interface SlideOptions {
   /** p:clrMapOvr — override the master color mapping for this slide. */
   colorMappingOverride?: ColorMappingOverrideOptions;
   comments?: SlideCommentOptions[];
-  layout?: SlideLayoutType | string;
+  layout?: string;
   master?: string;
   showMasterShapes?: boolean;
   showMasterPlaceholderAnimations?: boolean;
