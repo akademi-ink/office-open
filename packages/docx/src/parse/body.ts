@@ -129,11 +129,14 @@ function parseHeaderFooterRef(
 // ── Section child dispatch ───────────────────────────────────────────────────
 
 /**
- * The w:pict of a paragraph whose only run wraps a VML textbox — the shape
+ * The w:pict of a paragraph that *is* one VML text box — the shape
  * office-open's own textbox stringifier emits (w:p > w:r > w:pict, per
- * EG_RunInnerContent). Returns undefined when the paragraph carries any other
- * content, so a real run mixing text with a pict is never promoted (the
- * surrounding content would be lost).
+ * EG_RunInnerContent). Returns undefined unless the pict's only drawable
+ * shape carries the text box: a pict holding several shapes (a diagram of
+ * connectors plus boxes) or one shape without `v:textbox` is an inline
+ * picture run, and promoting it to the block textbox branch would drop every
+ * sibling shape. A pict inside a run that also carries other content never
+ * promotes: the surrounding content would be lost.
  */
 function findRunTextboxPict(el: Element): Element | undefined {
   let pict: Element | undefined;
@@ -147,7 +150,17 @@ function findRunTextboxPict(el: Element): Element | undefined {
     if (runContent.length > 0) return undefined;
     pict = findChild(child, "w:pict");
   }
-  return pict;
+  return pict === undefined ? undefined : soleTextboxPict(pict);
+}
+
+/** The pict when its only shape is a VML text box, else undefined. */
+function soleTextboxPict(pict: Element): Element | undefined {
+  const shapes = (pict.elements ?? []).filter(
+    (child) => child.type === "element" && child.name === "v:shape",
+  );
+  if (shapes.length !== 1) return undefined;
+  const textbox = findFirst(shapes[0]!, "v:textbox");
+  return textbox === undefined ? undefined : pict;
 }
 
 /**
