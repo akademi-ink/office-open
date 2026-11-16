@@ -1,4 +1,4 @@
-import { unzipSync, zipSync } from "fflate";
+import { zipSync } from "fflate";
 import { describe, expect, it } from "vite-plus/test";
 
 import { parseDocumentSync } from "../parse";
